@@ -41,3 +41,9 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: backgorund
+    uniqueID: 3411367371
+    locked: 0
+  - name: karakter
+    uniqueID: 336527801
+    locked: 0
