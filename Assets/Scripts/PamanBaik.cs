@@ -22,6 +22,10 @@ public class PamanBaik : MonoBehaviour
     public Sprite[] walkSprites;
     public float    frameDuration = 0.12f;
 
+    [Header("Sprite Diam (Idle)")]
+    [Tooltip("Sprite yang ditampilkan saat paman diam. Kosongkan = pakai walkSprites[0].")]
+    public Sprite idleSprite;
+
     [Header("Pergerakan Otomatis")]
     public float walkSpeed = 2f;
     [Tooltip("1 = kanan, -1 = kiri")]
@@ -56,6 +60,14 @@ public class PamanBaik : MonoBehaviour
     public float shadowLength    = 0.6f;
     public float shadowExtraOffsetY = -0.05f;
 
+    [Header("Dialog Saat Tiba")]
+    [Tooltip("Komponen NpcDialog yang akan dimainkan ketika paman tiba di samping Rara.\nKosongkan untuk menonaktifkan dialog.")]
+    public NpcDialog dialog;
+    [Tooltip("Hanya tampilkan dialog satu kali (true) atau setiap kali tiba (false)")]
+    public bool dialogOnceOnly = true;
+    [Tooltip("Jeda kecil sebelum dialog muncul setelah tiba (detik)")]
+    public float dialogDelay = 0.2f;
+
     // ── internal ──────────────────────────────────────────────────────────
     private SpriteRenderer sr;
     private float          frameTimer;
@@ -64,6 +76,9 @@ public class PamanBaik : MonoBehaviour
     private float          targetWorldHeight = -1f;
     private Vector2        moveTarget;
     private SpriteShadow   shadow;               // referensi komponen shadow
+    private bool           hasArrived;            // sudah pernah tiba di target
+    private bool           dialogTriggered;       // dialog sudah pernah dimainkan
+    private float          arriveTimer;
 
     // ══════════════════════════════════════════════════════════════════════
     void Awake()
@@ -86,6 +101,18 @@ public class PamanBaik : MonoBehaviour
     {
         // Setup shadow di Start agar sr.sprite & sorting layer sudah siap
         SetupShadow();
+
+        // Abaikan tabrakan fisik antara Paman ↔ Rara,
+        // supaya paman bisa berdiri tepat di sisi Rara tanpa terhalang collider
+        if (playerTarget != null)
+        {
+            var myCols   = GetComponentsInChildren<Collider2D>();
+            var raraCols = playerTarget.GetComponentsInChildren<Collider2D>();
+            foreach (var a in myCols)
+                foreach (var b in raraCols)
+                    if (a != null && b != null)
+                        Physics2D.IgnoreCollision(a, b, true);
+        }
     }
 
     void SetupShadow()
@@ -139,6 +166,45 @@ public class PamanBaik : MonoBehaviour
         UpdateAnimation();
         MoveCharacter();
         SyncShadowSettings();
+        UpdateDialogTrigger();
+    }
+
+    // ── Trigger dialog saat paman tiba di samping Rara ───────────────────
+    void UpdateDialogTrigger()
+    {
+        if (dialog == null || playerTarget == null) return;
+
+        // Hitung apakah paman sudah sampai di moveTarget
+        float distToTarget = Vector2.Distance(transform.position, moveTarget);
+        bool  arrivedNow   = !isMoving && distToTarget <= stopDistance * 1.1f;
+
+        // Reset status jika dialogOnceOnly == false dan paman menjauh lagi
+        if (!arrivedNow)
+        {
+            hasArrived  = false;
+            arriveTimer = 0f;
+            if (!dialogOnceOnly) dialogTriggered = false;
+            return;
+        }
+
+        if (hasArrived)
+        {
+            // Sudah tiba — tunggu jeda lalu mainkan dialog (sekali)
+            if (!dialogTriggered)
+            {
+                arriveTimer += Time.deltaTime;
+                if (arriveTimer >= dialogDelay)
+                {
+                    dialogTriggered = true;
+                    if (!dialog.IsPlaying) dialog.Play();
+                }
+            }
+        }
+        else
+        {
+            hasArrived  = true;
+            arriveTimer = 0f;
+        }
     }
 
     // ── Sync setting shadow tiap frame agar perubahan Inspector langsung tampil ──
@@ -184,8 +250,11 @@ public class PamanBaik : MonoBehaviour
         }
         else
         {
-            // Mode otomatis: paman menuju kanan Rara, trigger = Rara mendekati paman
-            moveTarget = new Vector2(playerTarget.position.x + frontOffset, playerTarget.position.y);
+            // Mode otomatis: paman selalu berhenti di SISI KANAN Rara
+            moveTarget = new Vector2(
+                playerTarget.position.x + frontOffset,
+                playerTarget.position.y
+            );
 
             float distToRara   = Vector2.Distance(transform.position, playerTarget.position);
             float distToTarget = Vector2.Distance(transform.position, moveTarget);
@@ -222,10 +291,10 @@ public class PamanBaik : MonoBehaviour
         }
         else
         {
-            // Saat diam: tampilkan frame pertama, reset timer & frame
+            // Saat diam: tampilkan idleSprite jika ada, kalau tidak pakai frame pertama walk
             frameTimer   = 0f;
             currentFrame = 0;
-            sr.sprite    = walkSprites[0];
+            sr.sprite    = (idleSprite != null) ? idleSprite : walkSprites[0];
         }
 
         // Pastikan skala tinggi tetap konsisten antar frame
@@ -294,16 +363,25 @@ public class PamanBaik : MonoBehaviour
         Gizmos.color = Color.red;
         Gizmos.DrawWireSphere(transform.position, stopDistance);
 
-        // Titik hijau = posisi tujuan paman (depan Rara)
-        if (playerTarget != null)
+        // Hitung target sebenarnya
+        Vector3 actualTarget;
+        if (stopPoint != null)
         {
-            var   rSR  = playerTarget.GetComponent<SpriteRenderer>();
-            float fDir = (rSR != null && rSR.flipX) ? -1f : 1f;
-            Vector3 front = playerTarget.position + new Vector3(fDir * frontOffset, 0f, 0f);
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(front, 0.25f);
-            Gizmos.DrawLine(playerTarget.position, front);
+            actualTarget = stopPoint.position;
+            Gizmos.color = new Color(0f, 0.6f, 1f, 0.5f);
+            Gizmos.DrawWireSphere(stopPoint.position, triggerDistance);
         }
+        else if (playerTarget != null)
+        {
+            // Mode otomatis: selalu di kanan Rara
+            actualTarget = playerTarget.position + new Vector3(frontOffset, 0f, 0f);
+        }
+        else return;
+
+        // Lingkaran hijau = target berhenti
+        Gizmos.color = Color.green;
+        Gizmos.DrawWireSphere(actualTarget, 0.3f);
+        Gizmos.DrawLine(transform.position, actualTarget);
     }
 
 // ══════════════════════════════════════════════════════════════════════

@@ -695,7 +695,7 @@ MonoBehaviour:
   lookAheadSpeed: 3
   useBounds: 1
   minX: -9.5
-  maxX: 15
+  maxX: 30
   minY: -7
   maxY: 5
 --- !u!1 &749377151
