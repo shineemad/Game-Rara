@@ -37,6 +37,12 @@ public class CameraFollow : MonoBehaviour
     public float minY      = -5f;
     public float maxY      = 8f;
 
+    [Header("Kecerahan Layar")]
+    [Tooltip("Warna background kamera (tampil di area kosong). Sesuaikan dengan langit art kamu.")]
+    public Color camBackgroundColor = new Color(0.85f, 0.42f, 0.05f, 1f);
+    [Tooltip("Aktifkan ambient light putih agar sprite tidak gelap.")]
+    public bool  fixAmbientLight    = true;
+
     // ── internal ──────────────────────────────────────────────────────────
     private float     currentLookAhead;
     private float     lastTargetX;
@@ -46,10 +52,13 @@ public class CameraFollow : MonoBehaviour
     void Awake()
     {
         cam = GetComponent<Camera>();
+        ApplyVisualFix();
     }
 
     void Start()
     {
+        ApplyVisualFix(); // pastikan berlaku meski Awake terlewat
+
         if (target == null)
         {
             // Coba temukan otomatis jika belum di-assign
@@ -124,5 +133,29 @@ public class CameraFollow : MonoBehaviour
         Vector3 center = new Vector3((minX + maxX) / 2f, (minY + maxY) / 2f, 0f);
         Vector3 size   = new Vector3(maxX - minX, maxY - minY, 0f);
         Gizmos.DrawWireCube(center, size);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // Terapkan fix kecerahan — dipanggil dari Awake, Start, dan OnValidate
+    // ══════════════════════════════════════════════════════════════════════
+    void ApplyVisualFix()
+    {
+        // 1. Warna background kamera (bagian layar yang tidak tertutup sprite)
+        if (cam == null) cam = GetComponent<Camera>();
+        if (cam != null)
+            cam.backgroundColor = camBackgroundColor;
+
+        // 2. Ambient light putih — sprite tidak terpengaruh warna skybox/gelap
+        if (fixAmbientLight)
+        {
+            RenderSettings.ambientMode  = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = Color.white;
+        }
+    }
+
+    // Auto-apply saat nilai Inspector diubah (edit mode & play mode)
+    void OnValidate()
+    {
+        ApplyVisualFix();
     }
 }

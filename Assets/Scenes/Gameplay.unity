@@ -20,7 +20,7 @@ RenderSettings:
   m_FogDensity: 0.01
   m_LinearFogStart: 0
   m_LinearFogEnd: 300
-  m_AmbientSkyColor: {r: 0.212, g: 0.227, b: 0.259, a: 1}
+  m_AmbientSkyColor: {r: 1, g: 1, b: 1, a: 1}
   m_AmbientEquatorColor: {r: 0.114, g: 0.125, b: 0.133, a: 1}
   m_AmbientGroundColor: {r: 0.047, g: 0.043, b: 0.035, a: 1}
   m_AmbientIntensity: 1
@@ -406,7 +406,7 @@ GameObject:
   - component: {fileID: 396292398}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -619,7 +619,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_BackGroundColor: {r: 0.83396226, g: 0.83396226, b: 0.83396226, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -698,6 +698,141 @@ MonoBehaviour:
   maxX: 30
   minY: -7
   maxY: 5
+  camBackgroundColor: {r: 0.83396226, g: 0.83396226, b: 0.83396226, a: 1}
+  fixAmbientLight: 1
+--- !u!1 &653051805
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 653051806}
+  - component: {fileID: 653051808}
+  - component: {fileID: 653051807}
+  m_Layer: 0
+  m_Name: pamanStopPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &653051806
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653051805}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -53.5, y: -1.5, z: -0}
+  m_LocalScale: {x: 0.1768854, y: 0.5129077, z: 4.205068}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1452768349}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!61 &653051807
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653051805}
+  m_Enabled: 0
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 21.72, y: 7.243535}
+    newSize: {x: 21.72, y: 7.243535}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 21.72, y: 7.243535}
+  m_EdgeRadius: 0
+--- !u!212 &653051808
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 653051805}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: -883599925
+  m_SortingLayer: 1
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 2699170030345945923, guid: 189ceaf0b3367d640b5072dae4ec6638, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 21.72, y: 7.243535}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
 --- !u!1 &749377151
 GameObject:
   m_ObjectHideFlags: 0
@@ -729,6 +864,126 @@ Transform:
   m_Children:
   - {fileID: 1452768349}
   m_Father: {fileID: 363968247}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &872379144
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 872379145}
+  m_Layer: 0
+  m_Name: NpcDialogCanvas
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &872379145
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 872379144}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &943494050
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 943494052}
+  - component: {fileID: 943494051}
+  m_Layer: 0
+  m_Name: day1Intro
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &943494051
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 943494050}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f6e1b514afa44d40bb624612b48900b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  barisPertama: HARI 1
+  barisKedua: Jalan Kaki ke Sekolah
+  teksLokasi: Jalan Menuju Sekolah
+  teksHint: Bersiaplah...
+  warnaBackground: {r: 0, g: 0, b: 0.04, a: 0.9}
+  warnaTeksJudul: {r: 0.95, g: 0.78, b: 0.1, a: 1}
+  warnaTeksLokasi: {r: 1, g: 1, b: 1, a: 1}
+  warnaGaris: {r: 0.95, g: 0.78, b: 0.1, a: 0.7}
+  ukuranFontJudul: 72
+  ukuranFontLokasi: 36
+  durasiTampil: 2.8
+  durasiTransisi: 0.5
+  narasiPembuka:
+  - pembicara: Narasi
+    teks: 'Pagi hari di Kota Makassar...
+
+      Rara bersiap berangkat ke sekolah
+      sendirian.'
+    portrait: {fileID: 0}
+  - pembicara: Rara
+    teks: "Hari ini Mama dan Papa kerja dari pagi.\nAku harus berangkat sendiri...
+      semoga aman! \U0001F60A"
+    portrait: {fileID: 0}
+  boxDialogSprite: {fileID: 0}
+  nameBannerSprite: {fileID: 0}
+  portraitRara: {fileID: 0}
+  portraitNarasi: {fileID: 0}
+  boxCenterX: 0.5
+  boxCenterY: 0.22
+  boxWidth: 0.94
+  boxHeight: 0.28
+  warnaPanel: {r: 0, g: 0, b: 0, a: 0.82}
+  warnaBorder: {r: 1, g: 0.85, b: 0.3, a: 1}
+  warnaBanner: {r: 0.14, g: 0.09, b: 0.01, a: 0.92}
+  warnaNama: {r: 1, g: 0.85, b: 0.3, a: 1}
+  warnaTeksDlg: {r: 1, g: 1, b: 1, a: 1}
+  warnaHintDlg: {r: 1, g: 1, b: 1, a: 0.55}
+  fontSizeNama: 30
+  fontSizeTeksDlg: 26
+  fontSizeHint: 16
+  kecepatanKetik: 0.025
+  fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
+  onIntroSelesai:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &943494052
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 943494050}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.6155312, y: 0.9751989, z: -0.048843276}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1107663592
 GameObject:
@@ -1105,6 +1360,7 @@ GameObject:
   - component: {fileID: 1452768351}
   - component: {fileID: 1452768352}
   - component: {fileID: 1452768353}
+  - component: {fileID: 1452768354}
   m_Layer: 0
   m_Name: Paman
   m_TagString: Untagged
@@ -1126,7 +1382,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1393280187}
-  - {fileID: 1597388838}
+  - {fileID: 653051806}
   m_Father: {fileID: 749377152}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!212 &1452768350
@@ -1196,13 +1452,13 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   walkSprites:
-  - {fileID: 4130640169021434097, guid: a123184c13977124ba81bc539700545d, type: 3}
   - {fileID: -855298285791758126, guid: f5b3566c2f471e84a8855991abd85cdf, type: 3}
   - {fileID: 6937817954938267909, guid: 0c171a94be9be814589204c039364c21, type: 3}
   - {fileID: -6470460504253458178, guid: 1bf566ee5fce9a34a982837d60f2d4a3, type: 3}
   - {fileID: -4178046375966092550, guid: f471e2d7b2f83c64c9efe2f26ea577c7, type: 3}
   - {fileID: -855298285791758126, guid: f5b3566c2f471e84a8855991abd85cdf, type: 3}
   frameDuration: 0.12
+  idleSprite: {fileID: 4130640169021434097, guid: a123184c13977124ba81bc539700545d, type: 3}
   walkSpeed: 1.5
   direction: -1
   patrolMode: 0
@@ -1211,8 +1467,8 @@ MonoBehaviour:
   playerTarget: {fileID: 396292394}
   triggerDistance: 6
   stopDistance: 1.5
-  stopPoint: {fileID: 1597388838}
-  frontOffset: 1.87
+  stopPoint: {fileID: 653051806}
+  frontOffset: 0.8
   shadowEnabled: 1
   shadowColor: {r: 0, g: 0, b: 0, a: 0.35}
   shadowScaleX: 0.85
@@ -1220,6 +1476,9 @@ MonoBehaviour:
   sunDirection: {x: 1, y: 1}
   shadowLength: 0.6
   shadowExtraOffsetY: -0.05
+  dialog: {fileID: 0}
+  dialogOnceOnly: 1
+  dialogDelay: 0.2
 --- !u!50 &1452768352
 Rigidbody2D:
   serializedVersion: 4
@@ -1293,6 +1552,98 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 4.97, y: 18.51}
   m_EdgeRadius: 0
+--- !u!114 &1452768354
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1452768348}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c2163f048da8d624286c5daba35a3076, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  lines:
+  - speakerName: Narasi
+    profile: {fileID: -7771728774132427043, guid: 6809b27ca40283248be0310e4d5f4ef1, type: 3}
+    text: '*Tiba-tiba ada orang asing mendekat ke arah Rara...*'
+  - speakerName: Paman Baik
+    profile: {fileID: -1209331726834910066, guid: 9faab9d09b6eba44fb09370ec6e1e75c, type: 3}
+    text: '"Hei dek, bentar ya~!"'
+  - speakerName: Rara (dalam hati)
+    profile: {fileID: -621021955452869361, guid: 74e32d7b50454b44fa273c2384918263, type: 3}
+    text: Eh? Siapa ini? Rara nggak pernah lihat orang ini sebelumnya...
+  - speakerName: Paman Baik
+    profile: {fileID: -1209331726834910066, guid: 9faab9d09b6eba44fb09370ec6e1e75c, type: 3}
+    text: '"Mau permen nggak? Enak banget lho~
+
+      Om punya banyak di warung,
+      ikut bentar aja ya, deket kok!"'
+  - speakerName: Rara (dalam hati)
+    profile: {fileID: -621021955452869361, guid: 74e32d7b50454b44fa273c2384918263, type: 3}
+    text: 'Tunggu... Rara nggak kenal orang ini sama sekali!
+
+      Dia nawarin permen
+      DAN mau ngajak Rara pergi... INI NGGAK BENER!'
+  - speakerName: Paman Baik
+    profile: {fileID: -1209331726834910066, guid: 9faab9d09b6eba44fb09370ec6e1e75c, type: 3}
+    text: '"Ayo dong, nggak usah malu-malu~ Sebentar aja kok!"'
+  - speakerName: "\u2014 PILIH RESPONS \u2014"
+    profile: {fileID: -621021955452869361, guid: 74e32d7b50454b44fa273c2384918263, type: 3}
+    text: "Gimana Rara harus merespons orang ini?\n\n[AMAN]  \"NGGAK MAU! Aku nggak
+      kenal Bapak!\" \u2014 Lari ke tempat rame!\n[RAGU]  \"Makasih Pak, tapi aku
+      udah mau telat sekolah...\"\n[BAHAYA] \"Boleh~ Om punya permen apa aja?\""
+  - speakerName: Narasi
+    profile: {fileID: -7771728774132427043, guid: 6809b27ca40283248be0310e4d5f4ef1, type: 3}
+    text: 'INGAT: Orang asing yang kasih hadiah atau ngajak pergi = TANDA BAHAYA!
+
+      Selalu
+      tolak dengan tegas dan pergi ke tempat yang rame!'
+  panelColor: {r: 0, g: 0, b: 0, a: 0.78}
+  borderColor: {r: 1, g: 0.85, b: 0.3, a: 0}
+  panelHeight: 220
+  panelWidthRatio: 0.85
+  bottomMargin: 40
+  showAtTop: 0
+  profileSize: 160
+  profileBgColor: {r: 1, g: 1, b: 1, a: 0.1}
+  profileOnRight: 0
+  speakerColor: {r: 1, g: 0.85, b: 0.3, a: 1}
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  speakerFontSize: 26
+  textFontSize: 26
+  typeSpeed: 0.0249
+  continueHint: "\u25BC SPACE / Klik untuk lanjut"
+  hintColor: {r: 1, g: 1, b: 1, a: 0.55}
+  hintFontSize: 16
+  editHeadline: 
+  editBody: 
+  editProfile: {fileID: 0}
+  showBannerBg: 0
+  fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
+  dialogBoxSprite: {fileID: 2113483900156250566, guid: 98ec8ec92efb90249821760b6affa4ad, type: 3}
+  nameBannerSprite: {fileID: 0}
+  panelCenterX: 0.5
+  panelCenterY: 0.178
+  panelWidthFrac: 0.924
+  panelHeightFrac: 0.291
+  portraitCenterX: 0.15
+  portraitCenterY: 0.505
+  portraitSizeW: 0.186
+  portraitSizeH: 0.622
+  portraitPreserveAspect: 0
+  bannerAnchorMin: {x: 0.25, y: 0.58}
+  bannerAnchorMax: {x: 0.49, y: 0.86}
+  textAnchorMin: {x: 0.25, y: 0.1}
+  textAnchorMax: {x: 0.96, y: 0.57}
+  hintCenterX: 0.74
+  hintCenterY: 0.32
+  hintSizeW: 0.38
+  hintSizeH: 0.18
+  onDialogEnd:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &1567103722
 GameObject:
   m_ObjectHideFlags: 0
@@ -1326,7 +1677,7 @@ Transform:
   - {fileID: 363968247}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &1597388837
+--- !u!1 &1669208156
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1334,29 +1685,251 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 1597388838}
+  - component: {fileID: 1669208159}
+  - component: {fileID: 1669208158}
+  - component: {fileID: 1669208157}
   m_Layer: 0
-  m_Name: pamanStopPoint
+  m_Name: tiang
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &1597388838
+--- !u!114 &1669208157
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1669208156}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c9ee4980dc5cc5540a88fca44ae5d6ae, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  playerTransform: {fileID: 396292394}
+  triggerDistance: 4.72
+  triggerOnce: 1
+  titleText: "\u26A0  ADA DUA JALUR!"
+  bodyText: 'Rara harus pilih jalur ke sekolah.
+
+    Mana yang menurutmu lebih aman
+    buat Rara?'
+  safeLabel: "\U0001F3DB  Jalan Ramai\n(aman, banyak orang)"
+  dangerLabel: "\U0001F534  Gang Sepi\n(lebih cepat, tapi... bahaya!)"
+  panelBgColor: {r: 0.22, g: 0.03, b: 0.03, a: 0.96}
+  borderColor: {r: 1, g: 0.85, b: 0.1, a: 1}
+  titleColor: {r: 1, g: 0.85, b: 0.1, a: 1}
+  bodyColor: {r: 1, g: 1, b: 1, a: 1}
+  safeColor: {r: 0.15, g: 0.6, b: 0.2, a: 1}
+  dangerColor: {r: 0.75, g: 0.2, b: 0.15, a: 1}
+  btnTextColor: {r: 1, g: 1, b: 1, a: 1}
+  panelWidthRatio: 0.75
+  panelHeightRatio: 0.55
+  fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
+  onSafeChosen:
+    m_PersistentCalls:
+      m_Calls: []
+  onDangerChosen:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!212 &1669208158
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1669208156}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: -883599925
+  m_SortingLayer: 1
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 2699170030345945923, guid: 189ceaf0b3367d640b5072dae4ec6638, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 21.72, y: 7.243535}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
+--- !u!4 &1669208159
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1597388837}
+  m_GameObject: {fileID: 1669208156}
   serializedVersion: 2
-  m_LocalRotation: {x: -0.0000013122335, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -29.72, y: -1.2, z: -0.20796262}
-  m_LocalScale: {x: 6.99768, y: 6.99768, z: 6.99768}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 23.5833, y: -0.2989, z: 0}
+  m_LocalScale: {x: 0.091363795, y: 0.8976326, z: 1.2545369}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 1452768349}
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1867878044
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1867878046}
+  - component: {fileID: 1867878045}
+  - component: {fileID: 1867878047}
+  m_Layer: 0
+  m_Name: gameManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1867878045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1867878044}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc918f5de96f082419c8d671a334f260, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  slides:
+  - backgroundColor: {r: 0.69411767, g: 0.69411767, b: 0.69411767, a: 0}
+    backgroundSprite: {fileID: 91187443311272219, guid: e5313ca03365187448e01f8836d9e28f, type: 3}
+    illustration: {fileID: 0}
+    title: 'Hari 1: Jalan Kaki ke Sekolah'
+    text: Pagi hari di sebuah jalan menuju sekolah. Rara, gadis 13 tahun berbaju
+      ungu, bersiap berangkat ke SMP Harapan. "Hati-hati di jalan, Rara!" kata Ibu.
+    dialogSprite: {fileID: 0}
+  - backgroundColor: {r: 0.36, g: 0.63, b: 0.78, a: 0}
+    backgroundSprite: {fileID: -2798150233915905176, guid: 47dd3c77de906d040b33b14ddd77fe2f, type: 3}
+    illustration: {fileID: 0}
+    title: Kenali Batas
+    text: Di luar rumah, banyak orang lalu-lalang. Nggak semua orang asing bisa dipercaya!
+      Rara harus tetap waspada dan berani bersuara kalau ada yang bikin dia nggak
+      nyaman.
+    dialogSprite: {fileID: 0}
+  - backgroundColor: {r: 1, g: 1, b: 1, a: 0}
+    backgroundSprite: {fileID: -7610767311658751208, guid: 704a7a712d1ec7b40a5500dcb4696e06, type: 3}
+    illustration: {fileID: 0}
+    title: Panduan Bermain
+    text: "\u2190 \u2192 : Gerakkan Rara ke kiri / kanan, Shift + \u2190 \u2192 :
+      Lari lebih cepat\nSPASI / Klik : Interaksi, Tombol TERIAK : Usir orang asing
+      yang mendekat\nNyawa Rara ada 3. Hati-hati!"
+    dialogSprite: {fileID: 0}
+  globalDialogSprite: {fileID: -8345842409488551085, guid: eda85efca84c886478e2d48bc80219a4, type: 3}
+  panelPaddingH: 115
+  panelPaddingV: 66.3
+  titleColor: {r: 1, g: 0.85, b: 0.2, a: 1}
+  textColor: {r: 1, g: 1, b: 1, a: 1}
+  hintColor: {r: 1, g: 1, b: 1, a: 0.55}
+  panelColor: {r: 0.81886786, g: 0.81886786, b: 0.81886786, a: 0.88}
+  borderColor: {r: 1, g: 0.8509804, b: 0.2, a: 0}
+  titleFontSize: 36
+  textFontSize: 22
+  hintFontSize: 15
+  fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
+  panelCenterX: 0.5
+  panelCenterY: 0.189
+  panelWidth: 0.94
+  panelHeight: 0.28
+  titleBodyGap: -45
+  illCenterX: 0.5
+  illCenterY: 0.67
+  illWidth: 0.84
+  illHeight: 0.58
+  btnSprite: {fileID: 0}
+  btnCenterX: 0.861
+  btnCenterY: 0.134
+  btnWidth: 0.115
+  btnHeight: 0.057
+  onPrologEnd:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!4 &1867878046
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1867878044}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 4.9047875, y: 1.0121962, z: 2.9053466}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1867878047
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1867878044}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 48a45e078d414c84b9f533a7a8566b84, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  forceShowOnDesktop: 1
+  dpadButtonSize: 160
+  actionButtonSize: 140
+  bottomMargin: 30
+  leftMargin: 30
+  rightMargin: 30
+  dpadColor: {r: 1, g: 1, b: 1, a: 0.25}
+  dpadPressColor: {r: 1, g: 0.85, b: 0.2, a: 0.65}
+  runColor: {r: 0.2, g: 0.8, b: 0.3, a: 0.5}
+  shoutColor: {r: 0.9, g: 0.2, b: 0.2, a: 0.6}
+  labelColor: {r: 1, g: 1, b: 1, a: 1}
+  fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
+  iconLeft: {fileID: 0}
+  iconRight: {fileID: 0}
+  iconRun: {fileID: 0}
+  iconShout: {fileID: 0}
+  iconColor: {r: 1, g: 1, b: 1, a: 1}
+  iconSizeFraction: 0.65
 --- !u!1 &1880805171
 GameObject:
   m_ObjectHideFlags: 0
@@ -1630,3 +2203,7 @@ SceneRoots:
   - {fileID: 519420032}
   - {fileID: 1567103723}
   - {fileID: 1256300576}
+  - {fileID: 1867878046}
+  - {fileID: 1669208159}
+  - {fileID: 872379145}
+  - {fileID: 943494052}

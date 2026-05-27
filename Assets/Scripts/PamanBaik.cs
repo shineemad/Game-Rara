@@ -99,6 +99,10 @@ public class PamanBaik : MonoBehaviour
 
     void Start()
     {
+        // Auto-temukan NpcDialog di GameObject yang sama jika belum di-assign
+        if (dialog == null)
+            dialog = GetComponent<NpcDialog>();
+
         // Setup shadow di Start agar sr.sprite & sorting layer sudah siap
         SetupShadow();
 
@@ -169,27 +173,28 @@ public class PamanBaik : MonoBehaviour
         UpdateDialogTrigger();
     }
 
-    // ── Trigger dialog saat paman tiba di samping Rara ───────────────────
+    // ── Trigger dialog saat paman dekat Rara ─────────────────────────────
     void UpdateDialogTrigger()
     {
         if (dialog == null || playerTarget == null) return;
 
-        // Hitung apakah paman sudah sampai di moveTarget
-        float distToTarget = Vector2.Distance(transform.position, moveTarget);
-        bool  arrivedNow   = !isMoving && distToTarget <= stopDistance * 1.1f;
+        // Sudah pernah dipicu dan hanya sekali? tidak perlu cek lagi
+        if (dialogTriggered && dialogOnceOnly) return;
 
-        // Reset status jika dialogOnceOnly == false dan paman menjauh lagi
-        if (!arrivedNow)
-        {
-            hasArrived  = false;
-            arriveTimer = 0f;
-            if (!dialogOnceOnly) dialogTriggered = false;
-            return;
-        }
+        // Ukur jarak langsung ke Rara (lebih stabil dari moveTarget yang terus berubah)
+        float distToRara = Vector2.Distance(transform.position, playerTarget.position);
 
-        if (hasArrived)
+        // Anggap "sudah tiba" jika: tidak sedang jalan DAN cukup dekat dengan Rara
+        bool arrived = !isMoving && distToRara <= (frontOffset + stopDistance + 0.5f);
+
+        if (arrived)
         {
-            // Sudah tiba — tunggu jeda lalu mainkan dialog (sekali)
+            if (!hasArrived)
+            {
+                hasArrived  = true;
+                arriveTimer = 0f;
+            }
+
             if (!dialogTriggered)
             {
                 arriveTimer += Time.deltaTime;
@@ -200,10 +205,12 @@ public class PamanBaik : MonoBehaviour
                 }
             }
         }
-        else
+        else if (distToRara > triggerDistance)
         {
-            hasArrived  = true;
+            // Rara menjauh cukup jauh — reset agar dialog bisa muncul lagi
+            hasArrived  = false;
             arriveTimer = 0f;
+            if (!dialogOnceOnly) dialogTriggered = false;
         }
     }
 

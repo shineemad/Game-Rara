@@ -35,12 +35,21 @@ public class player : MonoBehaviour
 
     void Update()
     {
+        // Gabungkan input keyboard + tombol mobile (mana saja yang aktif)
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical   = Input.GetAxisRaw("Vertical");
+        bool  shiftHeld  = Input.GetKey(KeyCode.LeftShift);
+
+        if (MobileControls.Instance != null)
+        {
+            if (Mathf.Abs(MobileControls.Horizontal) > 0f)
+                horizontal = MobileControls.Horizontal;
+            if (MobileControls.IsRunning) shiftHeld = true;
+        }
 
         Vector2 direction = new Vector2(horizontal, vertical).normalized;
         bool    isMoving  = direction.magnitude > 0f;
-        bool    isRunning = isMoving && Input.GetKey(KeyCode.LeftShift);
+        bool    isRunning = isMoving && shiftHeld;
 
         // ── tentukan state ──────────────────────────────────────────
         MoveState nextState;

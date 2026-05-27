@@ -56,6 +56,11 @@ public class GameState : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+
+            // Kecerahan 2D: ambient light harus putih agar sprite tampil
+            // dengan warna aslinya — default Unity seringkali abu-abu gelap
+            RenderSettings.ambientMode  = UnityEngine.Rendering.AmbientMode.Flat;
+            RenderSettings.ambientLight = Color.white;
         }
         else
         {
