@@ -100,6 +100,12 @@ public class PrologScreen : MonoBehaviour
     [Tooltip("Tinggi tombol")]
     [Range(0.02f, 0.3f)] public float btnHeight = 0.062f;
 
+    [Header("Kontrol Input")]
+    [Tooltip("Aktifkan agar SPACE / ENTER bisa memajukan slide (selain tombol LANJUT).")]
+    public bool advanceOnKeyboard   = true;
+    [Tooltip("Aktifkan agar klik mouse di mana saja bisa memajukan slide.")]
+    public bool advanceOnMouseClick = true;
+
     [Header("Event")]
     [Tooltip("Dipanggil setelah slide terakhir selesai. Sambungkan ke metode StartDay1() di Day1Controller.")]
     public UnityEngine.Events.UnityEvent onPrologEnd;
@@ -149,7 +155,19 @@ public class PrologScreen : MonoBehaviour
 
     void Update()
     {
-        // Lanjut hanya lewat tombol LANJUT — input keyboard/klik layar dinonaktifkan
+        if (!ready) return;
+
+        if (advanceOnKeyboard &&
+            (Input.GetKeyDown(KeyCode.Space) ||
+             Input.GetKeyDown(KeyCode.Return) ||
+             Input.GetKeyDown(KeyCode.KeypadEnter)))
+        {
+            NextSlide();
+            return;
+        }
+
+        if (advanceOnMouseClick && Input.GetMouseButtonDown(0))
+            NextSlide();
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -158,6 +176,7 @@ public class PrologScreen : MonoBehaviour
 
     public void NextSlide()
     {
+        if (!ready) return;   // cegah double-click sebelum slide selesai dimuat
         ready = false;
         currentSlide++;
 
@@ -267,6 +286,14 @@ public class PrologScreen : MonoBehaviour
         scaler.referenceResolution = new Vector2(1080f, 1920f);  // portrait mobile
         scaler.matchWidthOrHeight  = 0.5f;
         cGO.AddComponent<GraphicRaycaster>();
+
+        // EventSystem — dibutuhkan agar tombol LANJUT merespons klik
+        if (FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
+        {
+            var esGO = new GameObject("EventSystem");
+            esGO.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            esGO.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+        }
 
         // Root — full screen
         root = new GameObject("PrologRoot");

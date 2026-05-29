@@ -74,6 +74,7 @@ public class GameState : MonoBehaviour
     {
         int pts = overridePts ?? CategoryToPoints(category);
         score += pts;
+        Debug.Log($"[GameState] AddChoice: {label} | {category} | +{pts} poin | Total skor={score}");
         choices.Add(new ChoiceRecord
         {
             day      = day,
@@ -81,10 +82,16 @@ public class GameState : MonoBehaviour
             category = category,
             points   = pts
         });
+        // Update HUD langsung agar skor tampil segera
+        HUDManager.Instance?.UpdateScore(score);
     }
 
     /// Tambah skor langsung.
-    public void AddScore(int pts) => score += pts;
+    public void AddScore(int pts)
+    {
+        score += pts;
+        HUDManager.Instance?.UpdateScore(score);
+    }
 
     /// Kurangi nyawa. Return false jika nyawa habis (Game Over).
     public bool LoseLife()

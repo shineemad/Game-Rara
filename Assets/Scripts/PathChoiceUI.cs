@@ -6,24 +6,36 @@ using TMPro;
 /// <summary>
 /// PathChoiceUI — panel pilihan jalur "Jalan Ramai vs Gang Sepi".
 ///
-/// Cara Setup di Scene (5 langkah):
-///   1. Buat GameObject kosong bernama "PathTrigger" — taruh di posisi tiang/persimpangan.
-///   2. Tambahkan komponen ini ke PathTrigger.
-///   3. Di field "playerTransform" → drag Rara.
-///   4. Atur "triggerDistance" (jarak agar panel muncul, default 2).
-///   5. Play → saat Rara mendekati tiang, panel otomatis muncul.
+/// ═══════════════════════════════════════════════════════
+/// MODE A — UI dibuat di Editor (DIREKOMENDASIKAN):
+/// ═══════════════════════════════════════════════════════
+///   1. Buat Canvas "PathChoiceCanvas" (Screen Space – Overlay, sortOrder 700).
+///   2. Di dalam Canvas, buat struktur:
 ///
-/// Setelah pilihan dibuat:
-///   GameState.Instance.pathChoice = "safe" atau "dangerous"
-///   onSafeChosen / onDangerChosen dipanggil (sambungkan ke Day1Controller)
+///      PathChoiceCanvas
+///      └─ UIRoot                      ← RectTransform stretch penuh, SetActive false
+///         ├─ Overlay                  ← Image hitam semi-transparan, stretch penuh
+///         └─ Panel                    ← Image gelap, size ~75% × 55% layar, di tengah
+///            ├─ Title (TMP)           ← judul kuning, bold
+///            ├─ Body (TMP)            ← deskripsi putih
+///            ├─ BtnSafe (Button)      ← tombol hijau + Label (TMP)
+///            └─ BtnDanger (Button)    ← tombol merah + Label (TMP)
+///
+///   3. Drag referensi ke field di bawah header "── UI REFERENSI (Editor-Built) ──".
+///   4. Drag Transform Rara ke "Player Transform".
+///   5. Sambungkan onSafeChosen / onDangerChosen ke Day1Controller.
+///
+/// MODE B — Fallback Programatik (jika referensi tidak di-assign):
+///   Jalankan saja — UI dibuat otomatis saat runtime (tidak bisa diedit di Editor).
+/// ═══════════════════════════════════════════════════════
 /// </summary>
 public class PathChoiceUI : MonoBehaviour
 {
     // ══════════════════════════════════════════════════════════════════════
-    // INSPECTOR
+    // INSPECTOR — TRIGGER
     // ══════════════════════════════════════════════════════════════════════
 
-    [Header("Trigger")]
+    [Header("── TRIGGER ──")]
     [Tooltip("Drag Transform Rara ke sini")]
     public Transform playerTransform;
     [Tooltip("Jarak (unit) dari tiang agar panel muncul")]
@@ -31,14 +43,53 @@ public class PathChoiceUI : MonoBehaviour
     [Tooltip("Hanya tampil sekali (true) atau setiap kali Rara lewat (false)")]
     public bool  triggerOnce = true;
 
-    [Header("Konten Panel")]
-    public string titleText    = "⚠  ADA DUA JALUR!";
-    [TextArea(2, 4)]
-    public string bodyText     = "Rara harus pilih jalur ke sekolah.\nMana yang menurutmu lebih aman buat Rara?";
-    public string safeLabel    = "🏛  Jalan Ramai\n(aman, banyak orang)";
-    public string dangerLabel  = "🔴  Gang Sepi\n(lebih cepat, tapi... bahaya!)";
+    // ══════════════════════════════════════════════════════════════════════
+    // INSPECTOR — UI REFERENSI (Editor-Built)
+    // Isi bagian ini jika kamu membuat UI manual di Unity Editor.
+    // Jika semua dibiarkan kosong, UI dibuat otomatis (Mode B).
+    // ══════════════════════════════════════════════════════════════════════
 
-    [Header("Tampilan")]
+    [Header("── UI REFERENSI (Editor-Built) ──")]
+    [Tooltip("GameObject induk yang berisi Overlay + Panel. Di-hide/show saat trigger.")]
+    public GameObject uiRootRef;
+
+    [Tooltip("Image overlay gelap (boleh dikosongkan)")]
+    public Image overlayImageRef;
+
+    [Tooltip("GameObject panel utama (Image latar panel)")]
+    public GameObject panelRootRef;
+
+    [Tooltip("TextMeshProUGUI judul panel (contoh: '⚠ ADA DUA JALUR!')")]
+    public TextMeshProUGUI titleTMPRef;
+
+    [Tooltip("TextMeshProUGUI deskripsi / isi panel")]
+    public TextMeshProUGUI bodyTMPRef;
+
+    [Tooltip("Button Jalan Ramai (hijau)")]
+    public Button btnSafeRef;
+
+    [Tooltip("Label TMP di dalam BtnSafe")]
+    public TextMeshProUGUI btnSafeLabelRef;
+
+    [Tooltip("Button Gang Sepi (merah)")]
+    public Button btnDangerRef;
+
+    [Tooltip("Label TMP di dalam BtnDanger")]
+    public TextMeshProUGUI btnDangerLabelRef;
+
+    // ══════════════════════════════════════════════════════════════════════
+    // INSPECTOR — KONTEN & WARNA (berlaku di kedua mode)
+    // ══════════════════════════════════════════════════════════════════════
+
+    [Header("── KONTEN TEKS ──")]
+    public string titleText   = "⚠  ADA DUA JALUR!";
+    [TextArea(2, 4)]
+    public string bodyText    = "Rara harus pilih jalur ke sekolah.\nMana yang menurutmu lebih aman buat Rara?";
+    public string safeLabel   = "🏛  Jalan Ramai\n(aman, banyak orang)";
+    public string dangerLabel = "🔴  Gang Sepi\n(lebih cepat, tapi... bahaya!)";
+
+    [Header("── WARNA (Mode B / Fallback Programatik) ──")]
+    [Tooltip("Warna latar panel (hanya berlaku jika UI dibuat otomatis)")]
     public Color  panelBgColor   = new Color(0.22f, 0.03f, 0.03f, 0.96f);
     public Color  borderColor    = new Color(1f, 0.85f, 0.1f, 1f);
     public Color  titleColor     = new Color(1f, 0.85f, 0.1f, 1f);
@@ -51,10 +102,10 @@ public class PathChoiceUI : MonoBehaviour
     [Range(0.3f, 0.9f)]
     public float  panelHeightRatio = 0.55f;
 
-    [Header("Font (opsional)")]
+    [Header("── FONT (opsional) ──")]
     public TMP_FontAsset fontAsset;
 
-    [Header("Events — sambungkan ke Day1Controller")]
+    [Header("── EVENTS — sambungkan ke Day1Controller ──")]
     [Tooltip("Dipanggil saat pemain memilih Jalan Ramai")]
     public UnityEngine.Events.UnityEvent onSafeChosen;
     [Tooltip("Dipanggil saat pemain memilih Gang Sepi")]
@@ -64,14 +115,20 @@ public class PathChoiceUI : MonoBehaviour
     // INTERNAL
     // ══════════════════════════════════════════════════════════════════════
 
-    private Canvas  canvas;
-    private GameObject panelRoot;
-    private GameObject uiRoot;   // parent overlay + panel — ini yang di-hide/show
-    private bool    triggered = false;
-    private bool    shown     = false;
+    private Canvas      canvas;
+    private GameObject  panelRoot;
+    private GameObject  uiRoot;
+    private bool        triggered = false;
+    private bool        shown     = false;
+
+    // Apakah menggunakan referensi dari Editor (true) atau programatik (false)
+    private bool        usingEditorRefs = false;
 
     // referensi komponen Rigidbody2D Rara untuk pause gerak
     private Rigidbody2D playerRb;
+
+    // referensi PathEnvironment — dicari otomatis, tidak perlu di-assign manual
+    private PathEnvironment pathEnv;
 
     // ══════════════════════════════════════════════════════════════════════
     void Start()
@@ -86,7 +143,22 @@ public class PathChoiceUI : MonoBehaviour
         if (playerTransform != null)
             playerRb = playerTransform.GetComponent<Rigidbody2D>();
 
-        BuildUI();
+        // Auto-find PathEnvironment di scene
+        pathEnv = FindFirstObjectByType<PathEnvironment>();
+        if (pathEnv == null)
+            Debug.LogWarning("[PathChoiceUI] PathEnvironment tidak ditemukan di scene — latar tidak akan berubah.");
+
+        // Pilih mode: Editor-refs atau Programatik
+        if (uiRootRef != null && panelRootRef != null && btnSafeRef != null && btnDangerRef != null)
+        {
+            usingEditorRefs = true;
+            SetupEditorRefs();
+        }
+        else
+        {
+            usingEditorRefs = false;
+            BuildUI();
+        }
     }
 
     void Update()
@@ -110,8 +182,17 @@ public class PathChoiceUI : MonoBehaviour
     void ShowPanel()
     {
         shown = true;
-        uiRoot.SetActive(true);
-        panelRoot.SetActive(true);
+
+        if (usingEditorRefs)
+        {
+            uiRootRef.SetActive(true);
+            panelRootRef.SetActive(true);
+        }
+        else
+        {
+            uiRoot.SetActive(true);
+            panelRoot.SetActive(true);
+        }
 
         // Bekukan Rara agar tidak jalan terus
         if (playerRb != null)
@@ -127,6 +208,10 @@ public class PathChoiceUI : MonoBehaviour
             GameState.Instance.pathChoice = "safe";
 
         HidePanel();
+
+        // Aktifkan tampilan Jalan Ramai langsung dari sini
+        pathEnv?.AktifkanJalanRamai();
+
         onSafeChosen?.Invoke();
         Debug.Log("[PathChoice] Dipilih: Jalan Ramai (safe)");
     }
@@ -137,14 +222,26 @@ public class PathChoiceUI : MonoBehaviour
             GameState.Instance.pathChoice = "dangerous";
 
         HidePanel();
+
+        // Aktifkan tampilan Gang Sepi langsung dari sini
+        pathEnv?.AktifkanGangSepi();
+
         onDangerChosen?.Invoke();
         Debug.Log("[PathChoice] Dipilih: Gang Sepi (dangerous)");
     }
 
     void HidePanel()
     {
-        panelRoot.SetActive(false);
-        uiRoot.SetActive(false); // overlay ikut tersembunyi
+        if (usingEditorRefs)
+        {
+            panelRootRef.SetActive(false);
+            uiRootRef.SetActive(false);
+        }
+        else
+        {
+            panelRoot.SetActive(false);
+            uiRoot.SetActive(false);
+        }
 
         // Bebaskan kembali Rara
         if (playerRb != null)
@@ -152,11 +249,39 @@ public class PathChoiceUI : MonoBehaviour
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    // BUILD UI
+    // SETUP — MODE A (Editor-Built Refs)
+    // Terapkan teks & hook tombol ke referensi yang sudah di-assign di Inspector.
+    // ══════════════════════════════════════════════════════════════════════
+
+    void SetupEditorRefs()
+    {
+        // Isi teks dari field Inspector
+        if (titleTMPRef  != null) titleTMPRef.text  = titleText;
+        if (bodyTMPRef   != null) bodyTMPRef.text   = bodyText;
+        if (btnSafeLabelRef   != null) btnSafeLabelRef.text   = safeLabel;
+        if (btnDangerLabelRef != null) btnDangerLabelRef.text = dangerLabel;
+
+        // Daftarkan listener tombol
+        btnSafeRef.onClick.RemoveAllListeners();
+        btnSafeRef.onClick.AddListener(OnSafeButton);
+
+        btnDangerRef.onClick.RemoveAllListeners();
+        btnDangerRef.onClick.AddListener(OnDangerButton);
+
+        // Sembunyikan panel saat awal (panel masih terlihat di Editor agar mudah diedit)
+        panelRootRef.SetActive(false);
+        uiRootRef.SetActive(false);
+
+        Debug.Log("[PathChoiceUI] Mode A aktif — menggunakan UI dari Editor.");
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // BUILD UI — MODE B (Programatik / Fallback)
     // ══════════════════════════════════════════════════════════════════════
 
     void BuildUI()
     {
+        Debug.Log("[PathChoiceUI] Mode B aktif — UI dibuat secara programatik (fallback).");
         // Canvas khusus — di atas gameplay tapi di bawah dialog
         var cGO = new GameObject("PathChoiceCanvas");
         canvas = cGO.AddComponent<Canvas>();

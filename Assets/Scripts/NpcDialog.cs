@@ -26,6 +26,18 @@ public class NpcDialog : MonoBehaviour
     // DATA
     // ══════════════════════════════════════════════════════════════════════
 
+    // ── Pilihan dialog (AMAN / RAGU / BAHAYA) ─────────────────────────────
+    [System.Serializable]
+    public class Choice
+    {
+        [Tooltip("Teks yang tampil di tombol")]
+        public string label    = "Pilihan...";
+        [Tooltip("Kategori: AMAN | RAGU | BAHAYA")]
+        public string category = "AMAN";
+        /// Callback saat dipilih — set via kode (tidak muncul di Inspector)
+        [System.NonSerialized] public System.Action onSelect;
+    }
+
     [System.Serializable]
     public class DialogEntry
     {
@@ -33,6 +45,8 @@ public class NpcDialog : MonoBehaviour
         public Sprite profile;
         [TextArea(2, 5)]
         public string text = "Halo Rara, hati-hati di jalan ya!";
+        [Tooltip("Isi untuk menampilkan tombol pilihan. Kosongkan jika baris ini hanya teks biasa.")]
+        public Choice[] choices;
     }
 
     [Header("Daftar Dialog")]
@@ -151,6 +165,11 @@ public class NpcDialog : MonoBehaviour
     private bool             isPlaying;
     private bool             isTyping;
     private Coroutine        typingCo;
+    private GameObject       choicesPanel;      // panel tombol pilihan
+    private Choice[]         _pendingChoices;   // choices baris aktif, diproses TypeText
+    private bool             _choiceProcessed;  // guard double-fire pilihan
+    private bool             _ignoreNextAdvance;// blokir Advance() 1 frame setelah klik pilihan
+    private System.Action    _playLinesCallback;// callback dari PlayLines()
     // Sprite yang sedang ditampilkan — PRIVATE, hanya diubah ShowLine().
     // Tidak ikut OnValidate sehingga Inspector tidak bisa menimpanya.
     private Sprite           _displayedProfile;
@@ -243,19 +262,36 @@ public class NpcDialog : MonoBehaviour
 
         Debug.Log("[NpcDialog] Play() dipanggil — " + lines.Length + " baris dialog.");
         BuildUIIfNeeded();
+        StopAllCoroutines();
+        _pendingChoices    = null;
+        _choiceProcessed   = false;
+        _ignoreNextAdvance = false;
+        if (choicesPanel != null) { Destroy(choicesPanel); choicesPanel = null; }
         currentIndex = 0;
         isPlaying    = true;
         panelRoot.SetActive(true);
-        Debug.Log("[NpcDialog] Panel aktif: " + panelRoot.activeSelf + " | Canvas: " + (canvas != null ? canvas.name : "NULL"));
+        // Bekukan player langsung — tidak bergantung controller manapun
+        SetPlayerFrozen(true);
         ShowLine(0);
+    }
+
+    /// Mainkan dialog dari array baris + callback saat selesai.
+    public void PlayLines(DialogEntry[] newLines, System.Action onDone = null)
+    {
+        lines              = newLines;
+        _playLinesCallback = onDone;
+        Play();
     }
 
     /// Tutup paksa.
     public void Close()
     {
         isPlaying = false;
-        if (typingCo != null) StopCoroutine(typingCo);
+        StopAllCoroutines();
+        _pendingChoices = null;
+        if (choicesPanel != null) { Destroy(choicesPanel); choicesPanel = null; }
         if (panelRoot != null) panelRoot.SetActive(false);
+        SetPlayerFrozen(false);
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -264,12 +300,25 @@ public class NpcDialog : MonoBehaviour
 
     void Advance()
     {
+        // Blokir 1 frame setelah klik tombol pilihan (EventSystem + Update berjalan frame sama)
+        if (_ignoreNextAdvance) { _ignoreNextAdvance = false; return; }
+
+        // Panel pilihan aktif — harus klik tombol, bukan SPACE/klik sembarang
+        if (choicesPanel != null && choicesPanel.activeSelf) return;
+
         if (isTyping)
         {
-            // skip animasi ketik
+            // Skip animasi ketik
             if (typingCo != null) StopCoroutine(typingCo);
             isTyping     = false;
             textTMP.text = lines[currentIndex].text;
+            var cur = lines[currentIndex];
+            if (cur.choices != null && cur.choices.Length > 0)
+            {
+                _pendingChoices = null;
+                if (hintTMP != null) hintTMP.gameObject.SetActive(false);
+                BuildChoiceButtons(cur.choices);
+            }
             return;
         }
 
@@ -302,6 +351,17 @@ public class NpcDialog : MonoBehaviour
 
         ApplyProfile(_displayedProfile);
 
+        // Simpan choices — TypeText akan build tombol saat ketikan selesai
+        _pendingChoices = (line.choices != null && line.choices.Length > 0) ? line.choices : null;
+        if (_pendingChoices != null)
+        {
+            if (hintTMP != null) hintTMP.gameObject.SetActive(false);
+        }
+        else
+        {
+            if (hintTMP != null) hintTMP.gameObject.SetActive(true);
+        }
+
         if (typingCo != null) StopCoroutine(typingCo);
         typingCo = StartCoroutine(TypeText(line.text));
     }
@@ -313,7 +373,8 @@ public class NpcDialog : MonoBehaviour
         if (typeSpeed <= 0f)
         {
             textTMP.text = full;
-            isTyping = false;
+            isTyping     = false;
+            if (_pendingChoices != null) { BuildChoiceButtons(_pendingChoices); _pendingChoices = null; }
             yield break;
         }
         foreach (char c in full)
@@ -322,13 +383,133 @@ public class NpcDialog : MonoBehaviour
             yield return new WaitForSeconds(typeSpeed);
         }
         isTyping = false;
+        if (_pendingChoices != null) { BuildChoiceButtons(_pendingChoices); _pendingChoices = null; }
     }
 
     void EndDialog()
     {
         isPlaying = false;
+        StopAllCoroutines();
+        _pendingChoices = null;
+        if (choicesPanel != null) { Destroy(choicesPanel); choicesPanel = null; }
         panelRoot.SetActive(false);
+        SetPlayerFrozen(false);
         onDialogEnd?.Invoke();
+        // callback dari PlayLines() — dipanggil setelah onDialogEnd
+        var cb = _playLinesCallback;
+        _playLinesCallback = null;
+        cb?.Invoke();
+    }
+
+    // Freeze / unfreeze player secara langsung — tidak bergantung controller manapun
+    static void SetPlayerFrozen(bool frozen)
+    {
+        var p = FindFirstObjectByType<player>();
+        if (p != null) p.frozen = frozen;
+    }
+
+    // ══ Sistem Pilihan ═══════════════════════════════════════════════════════════════════
+
+    void BuildChoiceButtons(Choice[] choices)
+    {
+        if (choicesPanel != null) { Destroy(choicesPanel); choicesPanel = null; }
+        _choiceProcessed = false;
+
+        choicesPanel = new GameObject("ChoicesPanel");
+        choicesPanel.transform.SetParent(canvas.transform, false);
+        var cpRT = choicesPanel.AddComponent<RectTransform>();
+        cpRT.anchorMin = new Vector2(0.01f, 0.36f);
+        cpRT.anchorMax = new Vector2(0.62f, 0.90f);
+        cpRT.offsetMin = Vector2.zero;
+        cpRT.offsetMax = Vector2.zero;
+
+        float slotH = 1f / choices.Length;
+        for (int i = 0; i < choices.Length; i++)
+        {
+            var   c    = choices[i];
+            float yMax = 1f - i * slotH;
+            float yMin = yMax - slotH + 0.015f;
+
+            var btnGO = new GameObject("Btn_" + c.category);
+            btnGO.transform.SetParent(choicesPanel.transform, false);
+            var btnRT = btnGO.AddComponent<RectTransform>();
+            btnRT.anchorMin = new Vector2(0f, yMin);
+            btnRT.anchorMax = new Vector2(1f, yMax);
+            btnRT.offsetMin = new Vector2(0f,  4f);
+            btnRT.offsetMax = new Vector2(0f, -4f);
+
+            var img = btnGO.AddComponent<Image>();
+            img.color = CategoryToColor(c.category);
+
+            var btn = btnGO.AddComponent<Button>();
+            var bc  = btn.colors;
+            bc.highlightedColor = new Color(1f, 1f, 1f, 0.85f);
+            bc.pressedColor     = new Color(0.7f, 0.7f, 0.7f, 1f);
+            bc.colorMultiplier  = 1f;
+            btn.colors = bc;
+
+            var lblGO = new GameObject("Label");
+            lblGO.transform.SetParent(btnGO.transform, false);
+            var lblRT = lblGO.AddComponent<RectTransform>();
+            lblRT.anchorMin = Vector2.zero;
+            lblRT.anchorMax = Vector2.one;
+            lblRT.offsetMin = new Vector2(14f,  4f);
+            lblRT.offsetMax = new Vector2(-14f, -4f);
+            var tmp = lblGO.AddComponent<TextMeshProUGUI>();
+            ApplyFont(tmp);
+            tmp.text               = c.label;
+            tmp.fontSize           = textFontSize - 2;
+            tmp.color              = Color.white;
+            tmp.fontStyle          = FontStyles.Bold;
+            tmp.alignment          = TextAlignmentOptions.MidlineLeft;
+            tmp.enableWordWrapping = true;
+            tmp.raycastTarget      = false;
+
+            var localC = c;
+            btn.onClick.AddListener(() => OnChoiceSelected(localC));
+        }
+    }
+
+    static Color CategoryToColor(string cat)
+    {
+        switch (cat)
+        {
+            case "AMAN":   return new Color(0.149f, 0.678f, 0.380f, 1f);
+            case "RAGU":   return new Color(0.949f, 0.616f, 0.071f, 1f);
+            case "BAHAYA": return new Color(0.910f, 0.302f, 0.239f, 1f);
+            default:       return new Color(0.200f, 0.624f, 0.859f, 1f);
+        }
+    }
+
+    void OnChoiceSelected(Choice c)
+    {
+        if (_choiceProcessed) return;
+        _choiceProcessed   = true;
+        _ignoreNextAdvance = true;
+
+        if (choicesPanel != null) { Destroy(choicesPanel); choicesPanel = null; }
+        if (hintTMP != null) hintTMP.gameObject.SetActive(true);
+
+        // Jika onSelect sudah diisi via kode (mis. BangunEncounterLines),
+        // biarkan callback itu yang mengurus skor & nyawa — jangan duplikat di sini.
+        if (c.onSelect != null)
+        {
+            c.onSelect.Invoke();
+        }
+        else if (GameState.Instance != null)
+        {
+            // Fallback built-in: untuk dialog Inspector tanpa callback kustom
+            GameState.Instance.AddChoice(GameState.Instance.day, c.label, c.category);
+            if (c.category == "BAHAYA")
+                GameState.Instance.LoseLife();
+            HUDManager.Instance?.Refresh();
+        }
+
+        currentIndex++;
+        if (currentIndex >= lines.Length)
+            EndDialog();
+        else
+            ShowLine(currentIndex);
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -434,6 +615,7 @@ public class NpcDialog : MonoBehaviour
             return;
         }
         profileImg.enabled = true; // selalu aktif
+        profileImg.preserveAspect = portraitPreserveAspect;   // terapkan setiap ganti sprite
         if (spr != null)
         {
             profileImg.sprite = spr;
@@ -577,7 +759,7 @@ public class NpcDialog : MonoBehaviour
         profileGO.transform.SetParent(panelRoot.transform, false);
         profileRT  = profileGO.AddComponent<RectTransform>();
         profileImg = profileGO.AddComponent<Image>();
-        profileImg.preserveAspect = true;
+        profileImg.preserveAspect = portraitPreserveAspect;   // baca dari Inspector
         profileImg.raycastTarget  = false;
 
         if (hasBox)

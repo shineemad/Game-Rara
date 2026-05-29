@@ -64,6 +64,32 @@ public class HUDManager : MonoBehaviour
     public float introDuration     = 2.8f;
     public float introFadeDuration = 0.5f;
 
+    [Header("Popup Skor (kustomisasi bebas)")]
+    [Tooltip("Ukuran font teks popup skor")]
+    public int   popupFontSize      = 52;
+    [Tooltip("Berapa pixel popup naik selama animasi")]
+    public float popupRisePixels    = 120f;
+    [Tooltip("Durasi total animasi popup dalam detik")]
+    public float popupDuration      = 1.5f;
+    [Tooltip("Posisi horizontal popup skor (0=kiri, 1=kanan layar)")]
+    public float popupAnchorX       = 0.07f;
+    [Tooltip("Posisi vertikal popup skor (0=bawah, 1=atas layar)")]
+    public float popupAnchorY       = 0.90f;
+    [Tooltip("Offset vertikal popup nyawa berkurang dari popup skor")]
+    public float popupLifeLostOffsetY = -0.02f;
+    [Tooltip("Format teks popup AMAN. {0} = angka poin")]
+    public string popupFormatAman   = "+{0} POIN";
+    [Tooltip("Format teks popup RAGU. {0} = angka poin")]
+    public string popupFormatRagu   = "+{0} poin";
+    [Tooltip("Teks popup BAHAYA (poin nol)")]
+    public string popupTeksBahaya   = "0 POIN";
+    [Tooltip("Teks popup saat nyawa berkurang")]
+    public string popupTeksNyawa    = "\u22121 \u2764";
+    public Color  popupWarnaAman    = new Color(0.15f, 0.90f, 0.45f, 1f);
+    public Color  popupWarnaRagu    = new Color(0.97f, 0.70f, 0.10f, 1f);
+    public Color  popupWarnaBahaya  = new Color(0.95f, 0.30f, 0.25f, 1f);
+    public Color  popupWarnaNyawa   = new Color(0.95f, 0.18f, 0.18f, 1f);
+
     // ══════════════════════════════════════════════════════════════════════
     // RUNTIME REFS
     // ══════════════════════════════════════════════════════════════════════
@@ -75,6 +101,19 @@ public class HUDManager : MonoBehaviour
     private TextMeshProUGUI[] _dayLabels;
     private Image[]           _dayLines;
     private RectTransform     _gaugeFillRT;
+    private Image             _gaugeFillImg;       // referensi fill untuk ganti warna
+    private RectTransform     _gaugeMarkerRT;      // garis merah threshold
+
+    // ── Voice Meter: fill bar + 3 zona background + marker merah ───────
+    private TextMeshProUGUI _gaugeLevelLabel;    // teks level di kiri bar
+    private Image[]         _gaugeZones;         // [0]=hijau [1]=kuning [2]=merah background
+    private RectTransform   _gaugeFillBgRT;      // parent bar (untuk child fill)
+
+    // Batas zona sebagai fraksi 0–1 dari threshold Loud
+    // Zona hijau: 0 – thresholdMedium, kuning: thresholdMedium – thresholdLoud, merah: sisanya
+    // Versi visual statis untuk saat VoiceMeter belum ada:
+    const float ZN_NORMAL_END = 0.40f;
+    const float ZN_MEDIUM_END = 0.72f;
 
     private CanvasGroup      _introGroup;
     private TextMeshProUGUI  _introTitle;
@@ -166,6 +205,7 @@ public class HUDManager : MonoBehaviour
 
     public void UpdateScore(int score)
     {
+        Debug.Log($"[HUDManager] UpdateScore({score}) | _rScore={(  _rScore != null ? "ada" : "NULL")} | scoreText={(scoreText != null ? "ada" : "NULL")}");
         if (scoreText != null) scoreText.text = $"Skor: {score}";
         if (_rScore   != null) _rScore.text   = $"Skor: {score}";
     }
@@ -209,11 +249,138 @@ public class HUDManager : MonoBehaviour
         }
     }
 
-    /// Isi shout gauge (0–1). Panggil dari Day1Controller tiap frame.
+    /// Perbarui Voice Meter tiap frame.
+    /// value = VoiceMeter.NormalizedLevel (0–1 amplitudo RMS mentah).
+    /// Fill bar dipetakan ke seluruh lebar bar menggunakan threshold,
+    /// sehingga teriak keras = bar penuh.
     public void SetShoutGauge(float value)
     {
-        if (_gaugeFillRT == null) return;
-        _gaugeFillRT.anchorMax = new Vector2(Mathf.Clamp01(value), 1f);
+        float v = Mathf.Clamp01(value);
+
+        // ── Petakan nilai mentah ke posisi visual penuh (0–1 lebar bar) ──
+        float fillPos = MapToFillPos(v);
+
+        // ── Fill bar ──────────────────────────────────────────────────────
+        if (_gaugeFillRT != null)
+        {
+            // Minimal 4% lebar agar selalu ada, maks 100%
+            float fillWidth = Mathf.Max(0.04f, fillPos);
+            _gaugeFillRT.anchorMax = new Vector2(fillWidth, 1f);
+        }
+
+        var vm = VoiceMeter.Instance;
+
+        // ── Warna fill sesuai level ───────────────────────────────────────
+        if (_gaugeFillImg != null)
+        {
+            Color targetFill;
+            if (vm != null)
+            {
+                switch (vm.Level)
+                {
+                    case VoiceMeter.VoiceLevel.Loud:
+                        targetFill = Color.Lerp(
+                            VoiceMeter.ColorLoud, Color.white,
+                            Mathf.Abs(Mathf.Sin(Time.time * 9f)) * vm.LoudIntensity);
+                        break;
+                    case VoiceMeter.VoiceLevel.Medium:
+                        targetFill = VoiceMeter.ColorMedium;
+                        break;
+                    case VoiceMeter.VoiceLevel.Normal:
+                        targetFill = VoiceMeter.ColorNormal;
+                        break;
+                    default:
+                        targetFill = new Color(0.28f, 0.28f, 0.32f, 1f);
+                        break;
+                }
+            }
+            else
+            {
+                targetFill = fillPos > ZN_MEDIUM_END ? new Color(0.92f, 0.22f, 0.18f, 1f)
+                           : fillPos > ZN_NORMAL_END ? new Color(0.95f, 0.62f, 0.07f, 1f)
+                           : fillPos > 0.05f         ? new Color(0.15f, 0.68f, 0.38f, 1f)
+                           :                           new Color(0.28f, 0.28f, 0.32f, 1f);
+            }
+            _gaugeFillImg.color = Color.Lerp(_gaugeFillImg.color, targetFill, 0.20f);
+        }
+
+        // ── Zona background: terangkan zona aktif ────────────────────────
+        if (_gaugeZones != null && vm != null)
+        {
+            Color[] on = {
+                new Color(0.12f, 0.68f, 0.30f, 0.60f),
+                new Color(0.95f, 0.62f, 0.07f, 0.60f),
+                new Color(0.92f, 0.22f, 0.18f, 0.60f),
+            };
+            Color[] off = {
+                new Color(0.10f, 0.45f, 0.20f, 0.28f),
+                new Color(0.60f, 0.40f, 0.04f, 0.28f),
+                new Color(0.55f, 0.10f, 0.08f, 0.28f),
+            };
+            int active = vm.Level switch {
+                VoiceMeter.VoiceLevel.Normal => 0,
+                VoiceMeter.VoiceLevel.Medium => 1,
+                VoiceMeter.VoiceLevel.Loud   => 2,
+                _                            => -1,
+            };
+            for (int i = 0; i < _gaugeZones.Length; i++)
+            {
+                if (_gaugeZones[i] == null) continue;
+                Color target = (i == active) ? on[i] : off[i];
+                _gaugeZones[i].color = Color.Lerp(_gaugeZones[i].color, target, 0.18f);
+            }
+        }
+
+        // ── Label level ───────────────────────────────────────────────────
+        if (_gaugeLevelLabel != null && vm != null)
+        {
+            _gaugeLevelLabel.text = vm.NamaLevel();
+            Color lc = vm.Level switch {
+                VoiceMeter.VoiceLevel.Normal => VoiceMeter.ColorNormal,
+                VoiceMeter.VoiceLevel.Medium => VoiceMeter.ColorMedium,
+                VoiceMeter.VoiceLevel.Loud   => VoiceMeter.ColorLoud,
+                _                            => new Color(0.50f, 0.50f, 0.55f, 1f),
+            };
+            _gaugeLevelLabel.color = Color.Lerp(_gaugeLevelLabel.color, lc, 0.18f);
+        }
+    }
+
+    /// Petakan amplitudo RMS mentah (0–1) ke posisi visual fill bar (0–1).
+    /// Zona Normal  → 0.0  – ZN_NORMAL_END (0.40)
+    /// Zona Medium  → 0.40 – ZN_MEDIUM_END (0.72)
+    /// Zona Loud    → 0.72 – 1.00
+    float MapToFillPos(float raw)
+    {
+        var vm = VoiceMeter.Instance;
+        if (vm == null) return raw;
+
+        float thN = Mathf.Max(vm.thresholdNormal, 0.001f);
+        float thM = Mathf.Max(vm.thresholdMedium, thN + 0.001f);
+        float thL = Mathf.Max(vm.thresholdLoud,   thM + 0.001f);
+
+        if (raw <= 0f)
+            return 0f;
+        else if (raw < thN)
+            // Senyap → awal zona Normal (0 – 40% * 0.4)
+            return Mathf.Lerp(0f, ZN_NORMAL_END * 0.35f, raw / thN);
+        else if (raw < thM)
+            // Normal → zona Normal penuh (0.14 – 0.40)
+            return Mathf.Lerp(ZN_NORMAL_END * 0.35f, ZN_NORMAL_END,
+                (raw - thN) / (thM - thN));
+        else if (raw < thL)
+            // Medium → zona Medium (0.40 – 0.72)
+            return Mathf.Lerp(ZN_NORMAL_END, ZN_MEDIUM_END,
+                (raw - thM) / (thL - thM));
+        else
+            // Loud → zona merah (0.72 – 1.0)
+            return Mathf.Lerp(ZN_MEDIUM_END, 1.0f,
+                Mathf.Clamp01((raw - thL) / Mathf.Max(1f - thL, 0.05f)));
+    }
+
+    /// Petakan nilai threshold amplitudo ke posisi visual pada bar (0–1).
+    float MapThresholdPos(float thresholdLoud)
+    {
+        return ZN_MEDIUM_END;
     }
 
     /// Tampilkan layar intro "HARI N: ..." dengan fade in/out.
@@ -241,6 +408,101 @@ public class HUDManager : MonoBehaviour
 
         if (heartImages != null && newLives < heartImages.Length && heartImages[newLives] != null)
             StartCoroutine(FlashImage(heartImages[newLives]));
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // SCORE POPUP — teks melayang naik kemudian menghilang
+    // ══════════════════════════════════════════════════════════════════════
+
+    private Canvas _popupCanvas;   // canvas khusus popup agar tidak tumpang tindih dengan navbar
+
+    /// Tampilkan popup skor mengambang di dekat pojok kiri atas (dekat skor).
+    public void ShowScorePopup(int pts, string kategori = "AMAN")
+    {
+        if (pts <= 0 && kategori != "BAHAYA") return;   // tidak perlu popup 0 poin non-BAHAYA
+
+        string teks;
+        Color  warna;
+
+        switch (kategori)
+        {
+            case "AMAN":
+                teks  = string.Format(popupFormatAman, pts);
+                warna = popupWarnaAman;
+                break;
+            case "RAGU":
+                teks  = string.Format(popupFormatRagu, pts);
+                warna = popupWarnaRagu;
+                break;
+            default:    // BAHAYA
+                teks  = popupTeksBahaya;
+                warna = popupWarnaBahaya;
+                break;
+        }
+
+        StartCoroutine(AnimasiPopup(teks, warna, popupAnchorX, popupAnchorY));
+    }
+
+    /// Tampilkan popup nyawa berkurang.
+    public void ShowLifeLostPopup()
+    {
+        StartCoroutine(AnimasiPopup(
+            popupTeksNyawa, popupWarnaNyawa,
+            popupAnchorX, popupAnchorY + popupLifeLostOffsetY));
+    }
+
+    IEnumerator AnimasiPopup(string teks, Color warna, float anchorX, float anchorY)
+    {
+        // Pastikan canvas popup ada
+        if (_popupCanvas == null)
+        {
+            var cgo = new GameObject("[PopupCanvas]");
+            DontDestroyOnLoad(cgo);
+            _popupCanvas = cgo.AddComponent<Canvas>();
+            _popupCanvas.renderMode   = RenderMode.ScreenSpaceOverlay;
+            _popupCanvas.sortingOrder = 950;
+            var sc = cgo.AddComponent<CanvasScaler>();
+            sc.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            sc.referenceResolution = new Vector2(1920f, 1080f);
+            sc.matchWidthOrHeight  = 0.5f;
+        }
+
+        // Buat label popup
+        var go  = new GameObject("Popup");
+        go.transform.SetParent(_popupCanvas.transform, false);
+        var rt  = go.AddComponent<RectTransform>();
+        rt.anchorMin        = rt.anchorMax = new Vector2(anchorX, anchorY);
+        rt.pivot            = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta        = new Vector2(300f, 70f);
+        rt.anchoredPosition = Vector2.zero;
+
+        var tmp = go.AddComponent<TextMeshProUGUI>();
+        ApplyFont(tmp);
+        tmp.text               = teks;
+        tmp.fontSize           = popupFontSize;
+        tmp.fontStyle          = FontStyles.Bold;
+        tmp.color              = warna;
+        tmp.alignment          = TextAlignmentOptions.Center;
+        tmp.enableWordWrapping = false;
+
+        // Outline tipis agar terbaca di atas background apapun
+        tmp.outlineWidth = 0.25f;
+        tmp.outlineColor = new Color(0f, 0f, 0f, 0.80f);
+
+        // Animasi: naik + fade out
+        Vector2 posAwal = rt.anchoredPosition;
+
+        for (float t = 0f; t < popupDuration; t += Time.deltaTime)
+        {
+            float p = t / popupDuration;
+            rt.anchoredPosition = posAwal + Vector2.up * (popupRisePixels * p);
+            // Tetap penuh 60% pertama, fade di 40% terakhir
+            float alpha = p < 0.6f ? 1f : Mathf.Lerp(1f, 0f, (p - 0.6f) / 0.4f);
+            tmp.color = new Color(warna.r, warna.g, warna.b, alpha);
+            yield return null;
+        }
+
+        Destroy(go);
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -355,36 +617,83 @@ public class HUDManager : MonoBehaviour
             _dayLabels[i] = lblTMP;
         }
 
-        // ── KANAN: Shout Gauge ────────────────────────────────────────────
+        // ── KANAN: Voice Meter (fill bar + marker) ─────────────────────────
+        // Panel lebih lebar agar bar cukup besar
         var right = Panel(cGO, "NavRight", panelBgColor,
             new Vector2(1f, 1f), new Vector2(1f, 1f),
-            new Vector2(-14f, -12f), new Vector2(280f, 66f));
+            new Vector2(-14f, -12f), new Vector2(340f, 66f));
 
-        // Label
-        var gaugeLabel = Tmp(right, "GaugeLabel", "📢  TERIAK", 17,
-            new Color(1f, 1f, 1f, 0.68f));
+        // Label "📢 SUARA" di kiri panel
+        var gaugeLabel = Tmp(right, "GaugeLabel", "📢 SUARA", 16,
+            new Color(1f, 1f, 1f, 0.72f));
         gaugeLabel.alignment = TextAlignmentOptions.MidlineLeft;
         var glRT = gaugeLabel.rectTransform;
-        glRT.anchorMin = new Vector2(0f,    0.44f);
-        glRT.anchorMax = new Vector2(0.42f, 1.00f);
+        glRT.anchorMin = new Vector2(0f, 0.42f);
+        glRT.anchorMax = new Vector2(0.22f, 1.00f);
         glRT.offsetMin = new Vector2(10f, 0f);
         glRT.offsetMax = Vector2.zero;
 
-        // Background bar
-        var barBgRT  = Rect(right, "GaugeBg",
-            new Vector2(0.42f, 0.20f), new Vector2(0.95f, 0.80f));
-        var barBgImg = barBgRT.gameObject.AddComponent<Image>();
-        barBgImg.color = gaugeEmptyColor;
+        // Label level (Diam / Normal / Sedang / TERIAK!) di bawah label SUARA
+        _gaugeLevelLabel = Tmp(right, "LevelLabel", "Diam", 13,
+            new Color(0.55f, 0.55f, 0.60f, 1f));
+        _gaugeLevelLabel.alignment = TextAlignmentOptions.MidlineLeft;
+        var llRT = _gaugeLevelLabel.rectTransform;
+        llRT.anchorMin = new Vector2(0f,    0.00f);
+        llRT.anchorMax = new Vector2(0.22f, 0.42f);
+        llRT.offsetMin = new Vector2(10f, 0f);
+        llRT.offsetMax = Vector2.zero;
 
-        // Fill (anchorMax.x = nilai 0–1 saat runtime)
-        var fillGO   = new GameObject("GaugeFill");
+        // ── Background bar (latar gelap, isi penuh dari kiri bar) ──────
+        var barBg = new GameObject("GaugeBg");
+        barBg.transform.SetParent(right.transform, false);
+        var barBgRT = barBg.AddComponent<RectTransform>();
+        barBgRT.anchorMin = new Vector2(0.23f, 0.16f);
+        barBgRT.anchorMax = new Vector2(0.98f, 0.84f);
+        barBgRT.offsetMin = barBgRT.offsetMax = Vector2.zero;
+        _gaugeFillBgRT = barBgRT;
+        var barBgImg = barBg.AddComponent<Image>();
+        barBgImg.color = new Color(0.08f, 0.08f, 0.10f, 1f);
+
+        // ── 3 zona background (selalu terlihat, opacity rendah) ─────────
+        float[] zBounds = { 0f, ZN_NORMAL_END, ZN_MEDIUM_END, 1f };
+        Color[] zOff = {
+            new Color(0.10f, 0.45f, 0.20f, 0.40f),   // hijau redup
+            new Color(0.60f, 0.40f, 0.04f, 0.40f),   // kuning redup
+            new Color(0.55f, 0.10f, 0.08f, 0.40f),   // merah redup
+        };
+        _gaugeZones = new Image[3];
+        for (int i = 0; i < 3; i++)
+        {
+            var zGO = new GameObject("ZoneBg" + i);
+            zGO.transform.SetParent(barBgRT, false);
+            var zRT = zGO.AddComponent<RectTransform>();
+            zRT.anchorMin = new Vector2(zBounds[i],     0f);
+            zRT.anchorMax = new Vector2(zBounds[i + 1], 1f);
+            zRT.offsetMin = zRT.offsetMax = Vector2.zero;
+            _gaugeZones[i]       = zGO.AddComponent<Image>();
+            _gaugeZones[i].color = zOff[i];
+        }
+
+        // ── Fill bar (tumbuh dari kiri, warna berubah sesuai level) ────
+        var fillGO = new GameObject("GaugeFill");
         fillGO.transform.SetParent(barBgRT, false);
         _gaugeFillRT = fillGO.AddComponent<RectTransform>();
         _gaugeFillRT.anchorMin = Vector2.zero;
-        _gaugeFillRT.anchorMax = new Vector2(0f, 1f);   // mulai kosong
+        _gaugeFillRT.anchorMax = new Vector2(0.04f, 1f);   // minimal 4% agar selalu terlihat
         _gaugeFillRT.offsetMin = _gaugeFillRT.offsetMax = Vector2.zero;
-        var fillImg = fillGO.AddComponent<Image>();
-        fillImg.color = gaugeFillColor;
+        _gaugeFillImg = fillGO.AddComponent<Image>();
+        _gaugeFillImg.color = new Color(0.20f, 0.72f, 0.38f, 1f);   // hijau awal
+
+        // ── Marker merah — garis vertikal di posisi threshold Loud ─────
+        var markerGO = new GameObject("GaugeMarker");
+        markerGO.transform.SetParent(barBgRT, false);
+        _gaugeMarkerRT = markerGO.AddComponent<RectTransform>();
+        _gaugeMarkerRT.anchorMin = new Vector2(ZN_MEDIUM_END - 0.012f, -0.20f);
+        _gaugeMarkerRT.anchorMax = new Vector2(ZN_MEDIUM_END + 0.012f,  1.20f);
+        _gaugeMarkerRT.offsetMin = _gaugeMarkerRT.offsetMax = Vector2.zero;
+        var markerImg = markerGO.AddComponent<Image>();
+        markerImg.color = new Color(0.92f, 0.15f, 0.15f, 1f);
+
     }
 
     // ══════════════════════════════════════════════════════════════════════

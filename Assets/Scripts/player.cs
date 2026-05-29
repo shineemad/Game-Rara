@@ -27,6 +27,16 @@ public class player : MonoBehaviour
     private float     frameTimer;
     private int       currentFrame;
 
+    /// Jika true, karakter berhenti bergerak (dipakai saat dialog aktif).
+    /// Set via Day1Controller.FreezePlayer() / ResumePlayer().
+    [HideInInspector] public bool frozen = false;
+
+    /// Pengali kecepatan dari Voice Meter:
+    ///   1.6f → teriak keras (merah >80dB) — speed boost
+    ///   0.55f → suara sedang (kuning 60-80dB) — lambat / ragu
+    ///   1.0f → normal / diam
+    [HideInInspector] public float voiceSpeedMultiplier = 1f;
+
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -35,6 +45,23 @@ public class player : MonoBehaviour
 
     void Update()
     {
+        // Saat dialog aktif — hentikan semua pergerakan, tampilkan idle
+        if (frozen)
+        {
+            rb.velocity = Vector2.zero;
+            if (currentState != MoveState.Idle)
+            {
+                currentState = MoveState.Idle;
+                currentFrame = 0;
+                frameTimer   = 0f;
+            }
+            if (spriteRenderer != null)
+                spriteRenderer.sprite = idleSprite != null
+                    ? idleSprite
+                    : (walkSprites != null && walkSprites.Length > 0 ? walkSprites[0] : null);
+            return;
+        }
+
         // Gabungkan input keyboard + tombol mobile (mana saja yang aktif)
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical   = Input.GetAxisRaw("Vertical");
@@ -65,8 +92,8 @@ public class player : MonoBehaviour
             frameTimer   = 0f;
         }
 
-        // ── gerak fisika ────────────────────────────────────────────
-        float speed  = isRunning ? runSpeed : moveSpeed;
+        // ── gerak fisika ─────────────────────────────────────────────
+        float speed  = (isRunning ? runSpeed : moveSpeed) * voiceSpeedMultiplier;
         rb.velocity  = direction * speed;
 
         // ── flip sprite ─────────────────────────────────────────────

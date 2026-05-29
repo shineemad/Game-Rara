@@ -280,6 +280,8 @@ public class Day1Intro : MonoBehaviour
     // RUNTIME STATE — referensi UI aktif (untuk live-edit via OnValidate)
     // ══════════════════════════════════════════════════════════════════════
 
+    private player          _playerComp;   // referensi ke player.cs untuk freeze selama intro
+
     private RectTransform   _panelRT;
     private RectTransform   _portRT;
     private Image           _portImg;
@@ -369,6 +371,10 @@ public class Day1Intro : MonoBehaviour
 
     IEnumerator JalankanIntro()
     {
+        // ── Bekukan player sejak awal intro hingga selesai ─────────────────
+        _playerComp = FindFirstObjectByType<player>();
+        if (_playerComp != null) _playerComp.frozen = true;
+
         // ── Langkah 1: Tunggu PrologScreen selesai (jika ada) ─────────────────
         bool adaProlog = FindAnyObjectByType<PrologScreen>() != null;
         if (adaProlog)
@@ -391,8 +397,9 @@ public class Day1Intro : MonoBehaviour
         if (narasiPembuka != null && narasiPembuka.Length > 0)
             yield return StartCoroutine(TampilkanNarasi());
 
-        // ── Langkah 5: Beritahu Day1Controller untuk mulai game ───────────
-        onIntroSelesai?.Invoke();
+        // ── Langkah 5: Beritahu Day1Controller untuk mulai game ───────────        // Pastikan player di-unfreeze langsung di sini sebagai jaminan,
+        // agar tidak bergantung penuh pada Day1Controller.MulaiGame()
+        if (_playerComp != null) _playerComp.frozen = false;        onIntroSelesai?.Invoke();
     }
 
     // ══════════════════════════════════════════════════════════════════════

@@ -84,6 +84,8 @@ public class DialogManager : MonoBehaviour
     /// Tampilkan urutan dialog. onComplete dipanggil setelah baris terakhir.
     public void Show(List<DialogLine> lines, Action onComplete = null)
     {
+        BuildUIIfNeeded();
+
         this.currentLines = lines;
         this.lineIndex    = 0;
         this.onComplete   = onComplete;
@@ -165,17 +167,55 @@ public class DialogManager : MonoBehaviour
         foreach (Transform child in choicePanel.transform)
             Destroy(child.gameObject);
 
-        foreach (var choice in line.choices)
+        float slotH = 1f / line.choices.Length;
+        for (int i = 0; i < line.choices.Length; i++)
         {
-            var btnObj = Instantiate(choiceButtonPrefab, choicePanel.transform);
-            btnObj.GetComponentInChildren<TextMeshProUGUI>().text = choice.label;
+            var choice = line.choices[i];
+            float yMax = 1f - i * slotH;
+            float yMin = yMax - slotH + 0.015f;
 
-            // Warna tombol sesuai kategori
+            GameObject btnObj;
+            if (choiceButtonPrefab != null)
+            {
+                btnObj = Instantiate(choiceButtonPrefab, choicePanel.transform);
+            }
+            else
+            {
+                // Auto-build tombol tanpa prefab
+                btnObj = new GameObject("Choice_" + i);
+                btnObj.transform.SetParent(choicePanel.transform, false);
+                var bRT = btnObj.AddComponent<RectTransform>();
+                bRT.anchorMin = new Vector2(0f, yMin);
+                bRT.anchorMax = new Vector2(1f, yMax);
+                bRT.offsetMin = new Vector2(0f,  4f);
+                bRT.offsetMax = new Vector2(0f, -4f);
+                btnObj.AddComponent<Image>();
+
+                var lblGO = new GameObject("Label");
+                lblGO.transform.SetParent(btnObj.transform, false);
+                var lblRT = lblGO.AddComponent<RectTransform>();
+                lblRT.anchorMin = Vector2.zero;
+                lblRT.anchorMax = Vector2.one;
+                lblRT.offsetMin = new Vector2(14f,  4f);
+                lblRT.offsetMax = new Vector2(-14f, -4f);
+                var lbl = lblGO.AddComponent<TextMeshProUGUI>();
+                lbl.fontSize           = 24;
+                lbl.color              = Color.white;
+                lbl.fontStyle          = FontStyles.Bold;
+                lbl.alignment          = TextAlignmentOptions.MidlineLeft;
+                lbl.enableWordWrapping = true;
+                lbl.raycastTarget      = false;
+                btnObj.AddComponent<Button>();
+            }
+
+            // Teks & warna
+            var tmp = btnObj.GetComponentInChildren<TextMeshProUGUI>();
+            if (tmp != null) tmp.text = choice.label;
+
             var img = btnObj.GetComponent<Image>();
-            if (img != null)
-                img.color = CategoryColor(choice.category);
+            if (img != null) img.color = CategoryColor(choice.category);
 
-            var c = choice; // closure capture
+            var c = choice;
             btnObj.GetComponent<Button>().onClick.AddListener(() => OnChoiceSelected(c));
         }
     }
@@ -212,6 +252,145 @@ public class DialogManager : MonoBehaviour
         dialogPanel.SetActive(false);
         choicePanel.SetActive(false);
         onComplete?.Invoke();
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // AUTO-BUILD UI — jika field Inspector tidak di-assign, bangun sendiri
+    // ══════════════════════════════════════════════════════════════════════
+
+    void BuildUIIfNeeded()
+    {
+        if (dialogPanel != null) return;   // sudah ter-assign, tidak perlu build
+
+        // ── Canvas ─────────────────────────────────────────────────────────
+        var canvasGO = new GameObject("DialogManagerCanvas");
+        DontDestroyOnLoad(canvasGO);
+        var cv = canvasGO.AddComponent<Canvas>();
+        cv.renderMode   = RenderMode.ScreenSpaceOverlay;
+        cv.sortingOrder = 990;
+        var scaler = canvasGO.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
+        scaler.matchWidthOrHeight  = 0.5f;
+        canvasGO.AddComponent<GraphicRaycaster>();
+
+        // ── Panel utama ────────────────────────────────────────────────────
+        var panelGO = new GameObject("DialogPanel");
+        panelGO.transform.SetParent(canvasGO.transform, false);
+        var panelRT  = panelGO.AddComponent<RectTransform>();
+        // Posisi bawah layar (sama dengan NpcDialog default)
+        panelRT.anchorMin = new Vector2(0.03f, 0.01f);
+        panelRT.anchorMax = new Vector2(0.97f, 0.33f);
+        panelRT.offsetMin = Vector2.zero;
+        panelRT.offsetMax = Vector2.zero;
+        var panelImg = panelGO.AddComponent<Image>();
+        panelImg.color = new Color(0f, 0f, 0f, 0.82f);
+        var outline = panelGO.AddComponent<Outline>();
+        outline.effectColor    = new Color(1f, 0.85f, 0.3f, 1f);
+        outline.effectDistance = new Vector2(3f, -3f);
+        dialogPanel = panelGO;
+
+        // ── Foto pembicara ─────────────────────────────────────────────────
+        var portGO = new GameObject("Portrait");
+        portGO.transform.SetParent(panelGO.transform, false);
+        var portRT  = portGO.AddComponent<RectTransform>();
+        portRT.anchorMin = new Vector2(0.01f, 0.05f);
+        portRT.anchorMax = new Vector2(0.18f, 0.95f);
+        portRT.offsetMin = new Vector2(8f,  8f);
+        portRT.offsetMax = new Vector2(-8f, -8f);
+        portraitImage = portGO.AddComponent<Image>();
+        portraitImage.preserveAspect = true;
+        portraitImage.color          = new Color(0.15f, 0.15f, 0.15f, 0.6f);
+        portraitImage.raycastTarget  = false;
+
+        // ── Banner nama ────────────────────────────────────────────────────
+        var bannerGO = new GameObject("Banner");
+        bannerGO.transform.SetParent(panelGO.transform, false);
+        var bannerRT  = bannerGO.AddComponent<RectTransform>();
+        bannerRT.anchorMin = new Vector2(0.20f, 0.65f);
+        bannerRT.anchorMax = new Vector2(0.55f, 0.92f);
+        bannerRT.offsetMin = Vector2.zero;
+        bannerRT.offsetMax = Vector2.zero;
+        var bannerImg = bannerGO.AddComponent<Image>();
+        bannerImg.color         = new Color(0.14f, 0.09f, 0.01f, 0.92f);
+        bannerImg.raycastTarget = false;
+
+        var speakerGO = new GameObject("SpeakerText");
+        speakerGO.transform.SetParent(bannerGO.transform, false);
+        var speakerRT  = speakerGO.AddComponent<RectTransform>();
+        speakerRT.anchorMin = Vector2.zero;
+        speakerRT.anchorMax = Vector2.one;
+        speakerRT.offsetMin = new Vector2(10f, 2f);
+        speakerRT.offsetMax = new Vector2(-10f, -2f);
+        speakerText = speakerGO.AddComponent<TextMeshProUGUI>();
+        speakerText.fontSize        = 30;
+        speakerText.fontStyle       = FontStyles.Bold;
+        speakerText.color           = new Color(1f, 0.85f, 0.3f, 1f);
+        speakerText.alignment       = TextAlignmentOptions.MidlineLeft;
+        speakerText.raycastTarget   = false;
+
+        // ── Teks dialog ────────────────────────────────────────────────────
+        var bodyGO = new GameObject("DialogText");
+        bodyGO.transform.SetParent(panelGO.transform, false);
+        var bodyRT  = bodyGO.AddComponent<RectTransform>();
+        bodyRT.anchorMin = new Vector2(0.20f, 0.06f);
+        bodyRT.anchorMax = new Vector2(0.96f, 0.63f);
+        bodyRT.offsetMin = new Vector2(8f,  4f);
+        bodyRT.offsetMax = new Vector2(-8f, -4f);
+        dialogText = bodyGO.AddComponent<TextMeshProUGUI>();
+        dialogText.fontSize           = 26;
+        dialogText.color              = Color.white;
+        dialogText.alignment          = TextAlignmentOptions.TopLeft;
+        dialogText.enableWordWrapping = true;
+        dialogText.raycastTarget      = false;
+
+        // ── Tombol Lanjutkan ───────────────────────────────────────────────
+        var contGO = new GameObject("ContinueButton");
+        contGO.transform.SetParent(panelGO.transform, false);
+        var contRT  = contGO.AddComponent<RectTransform>();
+        contRT.anchorMin = new Vector2(0.72f, 0.04f);
+        contRT.anchorMax = new Vector2(0.97f, 0.30f);
+        contRT.offsetMin = Vector2.zero;
+        contRT.offsetMax = Vector2.zero;
+        var contImg = contGO.AddComponent<Image>();
+        contImg.color = new Color(0.2f, 0.6f, 0.86f, 0.85f);
+        continueButton = contGO.AddComponent<Button>();
+        continueButton.onClick.AddListener(OnContinueClicked);
+
+        var contLblGO = new GameObject("Label");
+        contLblGO.transform.SetParent(contGO.transform, false);
+        var contLblRT  = contLblGO.AddComponent<RectTransform>();
+        contLblRT.anchorMin = Vector2.zero;
+        contLblRT.anchorMax = Vector2.one;
+        contLblRT.offsetMin = Vector2.zero;
+        contLblRT.offsetMax = Vector2.zero;
+        var contTMP = contLblGO.AddComponent<TextMeshProUGUI>();
+        contTMP.text          = "▼ Lanjut";
+        contTMP.fontSize      = 22;
+        contTMP.color         = Color.white;
+        contTMP.fontStyle     = FontStyles.Bold;
+        contTMP.alignment     = TextAlignmentOptions.Center;
+        contTMP.raycastTarget = false;
+
+        // ── Panel pilihan ──────────────────────────────────────────────────
+        var cpGO = new GameObject("ChoicePanel");
+        cpGO.transform.SetParent(canvasGO.transform, false);
+        var cpRT  = cpGO.AddComponent<RectTransform>();
+        cpRT.anchorMin = new Vector2(0.03f, 0.34f);
+        cpRT.anchorMax = new Vector2(0.65f, 0.88f);
+        cpRT.offsetMin = Vector2.zero;
+        cpRT.offsetMax = Vector2.zero;
+        cpGO.AddComponent<Image>().color = new Color(0f, 0f, 0f, 0f); // transparan
+        choicePanel = cpGO;
+        choicePanel.SetActive(false);
+
+        // choiceButtonPrefab tidak diperlukan — tombol dibuat langsung di ShowChoicesIfAny()
+        choiceButtonPrefab = null;
+
+        dialogPanel.SetActive(false);
+
+        Debug.Log("[DialogManager] UI dibangun otomatis (auto-build). " +
+                  "Untuk kustomisasi tampilan, assign field di Inspector.");
     }
 
     // ── Portrait Mapping ───────────────────────────────────────────────────

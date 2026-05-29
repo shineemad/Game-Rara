@@ -79,6 +79,8 @@ public class PamanBaik : MonoBehaviour
     private bool           hasArrived;            // sudah pernah tiba di target
     private bool           dialogTriggered;       // dialog sudah pernah dimainkan
     private float          arriveTimer;
+    // Referensi ke Day1Controller untuk freeze/resume karakter saat dialog
+    private Day1Controller day1Controller;
 
     // ══════════════════════════════════════════════════════════════════════
     void Awake()
@@ -102,6 +104,17 @@ public class PamanBaik : MonoBehaviour
         // Auto-temukan NpcDialog di GameObject yang sama jika belum di-assign
         if (dialog == null)
             dialog = GetComponent<NpcDialog>();
+
+        // Temukan Day1Controller di scene untuk freeze/resume karakter
+        day1Controller = FindFirstObjectByType<Day1Controller>();
+
+        // Auto-subscribe: saat NpcDialog selesai → bebaskan karakter
+        if (dialog != null && day1Controller != null)
+        {
+            // Hapus listener lama dulu agar tidak double-subscribe
+            dialog.onDialogEnd.RemoveListener(day1Controller.ResumePlayer);
+            dialog.onDialogEnd.AddListener(day1Controller.ResumePlayer);
+        }
 
         // Setup shadow di Start agar sr.sprite & sorting layer sudah siap
         SetupShadow();
@@ -201,6 +214,8 @@ public class PamanBaik : MonoBehaviour
                 if (arriveTimer >= dialogDelay)
                 {
                     dialogTriggered = true;
+                    // Bekukan karakter Rara selama dialog berlangsung
+                    if (day1Controller != null) day1Controller.FreezePlayer();
                     if (!dialog.IsPlaying) dialog.Play();
                 }
             }
