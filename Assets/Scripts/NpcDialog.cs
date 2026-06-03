@@ -105,10 +105,16 @@ public class NpcDialog : MonoBehaviour
     public TMP_FontAsset fontAsset;
 
     [Header("Sprite Box Dialog")]
-    [Tooltip("Drag sprite kotak dialog kayu ke sini. Layout portrait+banner otomatis menyesuaikan.")]
+    [Tooltip("Aset DialogBoxLayout bersama. Jika di-assign, nilainya akan menimpa\n" +
+             "semua field tata letak + sprite di komponen ini.")]
+    public DialogBoxLayout layout;
+    [Tooltip("Drag sprite kotak dialog kayu ke sini. Layout portrait+banner otomatis menyesuaikan.\n" +
+             "Saat Play di Editor, auto-load dari boxDialogSpritePath jika field ini kosong.")]
     public Sprite dialogBoxSprite;
     [Tooltip("Sprite lencana nama kecil (banner berujung diamond). Opsional — jika kosong diganti warna solid.")]
     public Sprite nameBannerSprite;
+    [Tooltip("Path sprite box dialog (relatif Assets/). Diambil dari folder UI day 1/8.png agar sama dengan Day1Intro.")]
+    public string boxDialogSpritePath = "sprites/UI day 1/8.png";
 
     [Header("Posisi & Ukuran Box (berlaku saat pakai dialogBoxSprite)")]
     [Tooltip("Posisi tengah horizontal panel (0=kiri, 1=kanan) — sama seperti PrologScreen panelCenterX")]
@@ -233,6 +239,73 @@ public class NpcDialog : MonoBehaviour
     }
     [ContextMenu(">>> TEST: Tampilkan Dialog Sekarang (Play Mode)")]
     public void TestPlay() => Play();
+
+#if UNITY_EDITOR
+    void Reset()
+    {
+        TryLoadBoxSprite(overwrite: true);
+    }
+
+    [ContextMenu("▶ Muat Sprite Box Dialog (UI day 1/8.png) + Layout")]
+    void TryLoadBoxSpriteMenu()
+    {
+        TryLoadBoxSprite(overwrite: true);
+        Debug.Log("[NpcDialog] dialogBoxSprite=" + (dialogBoxSprite != null ? dialogBoxSprite.name : "null"));
+    }
+
+    void TryLoadBoxSprite(bool overwrite)
+    {
+        if (string.IsNullOrEmpty(boxDialogSpritePath)) return;
+        if (!overwrite && dialogBoxSprite != null) return;
+        var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/" + boxDialogSpritePath);
+        if (sp != null)
+        {
+            dialogBoxSprite = sp;
+            // CATATAN: TIDAK auto-apply preset di sini agar tweak slider Inspector
+            // tidak ke-overwrite. Panggil ApplyLayoutPreset8 manual via context menu.
+            UnityEditor.EditorUtility.SetDirty(this);
+        }
+        else
+        {
+            Debug.LogWarning("[NpcDialog] Sprite tidak ditemukan: Assets/" + boxDialogSpritePath);
+        }
+    }
+#endif
+
+    // Preset tata letak yang pas untuk sprite 8.png (1325×547, rasio ~2.42:1).
+    // Frame portrait kiri-atas (X 5.7–24.9%, Y 38–87%), banner kayu di bawah
+    // portrait (X 5.7–25.3%, Y 19.6–33.3%), area teks besar di kanan.
+    [ContextMenu("▶ Terapkan Layout Box untuk 8.png")]
+    public void ApplyLayoutPreset8()
+    {
+        panelCenterX    = 0.50f;
+        panelCenterY    = 0.215f;
+        panelWidthFrac  = 0.96f;
+        panelHeightFrac = 0.395f;
+
+        portraitCenterX        = 0.153f;
+        portraitCenterY        = 0.625f;
+        portraitSizeW          = 0.192f;
+        portraitSizeH          = 0.494f;
+        portraitPreserveAspect = true;
+
+        bannerAnchorMin = new Vector2(0.057f, 0.196f);
+        bannerAnchorMax = new Vector2(0.253f, 0.333f);
+
+        textAnchorMin = new Vector2(0.345f, 0.20f);
+        textAnchorMax = new Vector2(0.955f, 0.78f);
+
+        hintCenterX = 0.82f;
+        hintCenterY = 0.13f;
+        hintSizeW   = 0.30f;
+        hintSizeH   = 0.12f;
+
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+#endif
+        if (Application.isPlaying) ApplyLayout();
+    }
+
     // ══════════════════════════════════════════════════════════════════════
     void Update()
     {
@@ -259,6 +332,13 @@ public class NpcDialog : MonoBehaviour
             Debug.LogWarning("[NpcDialog] Daftar 'lines' kosong! Isi dulu di Inspector.");
             return;
         }
+
+#if UNITY_EDITOR
+        // Hanya load sprite kalau field kosong — JANGAN overwrite tweak Inspector.
+        TryLoadBoxSprite(overwrite: false);
+#endif
+        // Jika DialogBoxLayout di-assign, salin nilainya ke field lokal.
+        ApplyLayoutAsset();
 
         Debug.Log("[NpcDialog] Play() dipanggil — " + lines.Length + " baris dialog.");
         BuildUIIfNeeded();
@@ -601,10 +681,98 @@ public class NpcDialog : MonoBehaviour
         // tidak bisa menimpa foto yang sedang tampil.
     }
 
+    [System.NonSerialized] bool _inOnValidate;
     void OnValidate()
     {
+        // CATATAN: jangan panggil ApplyLayoutAsset() di sini.
+        // Sinkronisasi dari aset DialogBoxLayout adalah satu arah:
+        // DialogBoxLayout.OnValidate → push ke komponen. Memanggil balik
+        // di komponen menyebabkan loop tak terbatas (StackOverflow).
+        if (_inOnValidate) return;
+        _inOnValidate = true;
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.delayCall += () =>
+        {
+            if (this == null) { _inOnValidate = false; return; }
+            ApplyLayout();
+            _inOnValidate = false;
+        };
+#else
         ApplyLayout();
+        _inOnValidate = false;
+#endif
     }
+
+    /// <summary>Salin field DialogBoxLayout ke field lokal jika layout di-assign.</summary>
+#if UNITY_EDITOR
+    [ContextMenu("▶ Sync sekarang dari Layout")]
+    void SyncFromLayoutMenu()
+    {
+        ApplyLayoutAsset();
+        UnityEditor.EditorUtility.SetDirty(this);
+        if (!Application.isPlaying)
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        Debug.Log("[NpcDialog] Disinkron dari layout: " + (layout != null ? layout.name : "<null>"));
+    }
+#endif
+    public void ApplyLayoutAsset()
+    {
+        if (layout == null) return;
+        if (layout.boxSprite        != null) dialogBoxSprite  = layout.boxSprite;
+        if (layout.nameBannerSprite != null) nameBannerSprite = layout.nameBannerSprite;
+
+        panelCenterX    = layout.panelCenterX;
+        panelCenterY    = layout.panelCenterY;
+        panelWidthFrac  = layout.panelWidthFrac;
+        panelHeightFrac = layout.panelHeightFrac;
+
+        portraitCenterX        = layout.portraitCenterX;
+        portraitCenterY        = layout.portraitCenterY;
+        portraitSizeW          = layout.portraitSizeW;
+        portraitSizeH          = layout.portraitSizeH;
+        portraitPreserveAspect = layout.portraitPreserveAspect;
+
+        bannerAnchorMin = layout.bannerAnchorMin;
+        bannerAnchorMax = layout.bannerAnchorMax;
+        textAnchorMin   = layout.textAnchorMin;
+        textAnchorMax   = layout.textAnchorMax;
+
+        hintCenterX = layout.hintCenterX;
+        hintCenterY = layout.hintCenterY;
+        hintSizeW   = layout.hintSizeW;
+        hintSizeH   = layout.hintSizeH;
+    }
+
+#if UNITY_EDITOR
+    /// <summary>One-click setup Cara B — sama dengan tombol di Day1Intro.</summary>
+    [ContextMenu("▶ Buat + Assign DialogBoxLayout (One-Click Cara B)")]
+    void CreateAndAssignLayoutAsset()
+    {
+        const string assetPath = "Assets/DialogLayoutDefault.asset";
+        var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<DialogBoxLayout>(assetPath);
+        if (asset == null)
+        {
+            asset = ScriptableObject.CreateInstance<DialogBoxLayout>();
+            UnityEditor.AssetDatabase.CreateAsset(asset, assetPath);
+            Debug.Log("[NpcDialog] Aset baru dibuat: " + assetPath);
+        }
+
+        var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/sprites/UI day 1/8.png");
+        if (sp != null) asset.boxSprite = sp;
+        asset.ResetToPreset8();
+
+        layout = asset;
+        ApplyLayoutAsset();
+
+        UnityEditor.EditorUtility.SetDirty(asset);
+        UnityEditor.EditorUtility.SetDirty(this);
+        UnityEditor.AssetDatabase.SaveAssets();
+
+        Debug.Log("[NpcDialog] Layout di-assign: " + assetPath +
+                  ". Drag aset ini ke field 'Layout' pada Day1Intro & DialogManager juga.");
+    }
+#endif
 
     // Tampilkan sprite di kotak potret
     void ApplyProfile(Sprite spr)
@@ -699,6 +867,15 @@ public class NpcDialog : MonoBehaviour
         scaler.referenceResolution = new Vector2(1920f, 1080f);
         scaler.matchWidthOrHeight  = 0.5f;
         canvasGO.AddComponent<GraphicRaycaster>();
+
+        // ── EventSystem — wajib agar tombol pilihan merespon klik ──────────
+        if (FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
+        {
+            var esGO = new GameObject("EventSystem");
+            DontDestroyOnLoad(esGO);
+            esGO.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            esGO.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+        }
 
         // ── 2) Panel utama ─────────────────────────────────────────────────
         panelRoot = new GameObject("Panel");

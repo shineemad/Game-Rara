@@ -47,3 +47,6 @@ TagManager:
   - name: karakter
     uniqueID: 336527801
     locked: 0
+  - name: npc
+    uniqueID: 3288416075
+    locked: 0

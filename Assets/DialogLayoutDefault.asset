@@ -1,0 +1,33 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f81ba975768597d4fae6d7a2c5fcb42f, type: 3}
+  m_Name: DialogLayoutDefault
+  m_EditorClassIdentifier: 
+  boxSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
+  nameBannerSprite: {fileID: 0}
+  panelCenterX: 0.5
+  panelCenterY: 0.219
+  panelWidthFrac: 0.939
+  panelHeightFrac: 0.395
+  portraitCenterX: 0.14
+  portraitCenterY: 0.584
+  portraitSizeW: 0.189
+  portraitSizeH: 0.56
+  portraitPreserveAspect: 0
+  bannerAnchorMin: {x: 0.1, y: 0.1}
+  bannerAnchorMax: {x: 0.253, y: 0.333}
+  textAnchorMin: {x: 0.31, y: 0.55}
+  textAnchorMax: {x: 0.84, y: 0.76}
+  hintCenterX: 0.798
+  hintCenterY: 0.242
+  hintSizeW: 0.296
+  hintSizeH: 0.12

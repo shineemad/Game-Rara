@@ -28,6 +28,26 @@ public class PathEnvironment : MonoBehaviour
     public Color camBgJalanRamai = new Color(0.35f, 0.65f, 0.90f, 1f);
     public Color camBgGangSepi   = new Color(0.08f, 0.06f, 0.10f, 1f);
 
+    [Header("── BATAS KAMERA & PLAYER — Jalan Ramai ──")]
+    [Tooltip("Batas kiri dunia saat di Jalan Ramai")]
+    public float ramaiMinX = 18f;
+    [Tooltip("Batas kanan dunia saat di Jalan Ramai")]
+    public float ramaiMaxX = 80f;
+    [Tooltip("Batas kiri gerak player saat di Jalan Ramai")]
+    public float ramaiPlayerMinX = 18f;
+    [Tooltip("Batas kanan gerak player saat di Jalan Ramai")]
+    public float ramaiPlayerMaxX = 80f;
+
+    [Header("── BATAS KAMERA & PLAYER — Gang Sepi ──")]
+    [Tooltip("Batas kiri dunia saat di Gang Sepi")]
+    public float gangMinX = 18f;
+    [Tooltip("Batas kanan dunia saat di Gang Sepi")]
+    public float gangMaxX = 80f;
+    [Tooltip("Batas kiri gerak player saat di Gang Sepi")]
+    public float gangPlayerMinX = 18f;
+    [Tooltip("Batas kanan gerak player saat di Gang Sepi")]
+    public float gangPlayerMaxX = 80f;
+
     [Header("── PENCAHAYAAN ──")]
     public Color ambientJalanRamai         = new Color(1f, 0.95f, 0.85f, 1f);
     public Color ambientGangSepi           = new Color(0.25f, 0.22f, 0.30f, 1f);
@@ -53,12 +73,16 @@ public class PathEnvironment : MonoBehaviour
     public UnityEvent onGangSepiAktif;
 
     private Transform playerTransform;
+    private CameraFollow cameraFollow;
+    private player       playerScript;
 
     // ══════════════════════════════════════════════════════════════════════
     void Start()
     {
         if (mainCamera == null) mainCamera = Camera.main;
+        if (mainCamera != null) cameraFollow = mainCamera.GetComponent<CameraFollow>();
         playerTransform = GameObject.FindWithTag("Player")?.transform;
+        if (playerTransform != null) playerScript = playerTransform.GetComponent<player>();
 
         if (jalanRamai == null)
             Debug.LogWarning("[PathEnvironment] Field 'Jalan Ramai' belum di-assign!");
@@ -104,6 +128,8 @@ public class PathEnvironment : MonoBehaviour
         else Debug.LogWarning("[PathEnvironment] jalanRamai NULL!");
 
         if (mainCamera != null) mainCamera.backgroundColor = camBgJalanRamai;
+        TerapkanBatasKamera(ramaiMinX, ramaiMaxX);
+        TerapkanBatasPlayer(ramaiPlayerMinX, ramaiPlayerMaxX);
         StopAllCoroutines();
         StartCoroutine(TransisiAmbient(ambientJalanRamai));
         StartCoroutine(TampilkanOverlay(overlayJudulRamai, overlaySubRamai,
@@ -124,6 +150,8 @@ public class PathEnvironment : MonoBehaviour
         else Debug.LogWarning("[PathEnvironment] gangSepi NULL!");
 
         if (mainCamera != null) mainCamera.backgroundColor = camBgGangSepi;
+        TerapkanBatasKamera(gangMinX, gangMaxX);
+        TerapkanBatasPlayer(gangPlayerMinX, gangPlayerMaxX);
         StopAllCoroutines();
         StartCoroutine(TransisiAmbient(ambientGangSepi));
         StartCoroutine(TampilkanOverlay(overlayJudulGang, overlaySubGang,
@@ -134,6 +162,24 @@ public class PathEnvironment : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
     // INTERNAL
     // ══════════════════════════════════════════════════════════════════════
+
+    void TerapkanBatasKamera(float minX, float maxX)
+    {
+        if (cameraFollow == null) return;
+        cameraFollow.useBounds = true;
+        cameraFollow.minX = minX;
+        cameraFollow.maxX = maxX;
+        Debug.Log($"[PathEnvironment] Batas kamera: minX={minX} maxX={maxX}");
+    }
+
+    void TerapkanBatasPlayer(float minX, float maxX)
+    {
+        if (playerScript == null) return;
+        playerScript.boundMinX = minX;
+        playerScript.boundMaxX = maxX;
+        playerScript.useBounds = true;
+        Debug.Log($"[PathEnvironment] Batas player: minX={minX} maxX={maxX}");
+    }
 
     void SembunyikanBackgroundAwal()
     {
@@ -296,3 +342,4 @@ public class PathEnvironment : MonoBehaviour
     }
 #endif
 }
+

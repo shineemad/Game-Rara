@@ -37,6 +37,11 @@ public class player : MonoBehaviour
     ///   1.0f → normal / diam
     [HideInInspector] public float voiceSpeedMultiplier = 1f;
 
+    /// Batas pergerakan horizontal player (diset oleh PathEnvironment).
+    [HideInInspector] public bool  useBounds = false;
+    [HideInInspector] public float boundMinX = -999f;
+    [HideInInspector] public float boundMaxX =  999f;
+
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -95,6 +100,14 @@ public class player : MonoBehaviour
         // ── gerak fisika ─────────────────────────────────────────────
         float speed  = (isRunning ? runSpeed : moveSpeed) * voiceSpeedMultiplier;
         rb.velocity  = direction * speed;
+
+        // ── clamp posisi ke batas jalur ──────────────────────────────
+        if (useBounds)
+        {
+            Vector3 pos = transform.position;
+            pos.x = Mathf.Clamp(pos.x, boundMinX, boundMaxX);
+            transform.position = pos;
+        }
 
         // ── flip sprite ─────────────────────────────────────────────
         if      (horizontal > 0f) spriteRenderer.flipX = false;
@@ -172,3 +185,4 @@ public class player : MonoBehaviour
     }
 #endif
 }
+

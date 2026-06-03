@@ -112,10 +112,23 @@ public class Day1Intro : MonoBehaviour
     // STYLE BOX DIALOG (NpcDialog style)
     // ══════════════════════════════════════════════════════════════════════
 
-    [Header("──────── STYLE BOX DIALOG ────────")]
-    [Tooltip("Sprite kotak dialog (mis. kotak kayu). Sama seperti NpcDialog.dialogBoxSprite.\n" +
+    [Header("──────── SPRITE OVERLAY & DIALOG ────────")]
+    [Tooltip("Aset DialogBoxLayout bersama. Jika di-assign, NILAINYA akan menimpa\n" +
+             "boxDialogSprite + semua field tata letak panel/portrait/banner/teks/hint.\n" +
+             "Cukup edit aset → semua box dialog (Day1Intro, NpcDialog, DialogManager) ikut berubah.")]
+    public DialogBoxLayout layout;
+    [Tooltip("Sprite background overlay judul HARI 1. Auto-load dari UI day 1/6.png.\n" +
+             "Kosong = pakai warna solid warnaBackground.")]
+    public Sprite overlayBgSprite;
+
+    [Tooltip("Sprite kotak dialog narasi. Auto-load dari UI day 1/8.png.\n" +
              "Kosong = pakai panel gelap solid.")]
     public Sprite boxDialogSprite;
+
+    [Tooltip("Path sprite background overlay (relatif Assets/).")]
+    public string overlayBgSpritePath  = "sprites/UI day 1/6.png";
+    [Tooltip("Path sprite kotak dialog narasi (relatif Assets/).")]
+    public string boxDialogSpritePath  = "sprites/UI day 1/8.png";
 
     [Tooltip("Sprite banner nama pembicara (lencana kecil). Sama seperti NpcDialog.nameBannerSprite.\n" +
              "Kosong = pakai kotak kuning solid.")]
@@ -131,41 +144,41 @@ public class Day1Intro : MonoBehaviour
     [Tooltip("Posisi tengah horizontal panel (0=kiri, 1=kanan)")]
     [Range(0f, 1f)] public float panelCenterX   = 0.50f;
     [Tooltip("Posisi tengah vertikal panel (0=bawah, 1=atas)")]
-    [Range(0f, 1f)] public float panelCenterY   = 0.178f;
+    [Range(0f, 1f)] public float panelCenterY   = 0.215f;
     [Tooltip("Lebar panel (fraksi layar, 0–1)")]
-    [Range(0.1f, 1f)] public float panelWidthFrac  = 0.924f;
+    [Range(0.1f, 1f)] public float panelWidthFrac  = 0.96f;
     [Tooltip("Tinggi panel (fraksi layar, 0–1)")]
-    [Range(0.02f, 0.5f)] public float panelHeightFrac = 0.291f;
+    [Range(0.02f, 0.5f)] public float panelHeightFrac = 0.395f;
 
     [Header("Tata Letak Box (anchor 0–1, hanya berlaku saat pakai sprite)")]
     [Tooltip("Posisi tengah horizontal portrait dalam panel (0=kiri, 1=kanan)")]
-    [Range(0f, 1f)] public float portraitCenterX = 0.15f;
+    [Range(0f, 1f)] public float portraitCenterX = 0.153f;
     [Tooltip("Posisi tengah vertikal portrait dalam panel (0=bawah, 1=atas)")]
-    [Range(0f, 1f)] public float portraitCenterY = 0.505f;
+    [Range(0f, 1f)] public float portraitCenterY = 0.625f;
     [Tooltip("Lebar portrait sebagai fraksi lebar panel")]
-    [Range(0.02f, 0.6f)] public float portraitSizeW = 0.186f;
+    [Range(0.02f, 0.6f)] public float portraitSizeW = 0.192f;
     [Tooltip("Tinggi portrait sebagai fraksi tinggi panel")]
-    [Range(0.02f, 1f)] public float portraitSizeH = 0.622f;
+    [Range(0.02f, 1f)] public float portraitSizeH = 0.494f;
     [Tooltip("Pertahankan rasio aspek portrait (centang = tidak stretch)")]
-    public bool portraitPreserveAspect = false;
+    public bool portraitPreserveAspect = true;
     [Tooltip("Banner nama: anchor kiri-bawah (X=kiri, Y=bawah)")]
-    public Vector2 bannerAnchorMin = new Vector2(0.25f, 0.58f);
+    public Vector2 bannerAnchorMin = new Vector2(0.057f, 0.196f);
     [Tooltip("Banner nama: anchor kanan-atas (X=kanan, Y=atas)")]
-    public Vector2 bannerAnchorMax = new Vector2(0.49f, 0.86f);
+    public Vector2 bannerAnchorMax = new Vector2(0.253f, 0.333f);
     [Tooltip("Area teks: anchor kiri-bawah")]
-    public Vector2 textAnchorMin   = new Vector2(0.25f, 0.10f);
+    public Vector2 textAnchorMin   = new Vector2(0.345f, 0.20f);
     [Tooltip("Area teks: anchor kanan-atas")]
-    public Vector2 textAnchorMax   = new Vector2(0.96f, 0.57f);
+    public Vector2 textAnchorMax   = new Vector2(0.955f, 0.78f);
 
     [Header("Posisi Petunjuk Lanjut (geser di sini)")]
     [Tooltip("Posisi tengah horizontal petunjuk dalam panel (0=kiri, 1=kanan)")]
-    [Range(0f, 1f)] public float hintCenterX = 0.74f;
+    [Range(0f, 1f)] public float hintCenterX = 0.82f;
     [Tooltip("Posisi tengah vertikal petunjuk dalam panel (0=bawah, 1=atas)")]
-    [Range(0f, 1f)] public float hintCenterY = 0.32f;
+    [Range(0f, 1f)] public float hintCenterY = 0.13f;
     [Tooltip("Lebar area petunjuk (fraksi lebar panel)")]
-    [Range(0.05f, 1f)] public float hintSizeW = 0.38f;
+    [Range(0.05f, 1f)] public float hintSizeW = 0.30f;
     [Tooltip("Tinggi area petunjuk (fraksi tinggi panel)")]
-    [Range(0.02f, 0.5f)] public float hintSizeH = 0.18f;
+    [Range(0.02f, 0.5f)] public float hintSizeH = 0.12f;
 
     [Header("Warna Box (berlaku jika tidak pakai sprite)")]
     public Color warnaPanel   = new Color(0f, 0f, 0f, 0.82f);
@@ -201,8 +214,176 @@ public class Day1Intro : MonoBehaviour
     public UnityEvent onIntroSelesai;
 
     // ══════════════════════════════════════════════════════════════════════
-    // PRESET — Klik kanan komponen di Inspector → Load Preset
+    // EDITOR AUTO-LOAD SPRITES
     // ══════════════════════════════════════════════════════════════════════
+
+#if UNITY_EDITOR
+    void Reset()
+    {
+        TryLoadSprites(overwrite: true);
+    }
+
+    [ContextMenu("▶ Muat Sprite Overlay & Dialog Default (6.png / 8.png)")]
+    void TryLoadSpritesMenu()
+    {
+        TryLoadSprites(overwrite: true);
+        Debug.Log("[Day1Intro] overlayBgSprite=" + (overlayBgSprite != null ? overlayBgSprite.name : "null")
+                + "  boxDialogSprite=" + (boxDialogSprite != null ? boxDialogSprite.name : "null"));
+    }
+
+    /// <summary>
+    /// One-click setup: buat (jika belum ada) aset DialogBoxLayout di
+    /// Assets/DialogLayoutDefault.asset, isi dengan preset 8.png + sprite-nya,
+    /// lalu auto-assign ke field `layout` komponen ini. Setelah itu,
+    /// Day1Intro/NpcDialog/DialogManager yang juga punya field Layout cukup
+    /// di-drag aset yang sama → satu sumber kebenaran.
+    /// </summary>
+    [ContextMenu("▶ Buat + Assign DialogBoxLayout (One-Click Cara B)")]
+    void CreateAndAssignLayoutAsset()
+    {
+        const string assetPath = "Assets/DialogLayoutDefault.asset";
+        var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<DialogBoxLayout>(assetPath);
+        if (asset == null)
+        {
+            asset = ScriptableObject.CreateInstance<DialogBoxLayout>();
+            UnityEditor.AssetDatabase.CreateAsset(asset, assetPath);
+            Debug.Log("[Day1Intro] Aset baru dibuat: " + assetPath);
+        }
+
+        // Isi sprite default + reset preset 8
+        var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/sprites/UI day 1/8.png");
+        if (sp != null) asset.boxSprite = sp;
+        asset.ResetToPreset8();
+
+        // Assign ke field layout komponen ini + apply ke field lokal
+        layout = asset;
+        ApplyLayoutAsset();
+
+        UnityEditor.EditorUtility.SetDirty(asset);
+        UnityEditor.EditorUtility.SetDirty(this);
+        UnityEditor.AssetDatabase.SaveAssets();
+
+        Debug.Log("[Day1Intro] Layout di-assign: " + assetPath +
+                  ". Drag aset ini ke field 'Layout' pada NpcDialog & DialogManager juga.");
+    }
+
+    void TryLoadSprites(bool overwrite)
+    {
+        bool dirty = false;
+        if ((overwrite || overlayBgSprite == null) && !string.IsNullOrEmpty(overlayBgSpritePath))
+        {
+            var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/" + overlayBgSpritePath);
+            if (sp != null) { overlayBgSprite = sp; dirty = true; }
+            else Debug.LogWarning("[Day1Intro] Sprite tidak ditemukan: Assets/" + overlayBgSpritePath);
+        }
+        if ((overwrite || boxDialogSprite == null) && !string.IsNullOrEmpty(boxDialogSpritePath))
+        {
+            var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/" + boxDialogSpritePath);
+            if (sp != null)
+            {
+                boxDialogSprite = sp;
+                // Auto-sesuaikan tata letak agar pas dengan sprite 8.png
+                ApplyLayoutPreset8();
+                dirty = true;
+            }
+            else Debug.LogWarning("[Day1Intro] Sprite tidak ditemukan: Assets/" + boxDialogSpritePath);
+        }
+        if (dirty) UnityEditor.EditorUtility.SetDirty(this);
+    }
+#endif
+
+    // ══════════════════════════════════════════════════════════════════════
+    // PRESET LAYOUT untuk sprite 8.png (kotak dialog)
+    // ══════════════════════════════════════════════════════════════════════
+
+    [ContextMenu("▶ Terapkan Layout Box untuk 8.png")]
+    public void ApplyLayoutPreset8()
+    {
+        // Sprite 8.png rasio ~2.42:1 (1325×547). Pada layar 16:9 dengan
+        // panelWidthFrac=0.96 → tinggi proporsional ≈ 0.96/2.42 ≈ 0.40.
+        panelCenterX    = 0.50f;
+        panelCenterY    = 0.215f;
+        panelWidthFrac  = 0.96f;
+        panelHeightFrac = 0.395f;
+
+        // Frame portrait kiri-atas. Pixel sprite X 75–330, Y 70–340.
+        portraitCenterX        = 0.153f;
+        portraitCenterY        = 0.625f;
+        portraitSizeW          = 0.192f;
+        portraitSizeH          = 0.494f;
+        portraitPreserveAspect = true;
+
+        // Banner nama kayu (di bawah frame portrait). Pixel X 75–335, Y 365–440.
+        bannerAnchorMin = new Vector2(0.057f, 0.196f);
+        bannerAnchorMax = new Vector2(0.253f, 0.333f);
+
+        // Area teks besar di kanan. Pixel X 440–1280, Y 70–475. Padding aman dari border.
+        textAnchorMin = new Vector2(0.345f, 0.20f);
+        textAnchorMax = new Vector2(0.955f, 0.78f);
+
+        // Hint "▼ SPACE / Klik untuk lanjut" — pojok kanan-bawah area teks
+        hintCenterX = 0.82f;
+        hintCenterY = 0.13f;
+        hintSizeW   = 0.30f;
+        hintSizeH   = 0.12f;
+
+        fontSizeNama    = 30;
+        fontSizeTeksDlg = 30;
+        fontSizeHint    = 18;
+
+        warnaNama    = new Color(1f,    0.85f, 0.30f, 1f);
+        warnaTeksDlg = new Color(1f,    0.96f, 0.88f, 1f);
+        warnaHintDlg = new Color(1f,    1f,    1f,    0.55f);
+
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+#endif
+        ApplyLayout();
+    }
+
+    /// <summary>
+    /// Preset Day Intro — variasi preset 8 dengan banner & teks digeser,
+    /// portrait sedikit lebih kecil. Cocok untuk box dialog narasi Day 1.
+    /// </summary>
+    [ContextMenu("▶ Terapkan Layout Day Intro")]
+    public void ApplyLayoutPresetDayIntro()
+    {
+        panelCenterX    = 0.50f;
+        panelCenterY    = 0.219f;
+        panelWidthFrac  = 0.939f;
+        panelHeightFrac = 0.395f;
+
+        portraitCenterX        = 0.14f;
+        portraitCenterY        = 0.584f;
+        portraitSizeW          = 0.189f;
+        portraitSizeH          = 0.56f;
+        portraitPreserveAspect = false;
+
+        bannerAnchorMin = new Vector2(0.10f,  0.10f);
+        bannerAnchorMax = new Vector2(0.253f, 0.333f);
+
+        textAnchorMin = new Vector2(0.31f, 0.55f);
+        textAnchorMax = new Vector2(0.84f, 0.76f);
+
+        hintCenterX = 0.798f;
+        hintCenterY = 0.242f;
+        hintSizeW   = 0.296f;
+        hintSizeH   = 0.12f;
+
+        fontSizeNama    = 30;
+        fontSizeTeksDlg = 30;
+        fontSizeHint    = 18;
+
+        warnaNama    = new Color(1f, 0.85f, 0.30f, 1f);
+        warnaTeksDlg = new Color(1f, 0.96f, 0.88f, 1f);
+        warnaHintDlg = new Color(1f, 1f,    1f,    0.55f);
+
+#if UNITY_EDITOR
+        UnityEditor.EditorUtility.SetDirty(this);
+#endif
+        ApplyLayout();
+    }
+
 
     /// <summary>
     /// Muat preset layout box dialog yang cocok dengan sprite NpcDialog Day 1.
@@ -358,7 +539,28 @@ public class Day1Intro : MonoBehaviour
         if (_tmpHint  != null) { _tmpHint.color  = warnaHintDlg; _tmpHint.fontSize  = fontSizeHint;   }
     }
 
-    void OnValidate() => ApplyLayout();
+    [System.NonSerialized] bool _inOnValidate;
+    void OnValidate()
+    {
+        // CATATAN: jangan panggil ApplyLayoutAsset() di sini.
+        // Sinkronisasi dari aset DialogBoxLayout dilakukan satu arah:
+        // DialogBoxLayout.OnValidate → push ke komponen. Kalau komponen
+        // juga push balik dari aset di sini, terjadi loop tak terbatas
+        // (→ StackOverflowException).
+        if (_inOnValidate) return;
+        _inOnValidate = true;
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.delayCall += () =>
+        {
+            if (this == null) { _inOnValidate = false; return; }
+            ApplyLayout();
+            _inOnValidate = false;
+        };
+#else
+        ApplyLayout();
+        _inOnValidate = false;
+#endif
+    }
 
     // ══════════════════════════════════════════════════════════════════════
     // RUNTIME
@@ -366,7 +568,64 @@ public class Day1Intro : MonoBehaviour
 
     void Start()
     {
+#if UNITY_EDITOR
+        // Saat Play di Editor, selalu sinkronkan sprite dengan path
+        // (overwrite=true) — sprite lama yang tersimpan di scene akan diganti.
+        // Kosongkan path di Inspector kalau ingin pakai sprite manual.
+        TryLoadSprites(overwrite: true);
+#endif
+        // Jika aset DialogBoxLayout di-assign, terapkan nilai-nilainya
+        // SEBELUM coroutine intro berjalan agar UI terbentuk dari layout.
+        ApplyLayoutAsset();
         StartCoroutine(JalankanIntro());
+    }
+
+    /// <summary>
+    /// Salin nilai dari aset DialogBoxLayout ke field lokal komponen ini.
+    /// Dipanggil di Start(); juga di OnValidate() agar perubahan di aset
+    /// langsung terlihat saat Play Mode.
+    /// </summary>
+#if UNITY_EDITOR
+    [ContextMenu("▶ Sync sekarang dari Layout")]
+    void SyncFromLayoutMenu()
+    {
+        ApplyLayoutAsset();
+        UnityEditor.EditorUtility.SetDirty(this);
+        if (!Application.isPlaying)
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(
+                UnityEngine.SceneManagement.SceneManager.GetActiveScene());
+        Debug.Log("[Day1Intro] Disinkron dari layout: " + (layout != null ? layout.name : "<null>"));
+    }
+#endif
+    public void ApplyLayoutAsset()
+    {
+        if (layout == null) return;
+
+        if (layout.boxSprite        != null) boxDialogSprite  = layout.boxSprite;
+        if (layout.nameBannerSprite != null) nameBannerSprite = layout.nameBannerSprite;
+
+        panelCenterX    = layout.panelCenterX;
+        panelCenterY    = layout.panelCenterY;
+        panelWidthFrac  = layout.panelWidthFrac;
+        panelHeightFrac = layout.panelHeightFrac;
+
+        portraitCenterX        = layout.portraitCenterX;
+        portraitCenterY        = layout.portraitCenterY;
+        portraitSizeW          = layout.portraitSizeW;
+        portraitSizeH          = layout.portraitSizeH;
+        portraitPreserveAspect = layout.portraitPreserveAspect;
+
+        bannerAnchorMin = layout.bannerAnchorMin;
+        bannerAnchorMax = layout.bannerAnchorMax;
+        textAnchorMin   = layout.textAnchorMin;
+        textAnchorMax   = layout.textAnchorMax;
+
+        hintCenterX = layout.hintCenterX;
+        hintCenterY = layout.hintCenterY;
+        hintSizeW   = layout.hintSizeW;
+        hintSizeH   = layout.hintSizeH;
+
+        if (Application.isPlaying) ApplyLayout();
     }
 
     IEnumerator JalankanIntro()
@@ -424,8 +683,15 @@ public class Day1Intro : MonoBehaviour
         cg.alpha          = 0f;
         cg.blocksRaycasts = false;
 
-        // Background gelap
-        BuatImage(cGO.transform, "BG", Vector2.zero, Vector2.one, warnaBackground);
+        // Background — sprite jika tersedia, fallback warna solid
+        var bgImg = BuatImage(cGO.transform, "BG", Vector2.zero, Vector2.one, warnaBackground);
+        if (overlayBgSprite != null)
+        {
+            bgImg.sprite         = overlayBgSprite;
+            bgImg.type           = Image.Type.Simple;
+            bgImg.color          = Color.white;
+            bgImg.preserveAspect = false;
+        }
 
         // Garis dekoratif atas
         BuatImage(cGO.transform, "GarisAtas",

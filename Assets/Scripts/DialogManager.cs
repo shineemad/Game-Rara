@@ -21,6 +21,11 @@ using TMPro;
 /// </summary>
 public class DialogManager : MonoBehaviour
 {
+    [Header("Tata Letak Bersama (opsional)")]
+    [Tooltip("Aset DialogBoxLayout. Jika di-assign, panel/portrait/banner/teks/hint\n" +
+             "akan dibangun dengan anchor & sprite dari aset ini — sama dengan Day1Intro & NpcDialog.")]
+    public DialogBoxLayout layout;
+
     [Header("Panel Utama")]
     public GameObject       dialogPanel;
     public TextMeshProUGUI  speakerText;
@@ -274,45 +279,100 @@ public class DialogManager : MonoBehaviour
         scaler.matchWidthOrHeight  = 0.5f;
         canvasGO.AddComponent<GraphicRaycaster>();
 
+        // ── EventSystem — wajib agar Button/onClick merespon ───────────────
+        // Kalau scene belum punya EventSystem, tombol Lanjut & pilihan tidak
+        // akan menerima klik sama sekali (penyebab umum "button tidak merespon").
+        if (FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
+        {
+            var esGO = new GameObject("EventSystem");
+            DontDestroyOnLoad(esGO);
+            esGO.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            esGO.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+        }
+
         // ── Panel utama ────────────────────────────────────────────────────
         var panelGO = new GameObject("DialogPanel");
         panelGO.transform.SetParent(canvasGO.transform, false);
         var panelRT  = panelGO.AddComponent<RectTransform>();
-        // Posisi bawah layar (sama dengan NpcDialog default)
-        panelRT.anchorMin = new Vector2(0.03f, 0.01f);
-        panelRT.anchorMax = new Vector2(0.97f, 0.33f);
+        if (layout != null)
+        {
+            panelRT.anchorMin = layout.PanelAnchorMin;
+            panelRT.anchorMax = layout.PanelAnchorMax;
+        }
+        else
+        {
+            // Posisi bawah layar (default lama)
+            panelRT.anchorMin = new Vector2(0.03f, 0.01f);
+            panelRT.anchorMax = new Vector2(0.97f, 0.33f);
+        }
         panelRT.offsetMin = Vector2.zero;
         panelRT.offsetMax = Vector2.zero;
         var panelImg = panelGO.AddComponent<Image>();
-        panelImg.color = new Color(0f, 0f, 0f, 0.82f);
-        var outline = panelGO.AddComponent<Outline>();
-        outline.effectColor    = new Color(1f, 0.85f, 0.3f, 1f);
-        outline.effectDistance = new Vector2(3f, -3f);
+        if (layout != null && layout.boxSprite != null)
+        {
+            panelImg.sprite = layout.boxSprite;
+            panelImg.type   = Image.Type.Simple;
+            panelImg.color  = Color.white;
+        }
+        else
+        {
+            panelImg.color = new Color(0f, 0f, 0f, 0.82f);
+            var outline = panelGO.AddComponent<Outline>();
+            outline.effectColor    = new Color(1f, 0.85f, 0.3f, 1f);
+            outline.effectDistance = new Vector2(3f, -3f);
+        }
         dialogPanel = panelGO;
 
         // ── Foto pembicara ─────────────────────────────────────────────────
         var portGO = new GameObject("Portrait");
         portGO.transform.SetParent(panelGO.transform, false);
         var portRT  = portGO.AddComponent<RectTransform>();
-        portRT.anchorMin = new Vector2(0.01f, 0.05f);
-        portRT.anchorMax = new Vector2(0.18f, 0.95f);
-        portRT.offsetMin = new Vector2(8f,  8f);
-        portRT.offsetMax = new Vector2(-8f, -8f);
+        if (layout != null)
+        {
+            portRT.anchorMin = layout.PortraitAnchorMin;
+            portRT.anchorMax = layout.PortraitAnchorMax;
+            portRT.offsetMin = Vector2.zero;
+            portRT.offsetMax = Vector2.zero;
+        }
+        else
+        {
+            portRT.anchorMin = new Vector2(0.01f, 0.05f);
+            portRT.anchorMax = new Vector2(0.18f, 0.95f);
+            portRT.offsetMin = new Vector2(8f,  8f);
+            portRT.offsetMax = new Vector2(-8f, -8f);
+        }
         portraitImage = portGO.AddComponent<Image>();
-        portraitImage.preserveAspect = true;
-        portraitImage.color          = new Color(0.15f, 0.15f, 0.15f, 0.6f);
+        portraitImage.preserveAspect = (layout != null) ? layout.portraitPreserveAspect : true;
+        portraitImage.color          = new Color(1f, 1f, 1f, 1f);
         portraitImage.raycastTarget  = false;
 
         // ── Banner nama ────────────────────────────────────────────────────
         var bannerGO = new GameObject("Banner");
         bannerGO.transform.SetParent(panelGO.transform, false);
         var bannerRT  = bannerGO.AddComponent<RectTransform>();
-        bannerRT.anchorMin = new Vector2(0.20f, 0.65f);
-        bannerRT.anchorMax = new Vector2(0.55f, 0.92f);
+        if (layout != null)
+        {
+            bannerRT.anchorMin = layout.bannerAnchorMin;
+            bannerRT.anchorMax = layout.bannerAnchorMax;
+        }
+        else
+        {
+            bannerRT.anchorMin = new Vector2(0.20f, 0.65f);
+            bannerRT.anchorMax = new Vector2(0.55f, 0.92f);
+        }
         bannerRT.offsetMin = Vector2.zero;
         bannerRT.offsetMax = Vector2.zero;
         var bannerImg = bannerGO.AddComponent<Image>();
-        bannerImg.color         = new Color(0.14f, 0.09f, 0.01f, 0.92f);
+        if (layout != null && layout.nameBannerSprite != null)
+        {
+            bannerImg.sprite = layout.nameBannerSprite;
+            bannerImg.type   = Image.Type.Sliced;
+            bannerImg.color  = Color.white;
+        }
+        else
+        {
+            bannerImg.color = new Color(0.14f, 0.09f, 0.01f, 0.92f);
+        }
         bannerImg.raycastTarget = false;
 
         var speakerGO = new GameObject("SpeakerText");
@@ -333,10 +393,20 @@ public class DialogManager : MonoBehaviour
         var bodyGO = new GameObject("DialogText");
         bodyGO.transform.SetParent(panelGO.transform, false);
         var bodyRT  = bodyGO.AddComponent<RectTransform>();
-        bodyRT.anchorMin = new Vector2(0.20f, 0.06f);
-        bodyRT.anchorMax = new Vector2(0.96f, 0.63f);
-        bodyRT.offsetMin = new Vector2(8f,  4f);
-        bodyRT.offsetMax = new Vector2(-8f, -4f);
+        if (layout != null)
+        {
+            bodyRT.anchorMin = layout.textAnchorMin;
+            bodyRT.anchorMax = layout.textAnchorMax;
+            bodyRT.offsetMin = Vector2.zero;
+            bodyRT.offsetMax = Vector2.zero;
+        }
+        else
+        {
+            bodyRT.anchorMin = new Vector2(0.20f, 0.06f);
+            bodyRT.anchorMax = new Vector2(0.96f, 0.63f);
+            bodyRT.offsetMin = new Vector2(8f,  4f);
+            bodyRT.offsetMax = new Vector2(-8f, -4f);
+        }
         dialogText = bodyGO.AddComponent<TextMeshProUGUI>();
         dialogText.fontSize           = 26;
         dialogText.color              = Color.white;
@@ -348,8 +418,16 @@ public class DialogManager : MonoBehaviour
         var contGO = new GameObject("ContinueButton");
         contGO.transform.SetParent(panelGO.transform, false);
         var contRT  = contGO.AddComponent<RectTransform>();
-        contRT.anchorMin = new Vector2(0.72f, 0.04f);
-        contRT.anchorMax = new Vector2(0.97f, 0.30f);
+        if (layout != null)
+        {
+            contRT.anchorMin = layout.HintAnchorMin;
+            contRT.anchorMax = layout.HintAnchorMax;
+        }
+        else
+        {
+            contRT.anchorMin = new Vector2(0.72f, 0.04f);
+            contRT.anchorMax = new Vector2(0.97f, 0.30f);
+        }
         contRT.offsetMin = Vector2.zero;
         contRT.offsetMax = Vector2.zero;
         var contImg = contGO.AddComponent<Image>();

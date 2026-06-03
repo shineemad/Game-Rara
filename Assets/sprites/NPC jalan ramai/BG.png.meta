@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 8ba96dd59408e074d98c57bdb7708f04
+guid: c4502c473b94d53428b9c5bfa07c934e
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 8449957680324259999
-    second: jalur ramai_0
+      213: 1217519457885500660
+    second: Screenshot 2026-06-03 005526_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: jalur ramai_0
+      name: Screenshot 2026-06-03 005526_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 2680
-        height: 587
+        width: 82
+        height: 50
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -114,8 +114,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f90bfce8db7444570800000000000000
-      internalID: 8449957680324259999
+      spriteID: 4f4346a0f7f75e010800000000000000
+      internalID: 1217519457885500660
       vertices: []
       indices: 
       edges: []
@@ -130,7 +130,8 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Screenshot 2026-06-03 005526_0: 1217519457885500660
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

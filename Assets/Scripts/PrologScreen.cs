@@ -47,12 +47,21 @@ public class PrologScreen : MonoBehaviour
     public PrologSlide[] slides;
 
     [Header("Tampilan")]
-    [Tooltip("Sprite dialog yang dipakai untuk SEMUA slide. Drag sprite kotak dialog kamu ke sini.")]
+    [Tooltip("Sprite dialog yang dipakai untuk SEMUA slide. Auto-terisi dari Assets/sprites/UI day 1/9.png saat Reset.")]
     public Sprite globalDialogSprite;
+    [Tooltip("Path sprite default (relatif Assets/) untuk auto-assign di Editor.")]
+    public string defaultDialogSpritePath = "sprites/UI day 1/9.png";
+    [Tooltip("Path background prolog per slide (relatif Assets/). Urutan = urutan slide.")]
+    public string[] defaultBackgroundPaths = new string[]
+    {
+        "sprites/Backgroundnya/prolog day 1/prolog day 1.png",
+        "sprites/Backgroundnya/prolog day 1/prolog day 2.png",
+        "sprites/Backgroundnya/prolog day 1/prolog 3.png"
+    };
     [Tooltip("Padding teks dari tepi kiri/kanan panel (px di resolusi 1080). Naikkan agar teks tidak menyentuh border ornamen.")]
-    public float  panelPaddingH = 70f;
+    public float  panelPaddingH = 110f;
     [Tooltip("Padding teks dari tepi atas/bawah panel (px di resolusi 1920).")]
-    public float  panelPaddingV = 44f;
+    public float  panelPaddingV = 80f;
     public Color  titleColor     = new Color(0.25f, 0.08f, 0f, 1f);
     public Color  textColor      = new Color(0.18f, 0.06f, 0f, 1f);
     public Color  hintColor      = new Color(1f, 1f, 1f, 0.55f);
@@ -99,6 +108,16 @@ public class PrologScreen : MonoBehaviour
     [Range(0.05f, 1f)] public float btnWidth  = 1.00f;
     [Tooltip("Tinggi tombol")]
     [Range(0.02f, 0.3f)] public float btnHeight = 0.062f;
+    [Tooltip("Warna background tombol (digunakan jika Btn Sprite kosong)")]
+    public Color btnBgColor = new Color(0.05f, 0.05f, 0.08f, 0.92f);
+
+    [Header("Layout — Teks Hint")]
+    [Tooltip("Teks petunjuk di dalam tombol LANJUT")]
+    public string hintText      = "\u25bc  SPACE / KLIK UNTUK LANJUT";
+    [Tooltip("Ukuran font teks hint (0 = ikut hintFontSize)")]
+    public int    hintFontSizeOverride = 0;
+    [Tooltip("Rata teks hint")]
+    public TextAlignmentOptions hintAlign = TextAlignmentOptions.Center;
 
     [Header("Kontrol Input")]
     [Tooltip("Aktifkan agar SPACE / ENTER bisa memajukan slide (selain tombol LANJUT).")]
@@ -140,6 +159,14 @@ public class PrologScreen : MonoBehaviour
     {
         // Reset flag setiap kali scene dimuat ulang
         prologDone = false;
+
+#if UNITY_EDITOR
+        // Pastikan sprite dialog ter-assign meski lupa di Inspector
+        if (globalDialogSprite == null) TryLoadDefaultDialogSprite();
+        // Selalu sinkronkan background prolog dengan path (overwrite=true)
+        // agar sprite lama yang tersimpan di scene tergantikan.
+        TryLoadDefaultBackgrounds(overwrite: true);
+#endif
 
         if (slides == null || slides.Length == 0)
         {
@@ -378,7 +405,7 @@ public class PrologScreen : MonoBehaviour
         else
         {
             // Bar gelap semi-transparan — gaya retro bawah layar
-            btnImg.color = new Color(0.05f, 0.05f, 0.08f, 0.92f);
+            btnImg.color = btnBgColor;
             // Garis tipis atas sebagai border
             var topLine = new GameObject("TopBorder");
             topLine.transform.SetParent(btnGO.transform, false);
@@ -401,12 +428,13 @@ public class PrologScreen : MonoBehaviour
         nextButton.colors = colors;
         nextButton.onClick.AddListener(NextSlide);
 
+        int resolvedHintSize = (hintFontSizeOverride > 0) ? hintFontSizeOverride : hintFontSize + 4;
         hintTMP = MakeText(btnGO, "BtnLabel",
             new Vector2(0f, 0f), new Vector2(1f, 1f),
             new Vector2(14f, 4f), new Vector2(-14f, -4f),
-            hintFontSize + 4, new Color(1f, 1f, 1f, 0.90f),
-            TextAlignmentOptions.Center);
-        hintTMP.text      = "▼  SPACE / KLIK UNTUK LANJUT";
+            resolvedHintSize, hintColor,
+            hintAlign);
+        hintTMP.text      = hintText;
         hintTMP.fontStyle = FontStyles.Bold;
 
         StartCoroutine(BlinkHint());
@@ -536,6 +564,86 @@ public class PrologScreen : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
     // PRESET (klik kanan komponen → Load Preset)
     // ══════════════════════════════════════════════════════════════════════
+
+#if UNITY_EDITOR
+    // Auto-assign sprite dialog saat komponen pertama ditambahkan
+    void Reset()
+    {
+        TryLoadDefaultDialogSprite();
+        TryLoadDefaultBackgrounds(overwrite: true);
+    }
+
+    [ContextMenu("▶ Muat Sprite Dialog Default (UI day 1/9.png)")]
+    void TryLoadDefaultDialogSpriteMenu()
+    {
+        TryLoadDefaultDialogSprite();
+        if (globalDialogSprite != null)
+            Debug.Log($"[PrologScreen] Sprite dialog di-set: {globalDialogSprite.name}");
+        else
+            Debug.LogWarning($"[PrologScreen] Sprite tidak ditemukan di Assets/{defaultDialogSpritePath}");
+    }
+
+    [ContextMenu("▶ Muat Background Prolog Default (folder prolog day 1)")]
+    void TryLoadDefaultBackgroundsMenu()
+    {
+        TryLoadDefaultBackgrounds(overwrite: true);
+    }
+
+    void TryLoadDefaultDialogSprite()
+    {
+        if (string.IsNullOrEmpty(defaultDialogSpritePath)) return;
+        string fullPath = "Assets/" + defaultDialogSpritePath;
+        var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(fullPath);
+        if (sp != null)
+        {
+            globalDialogSprite = sp;
+            UnityEditor.EditorUtility.SetDirty(this);
+        }
+    }
+
+    void TryLoadDefaultBackgrounds(bool overwrite)
+    {
+        if (defaultBackgroundPaths == null || defaultBackgroundPaths.Length == 0) return;
+
+        // Pastikan slides[] minimal sebanyak path
+        if (slides == null || slides.Length < defaultBackgroundPaths.Length)
+        {
+            var resized = new PrologSlide[defaultBackgroundPaths.Length];
+            if (slides != null)
+                for (int i = 0; i < slides.Length && i < resized.Length; i++) resized[i] = slides[i];
+            for (int i = 0; i < resized.Length; i++)
+                if (resized[i] == null) resized[i] = new PrologSlide();
+            slides = resized;
+        }
+
+        int assigned = 0;
+        for (int i = 0; i < defaultBackgroundPaths.Length; i++)
+        {
+            if (i >= slides.Length) break;
+            if (slides[i] == null) slides[i] = new PrologSlide();
+            if (!overwrite && slides[i].backgroundSprite != null) continue;
+
+            string p = defaultBackgroundPaths[i];
+            if (string.IsNullOrEmpty(p)) continue;
+            var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/" + p);
+            if (sp != null)
+            {
+                slides[i].backgroundSprite = sp;
+                assigned++;
+            }
+            else
+            {
+                Debug.LogWarning($"[PrologScreen] Background tidak ditemukan: Assets/{p}");
+            }
+        }
+
+        if (assigned > 0)
+        {
+            UnityEditor.EditorUtility.SetDirty(this);
+            Debug.Log($"[PrologScreen] {assigned} background prolog di-assign ke slides[].");
+        }
+    }
+#endif
 
     [ContextMenu("Load Preset: Prolog Day 1 (Game Asli)")]
     void LoadPreset()

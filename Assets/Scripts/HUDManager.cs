@@ -53,12 +53,17 @@ public class HUDManager : MonoBehaviour
     [Tooltip("Sprite hati kosong. Jika kosong, pakai lingkaran abu solid.")]
     public Sprite heartEmptySprite;
 
-    [Header("Warna Navbar")]
-    public Color panelBgColor     = new Color(0.12f, 0.12f, 0.15f, 0.90f);
-    public Color dayActiveColor   = new Color(0.95f, 0.78f, 0.10f, 1f);
-    public Color dayInactiveColor = new Color(0.28f, 0.28f, 0.33f, 1f);
-    public Color gaugeFillColor   = new Color(0.92f, 0.18f, 0.18f, 1f);
-    public Color gaugeEmptyColor  = new Color(0.08f, 0.08f, 0.10f, 1f);
+    [Header("Warna Navbar (palet sunset/kayu)")]
+    [Tooltip("Warna panel HUD — coklat tua semi-transparan, selaras tema sunset/Padang.")]
+    public Color panelBgColor     = new Color(0.18f, 0.08f, 0.04f, 0.88f);
+    [Tooltip("Warna border emas pada panel HUD.")]
+    public Color panelBorderColor = new Color(0.95f, 0.72f, 0.18f, 1f);
+    [Tooltip("Warna aktif (hari sekarang) — kuning emas terang.")]
+    public Color dayActiveColor   = new Color(1f,    0.82f, 0.18f, 1f);
+    [Tooltip("Warna tidak aktif — coklat redup.")]
+    public Color dayInactiveColor = new Color(0.42f, 0.27f, 0.12f, 1f);
+    public Color gaugeFillColor   = new Color(0.96f, 0.45f, 0.10f, 1f);
+    public Color gaugeEmptyColor  = new Color(0.10f, 0.05f, 0.02f, 1f);
 
     [Header("Intro Hari")]
     public float introDuration     = 2.8f;
@@ -840,6 +845,11 @@ public class HUDManager : MonoBehaviour
             img.sprite = _sRoundRect;
             img.type   = Image.Type.Sliced;
             img.color  = bg;
+
+            // Border emas tipis agar selaras tema kayu/sunset
+            var ol = go.AddComponent<Outline>();
+            ol.effectColor    = panelBorderColor;
+            ol.effectDistance = new Vector2(2f, -2f);
         }
         return go;
     }

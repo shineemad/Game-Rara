@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 
 /// <summary>
@@ -104,6 +105,136 @@ public class PathChoiceUI : MonoBehaviour
 
     [Header("── FONT (opsional) ──")]
     public TMP_FontAsset fontAsset;
+    [Tooltip("Font khusus untuk judul. Kosongkan untuk pakai fontAsset di atas.")]
+    public TMP_FontAsset titleFontAsset;
+    [Tooltip("Font khusus untuk body. Kosongkan untuk pakai fontAsset di atas.")]
+    public TMP_FontAsset bodyFontAsset;
+    [Tooltip("Font khusus untuk label tombol. Kosongkan untuk pakai fontAsset di atas.")]
+    public TMP_FontAsset buttonFontAsset;
+
+    // ══════════════════════════════════════════════════════════════════════
+    // INSPECTOR — KUSTOMISASI TEKS (size, style, alignment, outline)
+    // Berlaku di kedua mode. Centang `overrideTextStyle` untuk aktifkan.
+    // ══════════════════════════════════════════════════════════════════════
+
+    [Header("── KUSTOMISASI TEKS (centang untuk override) ──")]
+    [Tooltip("Aktifkan agar pengaturan style teks di bawah diterapkan.")]
+    public bool overrideTextStyle = false;
+
+    [Header("   Judul")]
+    public float            titleFontSize        = 52f;
+    public FontStyles       titleFontStyle       = FontStyles.Bold;
+    public TextAlignmentOptions titleAlignment   = TextAlignmentOptions.Center;
+    [Range(-50f, 100f)] public float titleCharacterSpacing = 0f;
+    [Range(-50f, 100f)] public float titleLineSpacing      = 0f;
+    public bool             titleUseOutline      = false;
+    public Color            titleOutlineColor    = Color.black;
+    [Range(0f, 1f)] public float titleOutlineWidth = 0.2f;
+
+    [Header("   Body")]
+    public float            bodyFontSize         = 34f;
+    public FontStyles       bodyFontStyle        = FontStyles.Normal;
+    public TextAlignmentOptions bodyAlignment    = TextAlignmentOptions.Center;
+    [Range(-50f, 100f)] public float bodyCharacterSpacing = 0f;
+    [Range(-50f, 100f)] public float bodyLineSpacing      = 0f;
+    public bool             bodyUseOutline       = false;
+    public Color            bodyOutlineColor     = Color.black;
+    [Range(0f, 1f)] public float bodyOutlineWidth = 0.2f;
+
+    [Header("   Label Tombol")]
+    public float            buttonFontSize       = 42f;
+    public FontStyles       buttonFontStyle      = FontStyles.Bold;
+    public TextAlignmentOptions buttonAlignment  = TextAlignmentOptions.Center;
+    public bool             buttonUseOutline     = false;
+    public Color            buttonOutlineColor   = Color.black;
+    [Range(0f, 1f)] public float buttonOutlineWidth = 0.2f;
+
+    // ══════════════════════════════════════════════════════════════════════
+    // INSPECTOR — SPRITES (upload custom art untuk panel & tombol)
+    // Sprite di sini akan menggantikan warna solid. Berlaku di kedua mode.
+    // ══════════════════════════════════════════════════════════════════════
+
+    [Header("── SPRITES (opsional, drag image di sini) ──")]
+    [Tooltip("Sprite latar panel utama. Kosongkan untuk pakai warna solid panelBgColor.")]
+    public Sprite panelBgSprite;
+
+    [Tooltip("Sprite tombol Jalan Ramai. Kosongkan untuk pakai warna solid safeColor.")]
+    public Sprite safeButtonSprite;
+
+    [Tooltip("Sprite tombol Gang Sepi. Kosongkan untuk pakai warna solid dangerColor.")]
+    public Sprite dangerButtonSprite;
+
+    [Tooltip("Sprite overlay gelap (opsional). Kosongkan untuk pakai warna hitam transparan default.")]
+    public Sprite overlayBgSprite;
+
+    [Tooltip("Image Type untuk semua sprite (gunakan Sliced jika sprite punya 9-slice border).")]
+    public Image.Type spriteImageType = Image.Type.Sliced;
+
+    [Tooltip("Jika true, warna tint tetap diterapkan ke sprite. Jika false, sprite tampil apa adanya (warna putih).")]
+    public bool tintSpriteWithColor = false;
+
+    [Header("   Ukuran Sprite (centang untuk override)")]
+    [Tooltip("Aktifkan agar ukuran sprite di bawah diterapkan ke panel/overlay/tombol.")]
+    public bool overrideSpriteSize = false;
+
+    [Tooltip("Ukuran panel utama (lebar × tinggi, px). Anchor di-set ke center otomatis.")]
+    public Vector2 panelSize          = new Vector2(900f, 500f);
+    [Tooltip("Posisi panel (px, relatif pusat layar). 0,0 = tengah layar.")]
+    public Vector2 panelAnchoredPos   = Vector2.zero;
+
+    [Tooltip("Ukuran overlay gelap (lebar × tinggi, px). Set besar agar menutup layar penuh.")]
+    public Vector2 overlaySize        = new Vector2(1920f, 1080f);
+    [Tooltip("Jika true, overlay tetap stretch fullscreen (mengabaikan overlaySize).")]
+    public bool overlayStretchFullscreen = true;
+
+    [Tooltip("Skala uniform tambahan untuk sprite tombol Safe (1 = ukuran asli).")]
+    [Range(0.1f, 5f)] public float safeButtonScale   = 1f;
+    [Tooltip("Skala uniform tambahan untuk sprite tombol Danger (1 = ukuran asli).")]
+    [Range(0.1f, 5f)] public float dangerButtonScale = 1f;
+    [Tooltip("Skala uniform tambahan untuk sprite panel (1 = ukuran asli).")]
+    [Range(0.1f, 5f)] public float panelScale        = 1f;
+
+    // ══════════════════════════════════════════════════════════════════════
+    // INSPECTOR — POSISI & UKURAN TOMBOL (override layout)
+    // Centang `overrideButtonLayout` untuk memakai nilai di bawah ini.
+    // Nilai dalam satuan piksel relatif terhadap pusat panel (anchor center).
+    // ══════════════════════════════════════════════════════════════════════
+
+    [Header("── POSISI & UKURAN TOMBOL (centang untuk override) ──")]
+    [Tooltip("Aktifkan agar nilai posisi/ukuran di bawah diterapkan ke tombol di kedua mode.")]
+    public bool overrideButtonLayout = false;
+
+    [Tooltip("Posisi tombol Jalan Ramai (px, relatif pusat panel)")]
+    public Vector2 safeButtonAnchoredPos = new Vector2(0f, 80f);
+    [Tooltip("Ukuran tombol Jalan Ramai (lebar × tinggi, px)")]
+    public Vector2 safeButtonSize        = new Vector2(700f, 120f);
+
+    [Tooltip("Posisi tombol Gang Sepi (px, relatif pusat panel)")]
+    public Vector2 dangerButtonAnchoredPos = new Vector2(0f, -80f);
+    [Tooltip("Ukuran tombol Gang Sepi (lebar × tinggi, px)")]
+    public Vector2 dangerButtonSize        = new Vector2(700f, 120f);
+
+    [Header("── LIVE EDIT (saat Play) ──")]
+    [Tooltip("Jika true: setiap perubahan Inspector (teks, sprite, ukuran, posisi, style) langsung diterapkan saat Play.")]
+    public bool liveEdit = true;
+
+    [Tooltip("Jika true: paksa panel tetap terlihat saat Play (berguna untuk mengedit tata letak). Matikan saat selesai.")]
+    public bool previewPanelInPlay = false;
+
+    [Tooltip("Otomatis non-aktifkan LayoutGroup / ContentSizeFitter pada parent saat override layout. Wajib true jika UI memakai Vertical/Horizontal/Grid Layout.")]
+    public bool autoDisableLayoutGroup = true;
+
+    [Tooltip("Tampilkan log debug di Console saat layout/sprite di-apply.")]
+    public bool debugLog = false;
+
+    [Header("── MOBILE ──")]
+    [Tooltip("Hormati Safe Area (notch/punch hole) di mobile.")]
+    public bool  useSafeArea       = true;
+    [Tooltip("Minimum touch target untuk tombol (px). Default 96 untuk anak.")]
+    public float minTouchTargetPx  = 96f;
+    [Tooltip("Auto-batasi panel agar tidak melebihi layar. 0.92 = max 92% lebar.")]
+    [Range(0.5f, 1f)] public float maxPanelWidthScreenRatio  = 0.92f;
+    [Range(0.5f, 1f)] public float maxPanelHeightScreenRatio = 0.85f;
 
     [Header("── EVENTS — sambungkan ke Day1Controller ──")]
     [Tooltip("Dipanggil saat pemain memilih Jalan Ramai")]
@@ -159,10 +290,42 @@ public class PathChoiceUI : MonoBehaviour
             usingEditorRefs = false;
             BuildUI();
         }
+
+        // Pastikan EventSystem ada — tanpa ini tombol UI tidak akan merespons klik.
+        EnsureEventSystem();
+    }
+
+    // Auto-buat EventSystem jika scene tidak punya satupun.
+    void EnsureEventSystem()
+    {
+        if (EventSystem.current != null) return;
+        var es = FindFirstObjectByType<EventSystem>();
+        if (es != null) return;
+        var go = new GameObject("EventSystem");
+        go.AddComponent<EventSystem>();
+        go.AddComponent<StandaloneInputModule>();
+        Debug.LogWarning("[PathChoiceUI] EventSystem tidak ditemukan di scene — dibuat otomatis. Tombol UI sekarang bisa diklik.");
     }
 
     void Update()
     {
+        if (Application.isPlaying)
+        {
+            ApplySafeAreaIfNeeded();
+
+            // Preview panel — independent dari liveEdit, paksa panel terlihat.
+            if (previewPanelInPlay)
+            {
+                ForceShowPanelForPreview();
+            }
+
+            // Live edit — terapkan perubahan Inspector tiap frame.
+            if (liveEdit)
+            {
+                ReapplyAllCustomization();
+            }
+        }
+
         if (shown) return;
         if (triggerOnce && triggered) return;
         if (playerTransform == null) return;
@@ -173,6 +336,174 @@ public class PathChoiceUI : MonoBehaviour
             triggered = true;
             ShowPanel();
         }
+    }
+
+    // Aktifkan panel untuk preview tanpa harus kena trigger Rara.
+    void ForceShowPanelForPreview()
+    {
+        if (usingEditorRefs)
+        {
+            if (uiRootRef != null && !uiRootRef.activeSelf)       uiRootRef.SetActive(true);
+            if (panelRootRef != null && !panelRootRef.activeSelf) panelRootRef.SetActive(true);
+        }
+        else
+        {
+            if (uiRoot != null && !uiRoot.activeSelf)       uiRoot.SetActive(true);
+            if (panelRoot != null && !panelRoot.activeSelf) panelRoot.SetActive(true);
+        }
+    }
+
+    // ══════ Safe Area (notch handling) ══════
+    Rect lastSafeArea = Rect.zero;
+    void ApplySafeAreaIfNeeded()
+    {
+        if (!useSafeArea) return;
+        Rect sa = Screen.safeArea;
+        if (sa == lastSafeArea) return;
+        lastSafeArea = sa;
+
+        if (overrideSpriteSize)
+        {
+            float maxW = sa.width  * maxPanelWidthScreenRatio;
+            float maxH = sa.height * maxPanelHeightScreenRatio;
+            panelSize = new Vector2(
+                Mathf.Min(panelSize.x, maxW),
+                Mathf.Min(panelSize.y, maxH));
+        }
+    }
+
+    // ──────────── CONTEXT MENU UNTUK TEST SAAT PLAY ────────────
+    [ContextMenu("▶ Test: Tampilkan Panel Sekarang")]
+    public void TestShowPanel()
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[PathChoiceUI] Tekan Play dulu baru pakai test ini.");
+            return;
+        }
+        // Pastikan setup sudah jalan
+        if (!usingEditorRefs && panelRoot == null)
+        {
+            Debug.LogWarning("[PathChoiceUI] Panel belum dibuat. Tunggu 1 frame setelah Play.");
+            return;
+        }
+        ShowPanel();
+        ReapplyAllCustomization();
+        Debug.Log("[PathChoiceUI] Panel di-tampilkan via ContextMenu.");
+    }
+
+    [ContextMenu("▶ Test: Sembunyikan Panel")]
+    public void TestHidePanel()
+    {
+        HidePanel();
+        shown = false;
+        triggered = false;
+    }
+
+    [ContextMenu("▶ Diagnostic: Lihat Apa Yang Ditemukan")]
+    public void DiagnosticDump()
+    {
+        string modeStr      = usingEditorRefs ? "A (Editor-Built)" : "B (Programatik)";
+        string uiRootStr    = uiRootRef    != null ? uiRootRef.name    : "NULL";
+        string panelRootStr = panelRootRef != null ? panelRootRef.name : "NULL";
+        string btnSafeStr   = btnSafeRef   != null ? btnSafeRef.name   : "NULL";
+        string btnDangerStr = btnDangerRef != null ? btnDangerRef.name : "NULL";
+
+        Debug.Log("════════ PathChoiceUI DIAGNOSTIC ════════");
+        Debug.Log("Mode             : " + modeStr);
+        Debug.Log("overrideButtonLayout = " + overrideButtonLayout + "  | overrideSpriteSize = " + overrideSpriteSize + "  | overrideTextStyle = " + overrideTextStyle);
+        Debug.Log("liveEdit          = " + liveEdit);
+        Debug.Log("---- REFS ----");
+        Debug.Log("  uiRootRef       = " + uiRootStr);
+        Debug.Log("  panelRootRef    = " + panelRootStr);
+        Debug.Log("  btnSafeRef      = " + btnSafeStr);
+        Debug.Log("  btnDangerRef    = " + btnDangerStr);
+        Debug.Log("---- HASIL PENCARIAN (FindRT) ----");
+        var rtSafe   = FindRT(btnSafeRef   != null ? btnSafeRef.transform   : null, "BtnSafe");
+        var rtDanger = FindRT(btnDangerRef != null ? btnDangerRef.transform : null, "BtnDanger");
+        string safePathStr   = rtSafe   != null ? GetPath(rtSafe)   : "TIDAK KETEMU";
+        string dangerPathStr = rtDanger != null ? GetPath(rtDanger) : "TIDAK KETEMU";
+        Debug.Log("  Safe   tombol   = " + safePathStr);
+        Debug.Log("  Danger tombol   = " + dangerPathStr);
+        if (rtSafe != null)
+        {
+            Debug.Log($"  Safe   sekarang : anchoredPos={rtSafe.anchoredPosition} size={rtSafe.sizeDelta} scale={rtSafe.localScale.x}");
+            CheckParentLayout(rtSafe);
+        }
+        if (rtDanger != null)
+        {
+            Debug.Log($"  Danger sekarang : anchoredPos={rtDanger.anchoredPosition} size={rtDanger.sizeDelta} scale={rtDanger.localScale.x}");
+            CheckParentLayout(rtDanger);
+        }
+        Debug.Log("---- INSPECTOR VALUES ----");
+        Debug.Log("  safeButtonAnchoredPos   = " + safeButtonAnchoredPos);
+        Debug.Log("  safeButtonSize          = " + safeButtonSize);
+        Debug.Log("  dangerButtonAnchoredPos = " + dangerButtonAnchoredPos);
+        Debug.Log("  dangerButtonSize        = " + dangerButtonSize);
+        Debug.Log("---- KLIK & RAYCAST ----");
+        string esStatus = EventSystem.current != null ? "OK (" + EventSystem.current.name + ")" : "NULL ⚠ tombol tak akan merespons!";
+        Debug.Log("  EventSystem.current     = " + esStatus);
+        if (btnSafeRef != null)
+        {
+            var img = btnSafeRef.GetComponent<Image>();
+            string rt = img != null ? img.raycastTarget.ToString() : "NO IMAGE";
+            Debug.Log("  Safe   button interactable=" + btnSafeRef.interactable + " raycastTarget=" + rt + " siblingIndex=" + btnSafeRef.transform.GetSiblingIndex());
+        }
+        if (btnDangerRef != null)
+        {
+            var img = btnDangerRef.GetComponent<Image>();
+            string rt = img != null ? img.raycastTarget.ToString() : "NO IMAGE";
+            Debug.Log("  Danger button interactable=" + btnDangerRef.interactable + " raycastTarget=" + rt + " siblingIndex=" + btnDangerRef.transform.GetSiblingIndex());
+        }
+        if (overlayImageRef != null)
+        {
+            Debug.Log("  Overlay raycastTarget=" + overlayImageRef.raycastTarget + " siblingIndex=" + overlayImageRef.transform.GetSiblingIndex() + "  (overlay HARUS sibling lebih awal dari Panel)");
+        }
+        Debug.Log("════════════════════════════════════════");
+    }
+
+    string GetPath(Transform t)
+    {
+        if (t == null) return "(null)";
+        string p = t.name;
+        while (t.parent != null) { t = t.parent; p = t.name + "/" + p; }
+        return p;
+    }
+
+    // Panel harus menjadi sibling terakhir agar tombolnya berada di atas overlay (raycast lolos).
+    void EnsurePanelOnTop()
+    {
+        Transform pr = panelRootRef != null ? panelRootRef.transform : (panelRoot != null ? panelRoot.transform : null);
+        if (pr != null) pr.SetAsLastSibling();
+    }
+
+    // Pastikan overlay tidak menutupi panel — kalau urutan salah, klik tombol akan dimakan overlay.
+    void EnsureOverlayDoesNotBlock()
+    {
+        Image ov = overlayImageRef;
+        if (ov == null)
+        {
+            var t = FindRT(null, "Overlay");
+            if (t != null) ov = t.GetComponent<Image>();
+        }
+        if (ov == null) return;
+        // Pindahkan overlay ke sibling pertama agar panel selalu render di atasnya.
+        ov.transform.SetAsFirstSibling();
+    }
+
+    void CheckParentLayout(RectTransform child)
+    {
+        var p = child.parent;
+        if (p == null) return;
+        var lg = p.GetComponent<LayoutGroup>();
+        var fit = p.GetComponent<ContentSizeFitter>();
+        if (lg != null)
+            Debug.LogWarning($"    ⚠ Parent '{p.name}' punya {lg.GetType().Name} (enabled={lg.enabled}) — bisa menimpa posisi/ukuran!");
+        if (fit != null)
+            Debug.LogWarning($"    ⚠ Parent '{p.name}' punya ContentSizeFitter (enabled={fit.enabled}) — bisa menimpa ukuran!");
+        var le = child.GetComponent<LayoutElement>();
+        if (le != null && !le.ignoreLayout)
+            Debug.LogWarning($"    ⚠ Child '{child.name}' punya LayoutElement (ignoreLayout={le.ignoreLayout}) — bisa mengunci ukuran!");
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -193,6 +524,10 @@ public class PathChoiceUI : MonoBehaviour
             uiRoot.SetActive(true);
             panelRoot.SetActive(true);
         }
+
+        // Pastikan panel berada di atas overlay (sibling terakhir → render paling atas → klik diterima).
+        EnsurePanelOnTop();
+        EnsureOverlayDoesNotBlock();
 
         // Bekukan Rara agar tidak jalan terus
         if (playerRb != null)
@@ -268,12 +603,388 @@ public class PathChoiceUI : MonoBehaviour
         btnDangerRef.onClick.RemoveAllListeners();
         btnDangerRef.onClick.AddListener(OnDangerButton);
 
+        // Terapkan sprite & layout custom (jika di-set di Inspector)
+        ApplyCustomSprites();
+        ApplyCustomLayout();
+        ApplyTextStyleAll();
+
         // Sembunyikan panel saat awal (panel masih terlihat di Editor agar mudah diedit)
         panelRootRef.SetActive(false);
         uiRootRef.SetActive(false);
 
         Debug.Log("[PathChoiceUI] Mode A aktif — menggunakan UI dari Editor.");
     }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // APPLY — Sprite & Layout Override (berlaku di Mode A & Mode B)
+    // ══════════════════════════════════════════════════════════════════════
+
+    void ApplyCustomSprites()
+    {
+        // Panel background
+        if (panelBgSprite != null)
+        {
+            var img = (panelRootRef != null) ? panelRootRef.GetComponent<Image>()
+                                              : (panelRoot != null ? panelRoot.GetComponent<Image>() : null);
+            if (img != null) SetSpriteOnImage(img, panelBgSprite);
+        }
+
+        // Overlay
+        if (overlayBgSprite != null)
+        {
+            Image ov = overlayImageRef;
+            if (ov == null && uiRoot != null)
+            {
+                var t = uiRoot.transform.Find("Overlay");
+                if (t != null) ov = t.GetComponent<Image>();
+            }
+            if (ov != null) SetSpriteOnImage(ov, overlayBgSprite);
+        }
+
+        // Tombol Safe
+        if (safeButtonSprite != null)
+        {
+            Image img = (btnSafeRef != null) ? btnSafeRef.GetComponent<Image>() : null;
+            if (img == null && panelRoot != null)
+            {
+                var t = panelRoot.transform.Find("BtnSafe");
+                if (t != null) img = t.GetComponent<Image>();
+            }
+            if (img != null) SetSpriteOnImage(img, safeButtonSprite);
+        }
+
+        // Tombol Danger
+        if (dangerButtonSprite != null)
+        {
+            Image img = (btnDangerRef != null) ? btnDangerRef.GetComponent<Image>() : null;
+            if (img == null && panelRoot != null)
+            {
+                var t = panelRoot.transform.Find("BtnDanger");
+                if (t != null) img = t.GetComponent<Image>();
+            }
+            if (img != null) SetSpriteOnImage(img, dangerButtonSprite);
+        }
+
+        // Terapkan ukuran sprite (panel, overlay, scale tombol)
+        ApplySpriteSizes();
+    }
+
+    void ApplySpriteSizes()
+    {
+        if (!overrideSpriteSize) return;
+
+        // — PANEL —
+        RectTransform panelRT = null;
+        if (panelRootRef != null)   panelRT = panelRootRef.GetComponent<RectTransform>();
+        else if (panelRoot != null) panelRT = panelRoot.GetComponent<RectTransform>();
+        if (panelRT != null)
+        {
+            DisableLayoutOnParent(panelRT);
+            DisableLayoutElement(panelRT);
+            panelRT.anchorMin = new Vector2(0.5f, 0.5f);
+            panelRT.anchorMax = new Vector2(0.5f, 0.5f);
+            panelRT.pivot     = new Vector2(0.5f, 0.5f);
+            panelRT.anchoredPosition = panelAnchoredPos;
+            panelRT.sizeDelta        = panelSize;
+            panelRT.localScale       = Vector3.one * panelScale;
+            if (debugLog) Debug.Log($"[PathChoiceUI] Panel rect → pos={panelAnchoredPos} size={panelSize} scale={panelScale}");
+        }
+        else if (debugLog) Debug.LogWarning("[PathChoiceUI] Panel RT tidak ditemukan — drag Panel Root Ref di Inspector.");
+
+        // — OVERLAY —
+        RectTransform ovRT = null;
+        if (overlayImageRef != null) ovRT = overlayImageRef.GetComponent<RectTransform>();
+        else
+        {
+            var t = FindRT(null, "Overlay");
+            if (t != null) ovRT = t;
+        }
+        if (ovRT != null)
+        {
+            if (overlayStretchFullscreen)
+            {
+                ovRT.anchorMin = Vector2.zero;
+                ovRT.anchorMax = Vector2.one;
+                ovRT.offsetMin = Vector2.zero;
+                ovRT.offsetMax = Vector2.zero;
+            }
+            else
+            {
+                ovRT.anchorMin = new Vector2(0.5f, 0.5f);
+                ovRT.anchorMax = new Vector2(0.5f, 0.5f);
+                ovRT.pivot     = new Vector2(0.5f, 0.5f);
+                ovRT.anchoredPosition = Vector2.zero;
+                ovRT.sizeDelta        = overlaySize;
+            }
+        }
+
+        // — SKALA TOMBOL —
+        RectTransform safeRT   = FindRT(btnSafeRef   != null ? btnSafeRef.transform   : null, "BtnSafe");
+        if (safeRT != null) safeRT.localScale = Vector3.one * safeButtonScale;
+
+        RectTransform dangerRT = FindRT(btnDangerRef != null ? btnDangerRef.transform : null, "BtnDanger");
+        if (dangerRT != null) dangerRT.localScale = Vector3.one * dangerButtonScale;
+    }
+
+    void SetSpriteOnImage(Image img, Sprite sp)
+    {
+        img.sprite = sp;
+        img.type   = spriteImageType;
+        if (!tintSpriteWithColor) img.color = Color.white;
+    }
+
+    void ApplyCustomLayout()
+    {
+        if (!overrideButtonLayout) return;
+
+        RectTransform rtSafe   = FindRT(btnSafeRef   != null ? btnSafeRef.transform   : null, "BtnSafe");
+        RectTransform rtDanger = FindRT(btnDangerRef != null ? btnDangerRef.transform : null, "BtnDanger");
+
+        if (rtSafe != null)
+        {
+            DisableLayoutOnParent(rtSafe);
+            DisableLayoutElement(rtSafe);
+            Vector2 sz = new Vector2(
+                Mathf.Max(safeButtonSize.x, minTouchTargetPx),
+                Mathf.Max(safeButtonSize.y, minTouchTargetPx));
+            ApplyRect(rtSafe, safeButtonAnchoredPos, sz);
+            if (debugLog) Debug.Log($"[PathChoiceUI] Safe rect → pos={safeButtonAnchoredPos} size={sz}");
+        }
+        else if (debugLog) Debug.LogWarning("[PathChoiceUI] rtSafe TIDAK ditemukan — drag Btn Safe Ref di Inspector atau pastikan nama child 'BtnSafe' di bawah Panel.");
+
+        if (rtDanger != null)
+        {
+            DisableLayoutOnParent(rtDanger);
+            DisableLayoutElement(rtDanger);
+            Vector2 szD = new Vector2(
+                Mathf.Max(dangerButtonSize.x, minTouchTargetPx),
+                Mathf.Max(dangerButtonSize.y, minTouchTargetPx));
+            ApplyRect(rtDanger, dangerButtonAnchoredPos, szD);
+            if (debugLog) Debug.Log($"[PathChoiceUI] Danger rect → pos={dangerButtonAnchoredPos} size={szD}");
+        }
+        else if (debugLog) Debug.LogWarning("[PathChoiceUI] rtDanger TIDAK ditemukan — drag Btn Danger Ref di Inspector atau pastikan nama child 'BtnDanger' di bawah Panel.");
+    }
+
+    // Helper: cari RectTransform dari ref langsung, atau fallback cari child by name
+    // di SEMUA kandidat parent (panelRoot, panelRootRef, dan rekursif).
+    RectTransform FindRT(Transform direct, string childName)
+    {
+        if (direct != null) return direct as RectTransform;
+
+        // Cek di panelRoot (Mode B)
+        if (panelRoot != null)
+        {
+            var t = FindDeep(panelRoot.transform, childName);
+            if (t != null) return t as RectTransform;
+        }
+        // Cek di panelRootRef (Mode A)
+        if (panelRootRef != null)
+        {
+            var t = FindDeep(panelRootRef.transform, childName);
+            if (t != null) return t as RectTransform;
+        }
+        // Cek di uiRootRef (kalau tombol berada langsung di UIRoot, bukan di Panel)
+        if (uiRootRef != null)
+        {
+            var t = FindDeep(uiRootRef.transform, childName);
+            if (t != null) return t as RectTransform;
+        }
+        return null;
+    }
+
+    Transform FindDeep(Transform parent, string name)
+    {
+        if (parent.name == name) return parent;
+        for (int i = 0; i < parent.childCount; i++)
+        {
+            var c = parent.GetChild(i);
+            if (c.name == name) return c;
+            var r = FindDeep(c, name);
+            if (r != null) return r;
+        }
+        return null;
+    }
+
+    // Non-aktifkan LayoutGroup pada parent (jika ada) supaya anchoredPosition/sizeDelta tidak ditimpa tiap frame.
+    void DisableLayoutOnParent(RectTransform child)
+    {
+        if (!autoDisableLayoutGroup) return;
+        var parent = child.parent;
+        if (parent == null) return;
+        var lg = parent.GetComponent<UnityEngine.UI.LayoutGroup>();
+        if (lg != null && lg.enabled)
+        {
+            lg.enabled = false;
+            if (debugLog) Debug.Log($"[PathChoiceUI] LayoutGroup di '{parent.name}' DI-NONAKTIFKAN agar override layout berlaku.");
+        }
+        var fit = parent.GetComponent<UnityEngine.UI.ContentSizeFitter>();
+        if (fit != null && fit.enabled)
+        {
+            fit.enabled = false;
+            if (debugLog) Debug.Log($"[PathChoiceUI] ContentSizeFitter di '{parent.name}' DI-NONAKTIFKAN.");
+        }
+    }
+
+    // Non-aktifkan LayoutElement pada child sendiri agar tidak mengunci ukuran.
+    void DisableLayoutElement(RectTransform child)
+    {
+        if (!autoDisableLayoutGroup) return;
+        var le = child.GetComponent<UnityEngine.UI.LayoutElement>();
+        if (le != null && le.enabled)
+        {
+            le.ignoreLayout = true;
+            if (debugLog) Debug.Log($"[PathChoiceUI] LayoutElement di '{child.name}' → ignoreLayout=true.");
+        }
+    }
+
+    void ApplyRect(RectTransform rt, Vector2 pos, Vector2 size)
+    {
+        // Anchor di tengah panel agar posisi/ukuran konsisten
+        rt.anchorMin = new Vector2(0.5f, 0.5f);
+        rt.anchorMax = new Vector2(0.5f, 0.5f);
+        rt.pivot     = new Vector2(0.5f, 0.5f);
+        rt.anchoredPosition = pos;
+        rt.sizeDelta        = size;
+    }
+
+    // Terapkan font & style ke seluruh teks (judul, body, label tombol).
+    void ApplyTextStyleAll()
+    {
+        // —— JUDUL ——
+        TextMeshProUGUI title = titleTMPRef;
+        if (title == null && panelRoot != null)
+        {
+            var t = panelRoot.transform.Find("Title");
+            if (t != null) title = t.GetComponent<TextMeshProUGUI>();
+        }
+        if (title != null)
+        {
+            if (titleFontAsset != null) title.font = titleFontAsset;
+            else if (fontAsset != null) title.font = fontAsset;
+            title.color = titleColor;
+            if (overrideTextStyle)
+            {
+                title.fontSize          = titleFontSize;
+                title.fontStyle         = titleFontStyle;
+                title.alignment         = titleAlignment;
+                title.characterSpacing  = titleCharacterSpacing;
+                title.lineSpacing       = titleLineSpacing;
+                ApplyOutline(title, titleUseOutline, titleOutlineColor, titleOutlineWidth);
+            }
+        }
+
+        // —— BODY ——
+        TextMeshProUGUI body = bodyTMPRef;
+        if (body == null && panelRoot != null)
+        {
+            var t = panelRoot.transform.Find("Body");
+            if (t != null) body = t.GetComponent<TextMeshProUGUI>();
+        }
+        if (body != null)
+        {
+            if (bodyFontAsset != null) body.font = bodyFontAsset;
+            else if (fontAsset != null) body.font = fontAsset;
+            body.color = bodyColor;
+            if (overrideTextStyle)
+            {
+                body.fontSize          = bodyFontSize;
+                body.fontStyle         = bodyFontStyle;
+                body.alignment         = bodyAlignment;
+                body.characterSpacing  = bodyCharacterSpacing;
+                body.lineSpacing       = bodyLineSpacing;
+                ApplyOutline(body, bodyUseOutline, bodyOutlineColor, bodyOutlineWidth);
+            }
+        }
+
+        // —— LABEL TOMBOL ——
+        ApplyButtonLabelStyle(btnSafeLabelRef,   "BtnSafe");
+        ApplyButtonLabelStyle(btnDangerLabelRef, "BtnDanger");
+    }
+
+    void ApplyButtonLabelStyle(TextMeshProUGUI lblRef, string parentName)
+    {
+        TextMeshProUGUI lbl = lblRef;
+        if (lbl == null && panelRoot != null)
+        {
+            var p = panelRoot.transform.Find(parentName);
+            if (p != null)
+            {
+                var t = p.Find("Label");
+                if (t != null) lbl = t.GetComponent<TextMeshProUGUI>();
+            }
+        }
+        if (lbl == null) return;
+
+        if (buttonFontAsset != null) lbl.font = buttonFontAsset;
+        else if (fontAsset != null)  lbl.font = fontAsset;
+        lbl.color = btnTextColor;
+        if (overrideTextStyle)
+        {
+            lbl.fontSize  = buttonFontSize;
+            lbl.fontStyle = buttonFontStyle;
+            lbl.alignment = buttonAlignment;
+            ApplyOutline(lbl, buttonUseOutline, buttonOutlineColor, buttonOutlineWidth);
+        }
+    }
+
+    void ApplyOutline(TextMeshProUGUI tmp, bool on, Color col, float width)
+    {
+        if (on)
+        {
+            tmp.outlineColor = col;
+            tmp.outlineWidth = width;
+        }
+        else
+        {
+            tmp.outlineWidth = 0f;
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // LIVE EDIT — re-apply semua kustomisasi (sprite, teks, layout, ukuran)
+    // ══════════════════════════════════════════════════════════════════════
+
+    [ContextMenu("▶ Apply Customization Sekarang")]
+    public void ReapplyAllCustomization()
+    {
+        // Update teks dasar (Mode A & B)
+        if (titleTMPRef       != null) titleTMPRef.text       = titleText;
+        if (bodyTMPRef        != null) bodyTMPRef.text        = bodyText;
+        if (btnSafeLabelRef   != null) btnSafeLabelRef.text   = safeLabel;
+        if (btnDangerLabelRef != null) btnDangerLabelRef.text = dangerLabel;
+
+        // Mode B — cari child by name untuk update teks
+        if (panelRoot != null)
+        {
+            var tT = panelRoot.transform.Find("Title");
+            if (tT != null) { var x = tT.GetComponent<TextMeshProUGUI>(); if (x != null) x.text = titleText; }
+            var tB = panelRoot.transform.Find("Body");
+            if (tB != null) { var x = tB.GetComponent<TextMeshProUGUI>(); if (x != null) x.text = bodyText; }
+            var bS = panelRoot.transform.Find("BtnSafe");
+            if (bS != null) { var l = bS.Find("Label"); if (l != null) { var x = l.GetComponent<TextMeshProUGUI>(); if (x != null) x.text = safeLabel; } }
+            var bD = panelRoot.transform.Find("BtnDanger");
+            if (bD != null) { var l = bD.Find("Label"); if (l != null) { var x = l.GetComponent<TextMeshProUGUI>(); if (x != null) x.text = dangerLabel; } }
+        }
+
+        ApplyCustomSprites();   // sprite + ApplySpriteSizes()
+        ApplyCustomLayout();    // posisi & ukuran tombol
+        ApplyTextStyleAll();    // font, size, style, alignment, outline
+    }
+
+#if UNITY_EDITOR
+    void OnValidate()
+    {
+        // Saat user ubah nilai di Inspector ketika Play — re-apply.
+        if (!Application.isPlaying) return;
+        if (!liveEdit) return;
+        // Tunda 1 frame agar nilai sudah diserap Unity.
+        UnityEditor.EditorApplication.delayCall += () =>
+        {
+            if (this == null) return;
+            ReapplyAllCustomization();
+        };
+    }
+#endif
 
     // ══════════════════════════════════════════════════════════════════════
     // BUILD UI — MODE B (Programatik / Fallback)
@@ -358,6 +1069,11 @@ public class PathChoiceUI : MonoBehaviour
         MakeChoiceButton(panelRoot, "BtnDanger", dangerLabel,
             new Vector2(0.05f, 0.05f), new Vector2(0.95f, 0.27f),
             dangerColor, OnDangerButton);
+
+        // Terapkan sprite & layout custom (jika di-set di Inspector)
+        ApplyCustomSprites();
+        ApplyCustomLayout();
+        ApplyTextStyleAll();
 
         panelRoot.SetActive(false);
         uiRoot.SetActive(false); // overlay ikut tersembunyi
