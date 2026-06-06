@@ -417,7 +417,10 @@ public class PemotorMovement : MonoBehaviour
         else Debug.LogWarning("[PemotorMovement] DialogLayoutDefault.asset tidak ditemukan. " +
                               "Klik kanan NpcDialog \u2192 'Buat + Assign DialogBoxLayout' untuk buat baru.");
 
-        // Sprite profil pemotor — frame pertama dari folder pemotor (kalau ada)
+        // Sembunyikan latar banner nama \u2014 hanya teks "Pemotor" yang tampil
+        nd.showBannerBg = false;
+
+        // Sprite profil pemotor \u2014 frame pertama dari folder pemotor (kalau ada)
         Sprite profil = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(
             "Assets/sprites/pemotor/1.png");
 

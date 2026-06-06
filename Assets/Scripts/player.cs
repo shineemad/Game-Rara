@@ -13,6 +13,20 @@ public class player : MonoBehaviour
     public Sprite[] walkSprites;       // folder: sprites/RARA/PNG RARA/walk  (5 frame)
     public Sprite[] runSprites;        // folder: sprites/RARA/RUN   (4 frame)
 
+    [Header("Sprite Takut (Gang Sepi)")]
+    [Tooltip("Sprite idle Rara saat ketakutan di gang sepi (1 frame, statis).")]
+    public Sprite   idleScaredSprite;
+    [Tooltip("Animasi idle takut (mis. gemetar). Kosong = pakai idleScaredSprite statis.")]
+    public Sprite[] idleScaredFrames;
+    [Tooltip("Durasi per frame animasi takut (detik).")]
+    public float    scaredFrameDuration = 0.18f;
+    [Tooltip("Animasi jalan saat takut (langkah pelan/gemetar). Kosong = pakai walkSprites biasa.")]
+    public Sprite[] walkScaredSprites;
+    [Tooltip("Pengali kecepatan saat di mode takut (mis. 0.7 = 70% kecepatan normal).")]
+    [Range(0.3f, 1f)] public float scaredSpeedMultiplier = 0.75f;
+    [Tooltip("Paksa mode takut aktif (untuk testing). Normalnya auto-aktif saat GameState.pathChoice = 'dangerous'.")]
+    public bool     forceScaredMode = false;
+
     [Header("Animation")]
     public float walkFrameDuration = 0.12f; // detik per frame saat jalan
     public float runFrameDuration  = 0.07f; // detik per frame saat lari (lebih cepat)
@@ -50,6 +64,9 @@ public class player : MonoBehaviour
 
     void Update()
     {
+        // Cek apakah mode takut harus aktif (Rara di gang sepi)
+        bool scared = IsScaredModeActive();
+
         // Saat dialog aktif — hentikan semua pergerakan, tampilkan idle
         if (frozen)
         {
@@ -61,9 +78,7 @@ public class player : MonoBehaviour
                 frameTimer   = 0f;
             }
             if (spriteRenderer != null)
-                spriteRenderer.sprite = idleSprite != null
-                    ? idleSprite
-                    : (walkSprites != null && walkSprites.Length > 0 ? walkSprites[0] : null);
+                spriteRenderer.sprite = PilihIdleSprite(scared);
             return;
         }
 
@@ -98,7 +113,9 @@ public class player : MonoBehaviour
         }
 
         // ── gerak fisika ─────────────────────────────────────────────
-        float speed  = (isRunning ? runSpeed : moveSpeed) * voiceSpeedMultiplier;
+        float baseSpeed = isRunning ? runSpeed : moveSpeed;
+        if (scared) baseSpeed *= scaredSpeedMultiplier; // di gang sepi → melangkah pelan
+        float speed  = baseSpeed * voiceSpeedMultiplier;
         rb.velocity  = direction * speed;
 
         // ── clamp posisi ke batas jalur ──────────────────────────────
@@ -117,19 +134,53 @@ public class player : MonoBehaviour
         switch (currentState)
         {
             case MoveState.Idle:
-                spriteRenderer.sprite = idleSprite != null
-                    ? idleSprite
-                    : (walkSprites.Length > 0 ? walkSprites[0] : null);
+                // Mode takut: prioritas frame animasi takut → sprite tunggal takut → idle normal
+                if (scared && idleScaredFrames != null && idleScaredFrames.Length > 0)
+                {
+                    AdvanceAnimation(idleScaredFrames, scaredFrameDuration);
+                }
+                else
+                {
+                    spriteRenderer.sprite = PilihIdleSprite(scared);
+                }
                 break;
 
             case MoveState.Walk:
-                AdvanceAnimation(walkSprites, walkFrameDuration);
+                // Mode takut + ada walkScaredSprites → pakai animasi takut
+                if (scared && walkScaredSprites != null && walkScaredSprites.Length > 0)
+                    AdvanceAnimation(walkScaredSprites, walkFrameDuration * 1.2f);
+                else
+                    AdvanceAnimation(walkSprites, walkFrameDuration);
                 break;
 
             case MoveState.Run:
                 AdvanceAnimation(runSprites, runFrameDuration);
                 break;
         }
+    }
+
+    // ── Helper mode takut ────────────────────────────────
+
+    /// True jika Rara harus tampil takut: di gang sepi (pathChoice = "dangerous") atau force.
+    bool IsScaredModeActive()
+    {
+        if (forceScaredMode) return true;
+        if (GameState.Instance == null) return false;
+        return GameState.Instance.pathChoice == "dangerous";
+    }
+
+    /// Pilih sprite idle yang sesuai mode (takut vs normal).
+    Sprite PilihIdleSprite(bool scared)
+    {
+        if (scared)
+        {
+            if (idleScaredSprite != null) return idleScaredSprite;
+            if (idleScaredFrames != null && idleScaredFrames.Length > 0)
+                return idleScaredFrames[0];
+        }
+        if (idleSprite != null) return idleSprite;
+        if (walkSprites != null && walkSprites.Length > 0) return walkSprites[0];
+        return null;
     }
 
     // helper: majukan frame animasi berdasarkan array sprite yang diberikan

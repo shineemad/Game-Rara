@@ -18,10 +18,14 @@ public class PathEnvironment : MonoBehaviour
     [Header("── JALAN RAMAI ──")]
     [Tooltip("GO berisi sprite Jalan Ramai. Posisikan di scene. SetActive awal = FALSE.")]
     public GameObject jalanRamai;
+    [Tooltip("GO (NPC, props, dll) yang hanya muncul di Jalan Ramai.\nTidak perlu child dari jalanRamai — script akan SetActive(true) saat jalur ini dipilih dan SetActive(false) di jalur lain.")]
+    public GameObject[] objekJalanRamai;
 
     [Header("── GANG SEPI ──")]
     [Tooltip("GO berisi sprite Gang Sepi. Posisikan di scene. SetActive awal = FALSE.")]
     public GameObject gangSepi;
+    [Tooltip("GO (NPC, props, dll) yang hanya muncul di Gang Sepi.\nTidak perlu child dari gangSepi.")]
+    public GameObject[] objekGangSepi;
 
     [Header("── KAMERA ──")]
     public Camera mainCamera;
@@ -106,9 +110,25 @@ public class PathEnvironment : MonoBehaviour
         if (jalanRamai != null) jalanRamai.SetActive(false);
         if (gangSepi   != null) gangSepi.SetActive(false);
 
+        // Sembunyikan juga NPC/props milik tiap jalur — akan dinyalakan saat jalurnya dipilih.
+        SetGroupActive(objekJalanRamai, false);
+        SetGroupActive(objekGangSepi,   false);
+
         Debug.Log("[PathEnvironment] Start OK. JalanRamai=" +
             (jalanRamai != null ? jalanRamai.name : "NULL") +
-            " GangSepi=" + (gangSepi != null ? gangSepi.name : "NULL"));
+            " GangSepi=" + (gangSepi != null ? gangSepi.name : "NULL") +
+            " | objekRamai=" + (objekJalanRamai != null ? objekJalanRamai.Length : 0) +
+            " objekGang="  + (objekGangSepi   != null ? objekGangSepi.Length   : 0));
+    }
+
+    // Helper: SetActive ke seluruh elemen array (skip null).
+    void SetGroupActive(GameObject[] group, bool active)
+    {
+        if (group == null) return;
+        for (int i = 0; i < group.Length; i++)
+        {
+            if (group[i] != null) group[i].SetActive(active);
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -120,12 +140,15 @@ public class PathEnvironment : MonoBehaviour
         Debug.Log("[PathEnvironment] AktifkanJalanRamai()");
         SembunyikanBackgroundAwal();
         if (gangSepi   != null) gangSepi.SetActive(false);
+        SetGroupActive(objekGangSepi,   false);
         if (jalanRamai != null)
         {
             jalanRamai.SetActive(true);
             Debug.Log("[PathEnvironment] JalanRamai AKTIF");
         }
         else Debug.LogWarning("[PathEnvironment] jalanRamai NULL!");
+        SetGroupActive(objekJalanRamai, true);
+        Debug.Log("[PathEnvironment] Aktifkan " + (objekJalanRamai != null ? objekJalanRamai.Length : 0) + " objek Jalan Ramai");
 
         if (mainCamera != null) mainCamera.backgroundColor = camBgJalanRamai;
         TerapkanBatasKamera(ramaiMinX, ramaiMaxX);
@@ -142,12 +165,15 @@ public class PathEnvironment : MonoBehaviour
         Debug.Log("[PathEnvironment] AktifkanGangSepi()");
         SembunyikanBackgroundAwal();
         if (jalanRamai != null) jalanRamai.SetActive(false);
+        SetGroupActive(objekJalanRamai, false);
         if (gangSepi   != null)
         {
             gangSepi.SetActive(true);
             Debug.Log("[PathEnvironment] GangSepi AKTIF");
         }
         else Debug.LogWarning("[PathEnvironment] gangSepi NULL!");
+        SetGroupActive(objekGangSepi, true);
+        Debug.Log("[PathEnvironment] Aktifkan " + (objekGangSepi != null ? objekGangSepi.Length : 0) + " objek Gang Sepi");
 
         if (mainCamera != null) mainCamera.backgroundColor = camBgGangSepi;
         TerapkanBatasKamera(gangMinX, gangMaxX);
@@ -225,8 +251,10 @@ public class PathEnvironment : MonoBehaviour
         judulTMP.text = judul;
         subTMP.text   = sub;
 
-        var playerComp = playerTransform?.GetComponent<player>();
-        if (playerComp != null) playerComp.frozen = true;
+        // Freeze player TIDAK dikelola di sini — Day1Controller yang bertanggung jawab
+        // penuh atas dialogActive / frozen. Jika PathEnvironment ikut set frozen=false
+        // setelah overlay (±3.4 detik), bisa terjadi premature unfreeze di tengah
+        // dialog Encounter 2 saat pemain masuk gang sepi.
 
         // Fade in
         for (float t = 0f; t < overlayDurasiTransisi; t += Time.deltaTime)
@@ -239,7 +267,6 @@ public class PathEnvironment : MonoBehaviour
         for (float t = 0f; t < overlayDurasiTransisi; t += Time.deltaTime)
         { SetAlpha(bgImg, judulTMP, subTMP, 1f - t / overlayDurasiTransisi); yield return null; }
 
-        if (playerComp != null) playerComp.frozen = false;
         Destroy(canvasGO);
     }
 
@@ -300,8 +327,8 @@ public class PathEnvironment : MonoBehaviour
             ?? Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
         if (f != null) tmp.font = f;
         tmp.fontSize = size; tmp.color = color; tmp.fontStyle = style;
-        tmp.alignment = TextAlignmentOptions.Center;
-        tmp.enableWordWrapping = false;
+        tmp.alignment          = TextAlignmentOptions.Center;
+        tmp.textWrappingMode   = TextWrappingModes.NoWrap;
         return tmp;
     }
 

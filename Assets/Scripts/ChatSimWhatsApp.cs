@@ -1,0 +1,505 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+/// <summary>
+/// ChatSimWhatsApp — Simulasi chat WhatsApp orang asing yang minta foto/lokasi.
+///
+/// Alur:
+///   1. Pesan masuk satu per satu (typing indicator opsional)
+///   2. Setelah pesan terakhir, muncul 4 pilihan respons:
+///      - SCREENSHOT (bonus +100)
+///      - BLOKIR & HAPUS (AMAN, +SCORE_LAPOR)
+///      - LAPOR KE KPAI (AMAN, +SCORE_LAPOR)
+///      - BALAS (BAHAYA, -1 nyawa)
+///   3. Timer 8s: kalau habis, otomatis dianggap "BALAS"
+///   4. Reaksi pendek + tombol Lanjut.
+///
+/// Custom semua isi pesan & label tombol lewat Inspector.
+/// </summary>
+public class ChatSimWhatsApp : MonoBehaviour
+{
+    [System.Serializable]
+    public class PesanData
+    {
+        [TextArea(1, 4)] public string teks = "Hai, kenalan dong?";
+        [Tooltip("Delay sebelum pesan ini muncul (detik).")]
+        public float delayDetik = 1.2f;
+    }
+
+    [System.Serializable]
+    public class AksiData
+    {
+        public string label    = "BLOKIR & HAPUS";
+        public string kategori = "AMAN"; // "AMAN" | "RAGU" | "BAHAYA"
+        [TextArea(2, 4)]
+        public string reaksi   = "\u2713 Bagus! Kontak orang asing diblokir.";
+        public int    bonusPoin = 0;     // poin tambahan
+        public bool   kurangiNyawa = false;
+        public Color  warna = new Color(0.18f, 0.62f, 0.32f, 1f);
+    }
+
+    [Header("Header WhatsApp")]
+    public string namaKontak = "Pria Asing Halte";
+    public string statusKontak = "online";
+    public Color  warnaHeader = new Color(0.05f, 0.32f, 0.27f, 1f);
+    public Color  warnaTeksHeader = Color.white;
+
+    [Header("Background Chat")]
+    public Color warnaChatBg = new Color(0.05f, 0.12f, 0.12f, 1f);
+    public Color warnaBubbleMasuk = new Color(0.20f, 0.30f, 0.35f, 1f);
+    public Color warnaTeksBubble  = new Color(1f, 1f, 0.95f, 1f);
+
+    [Header("Daftar Pesan Masuk (CUSTOMIZABLE)")]
+    public PesanData[] pesanMasuk = new PesanData[]
+    {
+        new PesanData { teks = "Hai dek... om udah liat kamu tadi pagi di halte.",          delayDetik = 0.8f },
+        new PesanData { teks = "Kirim foto kamu yang lagi seragam dong, buat kenang-kenangan om.", delayDetik = 2.0f },
+        new PesanData { teks = "Tenang, jangan bilang siapa-siapa ya... ini rahasia kita berdua \uD83D\uDE0A", delayDetik = 2.4f }
+    };
+
+    [Header("Timer Pilihan")]
+    public float waktuPilihDetik = 8f;
+    public Color warnaTimer = new Color(1f, 0.85f, 0.3f, 1f);
+
+    [Header("Tombol Screenshot (Bonus opsional)")]
+    public bool   tampilkanTombolScreenshot = true;
+    public string screenshotLabel = "\uD83D\uDCF7 Screenshot Bukti";
+    public int    screenshotBonus = 100;
+    public Color  screenshotWarna = new Color(0.20f, 0.62f, 0.86f, 1f);
+
+    [Header("Daftar Aksi Utama (CUSTOMIZABLE)")]
+    public AksiData[] aksiList = new AksiData[]
+    {
+        new AksiData {
+            label = "\uD83D\uDEAB BLOKIR & HAPUS", kategori = "AMAN",
+            reaksi = "\u2713 Kontaknya diblokir. Bagus! Tunjukkan ini ke ortu juga ya.",
+            bonusPoin = 500, // SCORE_LAPOR
+            warna = new Color(0.91f, 0.30f, 0.24f, 1f)
+        },
+        new AksiData {
+            label = "\u260E LAPOR KPAI 021-31901556", kategori = "AMAN",
+            reaksi = "\u2713 Hebat! Kamu lapor ke KPAI. Mereka akan tindak lanjut.",
+            bonusPoin = 500,
+            warna = new Color(0.18f, 0.62f, 0.32f, 1f)
+        },
+        new AksiData {
+            label = "\uD83D\uDCAC Balas: 'Iya Om'", kategori = "BAHAYA",
+            reaksi = "\u2716 GAWAT! Orang itu makin pede dan minta lokasi. Kamu kehilangan 1 nyawa.",
+            kurangiNyawa = true,
+            warna = new Color(0.50f, 0.20f, 0.20f, 1f)
+        },
+        new AksiData {
+            label = "\u2753 Diamkan / Abaikan", kategori = "RAGU",
+            reaksi = "\u26A0 Kamu diamkan. Tapi besok dia masih kirim chat lagi. Lebih baik blokir/lapor.",
+            warna = new Color(0.95f, 0.62f, 0.07f, 1f)
+        }
+    };
+
+    [Header("Aksi Default Saat Timeout")]
+    [Tooltip("Index aksi yang dipakai kalau waktu habis (biasanya BAHAYA).")]
+    public int aksiSaatTimeout = 2;
+
+    [Header("Tombol Lanjut")]
+    public string tombolLanjutTeks = "\u25B6  Lanjut";
+    public Color  warnaLanjut = new Color(0.20f, 0.62f, 0.86f, 1f);
+
+    [Header("Font")]
+    public TMP_FontAsset fontAsset;
+
+    [Header("Sorting")]
+    public int sortingOrder = 935;
+
+    // ── runtime ───────────────────────────────────────────────────────────
+    private Action     _onSelesai;
+    private GameObject _canvasGO;
+    private GameObject _phoneFrame;
+    private RectTransform _chatScroll;
+    private TextMeshProUGUI _timerText;
+    private GameObject _tombolPanel;
+    private GameObject _reaksiPanel;
+    private bool       _aksiDipilih;
+    private bool       _screenshotDiambil;
+    private float      _sisaWaktu;
+    private Sprite     _roundedSprite;
+
+    // ══════════════════════════════════════════════════════════════════════
+    public void Mulai(Action onSelesai)
+    {
+        _onSelesai = onSelesai;
+        BuildScene();
+        StartCoroutine(JalankanChat());
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    void BuildScene()
+    {
+        _canvasGO = new GameObject("ChatSim_Canvas");
+        var canvas = _canvasGO.AddComponent<Canvas>();
+        canvas.renderMode  = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = sortingOrder;
+        var scaler = _canvasGO.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        _canvasGO.AddComponent<GraphicRaycaster>();
+
+        // Frame HP (di tengah layar)
+        _phoneFrame = new GameObject("PhoneFrame");
+        _phoneFrame.transform.SetParent(_canvasGO.transform, false);
+        var pImg = _phoneFrame.AddComponent<Image>();
+        pImg.sprite = GetRoundedSprite();
+        pImg.color  = new Color(0.02f, 0.02f, 0.02f, 1f);
+        pImg.type   = Image.Type.Sliced;
+        var pOutl = _phoneFrame.AddComponent<Outline>();
+        pOutl.effectColor    = new Color(0.4f, 0.4f, 0.4f, 1f);
+        pOutl.effectDistance = new Vector2(3f, -3f);
+        var pRT = _phoneFrame.GetComponent<RectTransform>();
+        pRT.anchorMin = new Vector2(0.5f, 0.5f); pRT.anchorMax = new Vector2(0.5f, 0.5f);
+        pRT.pivot = new Vector2(0.5f, 0.5f);
+        pRT.sizeDelta = new Vector2(640f, 860f);
+
+        // Header WhatsApp
+        var header = new GameObject("Header");
+        header.transform.SetParent(_phoneFrame.transform, false);
+        var hImg = header.AddComponent<Image>();
+        hImg.sprite = GetRoundedSprite();
+        hImg.color  = warnaHeader;
+        hImg.type   = Image.Type.Sliced;
+        var hRT = header.GetComponent<RectTransform>();
+        hRT.anchorMin = new Vector2(0f, 1f); hRT.anchorMax = new Vector2(1f, 1f);
+        hRT.pivot = new Vector2(0.5f, 1f);
+        hRT.sizeDelta = new Vector2(0f, 90f);
+        hRT.offsetMin = new Vector2(8f, hRT.offsetMin.y);
+        hRT.offsetMax = new Vector2(-8f, -8f);
+
+        var nama = BuatTeks(header.transform, "Nama", namaKontak, 22, warnaTeksHeader, FontStyles.Bold);
+        nama.alignment = TextAlignmentOptions.MidlineLeft;
+        var nrt = nama.rectTransform;
+        nrt.anchorMin = new Vector2(0f, 0.4f); nrt.anchorMax = new Vector2(1f, 1f);
+        nrt.offsetMin = new Vector2(80f, 0f); nrt.offsetMax = new Vector2(-12f, -8f);
+
+        var status = BuatTeks(header.transform, "Status", statusKontak, 14, new Color(1f,1f,1f,0.75f), FontStyles.Italic);
+        status.alignment = TextAlignmentOptions.MidlineLeft;
+        var stt = status.rectTransform;
+        stt.anchorMin = new Vector2(0f, 0f); stt.anchorMax = new Vector2(1f, 0.4f);
+        stt.offsetMin = new Vector2(80f, 4f); stt.offsetMax = new Vector2(-12f, 0f);
+
+        // Avatar bulat
+        var avatar = new GameObject("Avatar");
+        avatar.transform.SetParent(header.transform, false);
+        var aImg = avatar.AddComponent<Image>();
+        aImg.sprite = GetRoundedSprite();
+        aImg.color  = new Color(0.45f, 0.25f, 0.30f, 1f);
+        aImg.type   = Image.Type.Sliced;
+        var aRT = avatar.GetComponent<RectTransform>();
+        aRT.anchorMin = new Vector2(0f, 0.5f); aRT.anchorMax = new Vector2(0f, 0.5f);
+        aRT.pivot = new Vector2(0f, 0.5f);
+        aRT.sizeDelta = new Vector2(60f, 60f);
+        aRT.anchoredPosition = new Vector2(12f, 0f);
+
+        // Chat area
+        var chatBg = new GameObject("ChatBg");
+        chatBg.transform.SetParent(_phoneFrame.transform, false);
+        var cbImg = chatBg.AddComponent<Image>();
+        cbImg.color = warnaChatBg;
+        var cbRT = chatBg.GetComponent<RectTransform>();
+        cbRT.anchorMin = new Vector2(0f, 0f); cbRT.anchorMax = new Vector2(1f, 1f);
+        cbRT.offsetMin = new Vector2(8f, 8f);
+        cbRT.offsetMax = new Vector2(-8f, -100f);
+
+        // Scroll container utk pesan
+        var scroll = new GameObject("ChatScroll");
+        scroll.transform.SetParent(chatBg.transform, false);
+        _chatScroll = scroll.AddComponent<RectTransform>();
+        _chatScroll.anchorMin = new Vector2(0f, 0f); _chatScroll.anchorMax = new Vector2(1f, 1f);
+        _chatScroll.offsetMin = new Vector2(12f, 12f);
+        _chatScroll.offsetMax = new Vector2(-12f, -12f);
+        var vlg = scroll.AddComponent<VerticalLayoutGroup>();
+        vlg.childAlignment = TextAnchor.LowerLeft;
+        vlg.spacing = 10f;
+        vlg.childControlWidth = true;
+        vlg.childControlHeight = true;
+        vlg.childForceExpandWidth = false;
+        vlg.childForceExpandHeight = false;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    IEnumerator JalankanChat()
+    {
+        foreach (var p in pesanMasuk)
+        {
+            yield return TampilkanTyping();
+            yield return new WaitForSeconds(p.delayDetik);
+            TambahBubble(p.teks);
+            yield return new WaitForSeconds(0.4f);
+        }
+
+        // Tampilkan tombol aksi + timer
+        BuildTombolAksi();
+        yield return TimerCoroutine();
+    }
+
+    IEnumerator TampilkanTyping()
+    {
+        var bubble = TambahBubble("...");
+        var tmp = bubble.GetComponentInChildren<TextMeshProUGUI>();
+        float t = 0f;
+        while (t < 0.6f)
+        {
+            t += Time.deltaTime;
+            int n = (Mathf.FloorToInt(t * 3f) % 3) + 1;
+            tmp.text = new string('.', n);
+            yield return null;
+        }
+        Destroy(bubble);
+    }
+
+    GameObject TambahBubble(string teks)
+    {
+        var go = new GameObject("Bubble");
+        go.transform.SetParent(_chatScroll, false);
+        var img = go.AddComponent<Image>();
+        img.sprite = GetRoundedSprite();
+        img.color  = warnaBubbleMasuk;
+        img.type   = Image.Type.Sliced;
+        var le = go.AddComponent<LayoutElement>();
+        le.preferredWidth  = 460f;
+        le.flexibleWidth   = 0f;
+
+        var t = BuatTeks(go.transform, "Text", teks, 18, warnaTeksBubble, FontStyles.Normal);
+        t.alignment = TextAlignmentOptions.TopLeft;
+        var fitter = go.AddComponent<ContentSizeFitter>();
+        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        var trt = t.rectTransform;
+        trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
+        trt.offsetMin = new Vector2(14f, 10f);
+        trt.offsetMax = new Vector2(-14f, -10f);
+
+        return go;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    void BuildTombolAksi()
+    {
+        // Timer di atas tombol
+        _timerText = BuatTeks(_canvasGO.transform, "Timer", "", 28, warnaTimer, FontStyles.Bold);
+        _timerText.alignment = TextAlignmentOptions.Center;
+        var trt = _timerText.rectTransform;
+        trt.anchorMin = new Vector2(0.5f, 0f); trt.anchorMax = new Vector2(0.5f, 0f);
+        trt.pivot = new Vector2(0.5f, 0f);
+        trt.sizeDelta = new Vector2(400f, 50f);
+        trt.anchoredPosition = new Vector2(0f, 230f);
+
+        _tombolPanel = new GameObject("TombolPanel");
+        _tombolPanel.transform.SetParent(_canvasGO.transform, false);
+        var tpRT = _tombolPanel.AddComponent<RectTransform>();
+        tpRT.anchorMin = new Vector2(0.5f, 0f); tpRT.anchorMax = new Vector2(0.5f, 0f);
+        tpRT.pivot = new Vector2(0.5f, 0f);
+        tpRT.sizeDelta = new Vector2(900f, 200f);
+        tpRT.anchoredPosition = new Vector2(0f, 30f);
+
+        var grid = _tombolPanel.AddComponent<GridLayoutGroup>();
+        grid.cellSize = new Vector2(430f, 70f);
+        grid.spacing = new Vector2(20f, 16f);
+        grid.childAlignment = TextAnchor.MiddleCenter;
+        grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        grid.constraintCount = 2;
+
+        // Tombol screenshot (kalau diaktifkan)
+        if (tampilkanTombolScreenshot)
+        {
+            BuatTombol(_tombolPanel.transform, screenshotLabel + $" (+{screenshotBonus})", screenshotWarna, () =>
+            {
+                if (_screenshotDiambil) return;
+                _screenshotDiambil = true;
+                AudioManager.Instance?.Click();
+                var gs = GameState.Instance;
+                if (gs != null) { gs.score += screenshotBonus; gs.screenshotTaken = true; }
+                Debug.Log($"[ChatSim] Screenshot diambil. +{screenshotBonus} poin.");
+                // Visual feedback: ubah teks tombol
+                var label = _tombolPanel.transform.Find(screenshotLabel + $" (+{screenshotBonus})/Label")?.GetComponent<TextMeshProUGUI>();
+                if (label != null) label.text = "\u2713 Screenshot tersimpan";
+            });
+        }
+
+        foreach (var a in aksiList)
+        {
+            var aksiRef = a; // capture
+            BuatTombol(_tombolPanel.transform, a.label, a.warna, () => PilihAksi(aksiRef));
+        }
+    }
+
+    void BuatTombol(Transform parent, string teks, Color warna, Action onClick)
+    {
+        var go = new GameObject(teks);
+        go.transform.SetParent(parent, false);
+        var img = go.AddComponent<Image>();
+        img.sprite = GetRoundedSprite();
+        img.color  = warna;
+        img.type   = Image.Type.Sliced;
+        var outl = go.AddComponent<Outline>();
+        outl.effectColor    = new Color(1f, 1f, 1f, 0.35f);
+        outl.effectDistance = new Vector2(2f, -2f);
+        var btn = go.AddComponent<Button>();
+        btn.targetGraphic = img;
+        var colors = btn.colors;
+        colors.highlightedColor = new Color(Mathf.Min(1f, warna.r * 1.18f), Mathf.Min(1f, warna.g * 1.18f), Mathf.Min(1f, warna.b * 1.18f), warna.a);
+        colors.pressedColor     = new Color(warna.r * 0.85f, warna.g * 0.85f, warna.b * 0.85f, warna.a);
+        btn.colors = colors;
+        btn.onClick.AddListener(() => onClick?.Invoke());
+
+        var t = BuatTeks(go.transform, "Label", teks, 18, Color.white, FontStyles.Bold);
+        t.alignment = TextAlignmentOptions.Center;
+        var trt = t.rectTransform;
+        trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
+        trt.offsetMin = new Vector2(10f, 4f);
+        trt.offsetMax = new Vector2(-10f, -4f);
+    }
+
+    IEnumerator TimerCoroutine()
+    {
+        _sisaWaktu = waktuPilihDetik;
+        while (_sisaWaktu > 0f && !_aksiDipilih)
+        {
+            _sisaWaktu -= Time.deltaTime;
+            int s = Mathf.CeilToInt(_sisaWaktu);
+            _timerText.text = $"\u23F1 {s} detik untuk memutuskan!";
+            _timerText.color = s <= 3 ? new Color(0.91f, 0.30f, 0.24f, 1f) : warnaTimer;
+            yield return null;
+        }
+        if (!_aksiDipilih && aksiSaatTimeout >= 0 && aksiSaatTimeout < aksiList.Length)
+        {
+            Debug.Log("[ChatSim] Waktu habis \u2192 default aksi index " + aksiSaatTimeout);
+            PilihAksi(aksiList[aksiSaatTimeout]);
+        }
+    }
+
+    void PilihAksi(AksiData a)
+    {
+        if (_aksiDipilih) return;
+        _aksiDipilih = true;
+        AudioManager.Instance?.Click();
+
+        var gs = GameState.Instance;
+        if (gs != null)
+        {
+            gs.AddChoice(2, "Chat: " + a.label, a.kategori);
+            if (a.bonusPoin > 0)
+            {
+                gs.score += a.bonusPoin;
+                Debug.Log($"[ChatSim] Bonus +{a.bonusPoin}");
+            }
+            if (a.kurangiNyawa)
+            {
+                gs.lives = Mathf.Max(0, gs.lives - 1);
+                Debug.Log($"[ChatSim] Nyawa -1 (sisa {gs.lives})");
+            }
+        }
+
+        AudioClip sfx = a.kategori switch
+        {
+            "AMAN"   => AudioManager.Instance?.sfxAman,
+            "RAGU"   => AudioManager.Instance?.sfxRagu,
+            "BAHAYA" => AudioManager.Instance?.sfxBahaya,
+            _        => null
+        };
+        if (sfx != null) AudioManager.Instance.sfxSource.PlayOneShot(sfx);
+
+        // Hapus tombol & timer, tampilkan reaksi
+        if (_tombolPanel != null) Destroy(_tombolPanel);
+        if (_timerText != null) _timerText.text = "";
+
+        BuildReaksi(a);
+    }
+
+    void BuildReaksi(AksiData a)
+    {
+        _reaksiPanel = new GameObject("ReaksiPanel");
+        _reaksiPanel.transform.SetParent(_canvasGO.transform, false);
+        var img = _reaksiPanel.AddComponent<Image>();
+        img.sprite = GetRoundedSprite();
+        img.color  = new Color(0.08f, 0.10f, 0.14f, 0.97f);
+        img.type   = Image.Type.Sliced;
+        var outl = _reaksiPanel.AddComponent<Outline>();
+        outl.effectColor    = a.warna;
+        outl.effectDistance = new Vector2(2f, -2f);
+        var rt = _reaksiPanel.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 0f); rt.anchorMax = new Vector2(0.5f, 0f);
+        rt.pivot = new Vector2(0.5f, 0f);
+        rt.sizeDelta = new Vector2(1000f, 220f);
+        rt.anchoredPosition = new Vector2(0f, 30f);
+
+        var teks = BuatTeks(_reaksiPanel.transform, "Reaksi", a.reaksi, 22, new Color(1f,1f,0.92f,1f), FontStyles.Normal);
+        teks.alignment = TextAlignmentOptions.Center;
+        var trt = teks.rectTransform;
+        trt.anchorMin = new Vector2(0f, 0f); trt.anchorMax = new Vector2(1f, 1f);
+        trt.offsetMin = new Vector2(30f, 80f);
+        trt.offsetMax = new Vector2(-30f, -25f);
+
+        // Tombol lanjut
+        var btnGO = new GameObject("LanjutBtn");
+        btnGO.transform.SetParent(_reaksiPanel.transform, false);
+        var bImg = btnGO.AddComponent<Image>();
+        bImg.sprite = GetRoundedSprite();
+        bImg.color  = warnaLanjut;
+        bImg.type   = Image.Type.Sliced;
+        var bRT = btnGO.GetComponent<RectTransform>();
+        bRT.anchorMin = new Vector2(0.5f, 0f); bRT.anchorMax = new Vector2(0.5f, 0f);
+        bRT.pivot = new Vector2(0.5f, 0f);
+        bRT.sizeDelta = new Vector2(280f, 55f);
+        bRT.anchoredPosition = new Vector2(0f, 18f);
+
+        var btn = btnGO.AddComponent<Button>();
+        btn.targetGraphic = bImg;
+        btn.onClick.AddListener(() =>
+        {
+            AudioManager.Instance?.Click();
+            if (_canvasGO != null) Destroy(_canvasGO);
+            _onSelesai?.Invoke();
+        });
+
+        var lab = BuatTeks(btnGO.transform, "Label", tombolLanjutTeks, 20, Color.white, FontStyles.Bold);
+        lab.alignment = TextAlignmentOptions.Center;
+        var lrt = lab.rectTransform;
+        lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one;
+        lrt.offsetMin = Vector2.zero; lrt.offsetMax = Vector2.zero;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    TextMeshProUGUI BuatTeks(Transform parent, string name, string content, int size, Color color, FontStyles style)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        go.AddComponent<RectTransform>();
+        var tmp = go.AddComponent<TextMeshProUGUI>();
+        if (fontAsset != null) tmp.font = fontAsset;
+        else if (TMP_Settings.defaultFontAsset != null) tmp.font = TMP_Settings.defaultFontAsset;
+        tmp.text = content; tmp.fontSize = size; tmp.color = color; tmp.fontStyle = style;
+        tmp.textWrappingMode = TextWrappingModes.Normal; tmp.raycastTarget = false;
+        return tmp;
+    }
+
+    Sprite GetRoundedSprite()
+    {
+        if (_roundedSprite != null) return _roundedSprite;
+        int size = 64; int radius = 14;
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp; tex.filterMode = FilterMode.Bilinear;
+        Color32 w = new Color32(255,255,255,255), c = new Color32(255,255,255,0);
+        for (int y=0;y<size;y++) for (int x=0;x<size;x++)
+        {
+            bool inside = true;
+            if      (x<radius && y<radius)             { int dx=radius-x, dy=radius-y; inside = dx*dx+dy*dy <= radius*radius; }
+            else if (x>=size-radius && y<radius)       { int dx=x-(size-1-radius), dy=radius-y; inside = dx*dx+dy*dy <= radius*radius; }
+            else if (x<radius && y>=size-radius)       { int dx=radius-x, dy=y-(size-1-radius); inside = dx*dx+dy*dy <= radius*radius; }
+            else if (x>=size-radius && y>=size-radius) { int dx=x-(size-1-radius), dy=y-(size-1-radius); inside = dx*dx+dy*dy <= radius*radius; }
+            tex.SetPixel(x, y, inside ? (Color)w : (Color)c);
+        }
+        tex.Apply();
+        _roundedSprite = Sprite.Create(tex, new Rect(0,0,size,size), new Vector2(0.5f,0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(radius,radius,radius,radius));
+        return _roundedSprite;
+    }
+}

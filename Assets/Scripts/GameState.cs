@@ -102,11 +102,13 @@ public class GameState : MonoBehaviour
 
     public bool IsAlive() => lives > 0;
 
-    /// Tambah pencapaian (tidak duplikat).
+    /// Tambah pencapaian (tidak duplikat). Memunculkan popup AchievementPopup.
     public void EarnAchievement(string name)
     {
-        if (!achievements.Contains(name))
-            achievements.Add(name);
+        if (achievements.Contains(name)) return;
+        achievements.Add(name);
+        AchievementPopup.Show(name);
+        AudioManager.Instance?.PlayAchievement();
     }
 
     /// Nilai akhir berdasarkan skor dari max 1000.

@@ -163,9 +163,11 @@ public class PrologScreen : MonoBehaviour
 #if UNITY_EDITOR
         // Pastikan sprite dialog ter-assign meski lupa di Inspector
         if (globalDialogSprite == null) TryLoadDefaultDialogSprite();
-        // Selalu sinkronkan background prolog dengan path (overwrite=true)
-        // agar sprite lama yang tersimpan di scene tergantikan.
-        TryLoadDefaultBackgrounds(overwrite: true);
+        // HANYA isi slot background yang masih kosong — JANGAN overwrite
+        // sprite yang sudah di-set user di Inspector.
+        // (Sebelumnya overwrite:true → setiap Play meng-RESET backgroundSprite
+        //  ke nilai default sehingga perubahan Inspector tidak pernah terlihat.)
+        TryLoadDefaultBackgrounds(overwrite: false);
 #endif
 
         if (slides == null || slides.Length == 0)
@@ -502,6 +504,39 @@ public class PrologScreen : MonoBehaviour
             rt.offsetMax = new Vector2(-pH, -(pV * 2f + 36f + g));
         }
 
+        // Update FONT SIZE, COLOR, & HINT TEXT secara live — sebelumnya
+        // perubahan Inspector untuk titleFontSize / textFontSize / titleColor /
+        // textColor / hintText TIDAK pernah terlihat karena cuma di-baca di BuildUI().
+        if (titleTMP != null)
+        {
+            titleTMP.fontSize = titleFontSize;
+            titleTMP.color    = titleColor;
+            ApplyFont(titleTMP);
+        }
+        if (bodyTMP != null)
+        {
+            bodyTMP.fontSize = textFontSize;
+            bodyTMP.color    = textColor;
+            ApplyFont(bodyTMP);
+        }
+        if (pageCounter != null)
+        {
+            pageCounter.fontSize = hintFontSize;
+            pageCounter.color    = hintColor;
+            ApplyFont(pageCounter);
+        }
+        if (hintTMP != null)
+        {
+            int hSize = (hintFontSizeOverride > 0) ? hintFontSizeOverride : hintFontSize + 4;
+            hintTMP.fontSize  = hSize;
+            hintTMP.color     = hintColor;
+            hintTMP.text      = hintText;
+            hintTMP.alignment = hintAlign;
+            ApplyFont(hintTMP);
+        }
+        if (panelImg != null && panelImg.sprite == null) panelImg.color = panelColor;
+        if (panelOutline != null) panelOutline.effectColor = borderColor;
+
         // Refresh konten slide yang sedang tampil
         if (slides != null && currentSlide < slides.Length)
             ShowSlide(currentSlide);
@@ -558,7 +593,13 @@ public class PrologScreen : MonoBehaviour
         TMP_FontAsset f = fontAsset;
         if (f == null) f = TMP_Settings.defaultFontAsset;
         if (f == null) f = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
-        if (f != null) tmp.font = f;
+        if (f != null)
+        {
+            tmp.font = f;
+            // PENTING: refresh material juga — kalau tidak, glyph render
+            // dengan material font lama → teks bisa hilang / blank.
+            if (f.material != null) tmp.fontSharedMaterial = f.material;
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════

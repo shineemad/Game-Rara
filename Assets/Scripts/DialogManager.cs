@@ -26,6 +26,10 @@ public class DialogManager : MonoBehaviour
              "akan dibangun dengan anchor & sprite dari aset ini — sama dengan Day1Intro & NpcDialog.")]
     public DialogBoxLayout layout;
 
+    [Header("Banner Nama Pembicara")]
+    [Tooltip("Sembunyikan latar/banner nama pembicara (mis. saat PEMOTOR). Teks nama tetap tampil.")]
+    public bool sembunyikanLatarNama = false;
+
     [Header("Panel Utama")]
     public GameObject       dialogPanel;
     public TextMeshProUGUI  speakerText;
@@ -208,7 +212,7 @@ public class DialogManager : MonoBehaviour
                 lbl.color              = Color.white;
                 lbl.fontStyle          = FontStyles.Bold;
                 lbl.alignment          = TextAlignmentOptions.MidlineLeft;
-                lbl.enableWordWrapping = true;
+                lbl.textWrappingMode   = TextWrappingModes.Normal;
                 lbl.raycastTarget      = false;
                 btnObj.AddComponent<Button>();
             }
@@ -363,7 +367,14 @@ public class DialogManager : MonoBehaviour
         bannerRT.offsetMin = Vector2.zero;
         bannerRT.offsetMax = Vector2.zero;
         var bannerImg = bannerGO.AddComponent<Image>();
-        if (layout != null && layout.nameBannerSprite != null)
+        if (sembunyikanLatarNama)
+        {
+            // Banner tetap ada (sebagai container teks) tapi visual disembunyikan total
+            bannerImg.sprite  = null;
+            bannerImg.color   = new Color(0f, 0f, 0f, 0f);
+            bannerImg.enabled = false;
+        }
+        else if (layout != null && layout.nameBannerSprite != null)
         {
             bannerImg.sprite = layout.nameBannerSprite;
             bannerImg.type   = Image.Type.Sliced;
@@ -411,7 +422,7 @@ public class DialogManager : MonoBehaviour
         dialogText.fontSize           = 26;
         dialogText.color              = Color.white;
         dialogText.alignment          = TextAlignmentOptions.TopLeft;
-        dialogText.enableWordWrapping = true;
+        dialogText.textWrappingMode   = TextWrappingModes.Normal;
         dialogText.raycastTarget      = false;
 
         // ── Tombol Lanjutkan ───────────────────────────────────────────────

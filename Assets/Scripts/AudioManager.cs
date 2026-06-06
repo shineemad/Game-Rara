@@ -9,7 +9,7 @@ using UnityEngine;
 ///   sfxSource  → AudioSource untuk efek suara (PlayOneShot)
 ///   bgmClips   → [0]=menu  [1]=day1  [2]=day2  [3]=day3  [4]=boss  [5]=result
 ///   sfx*       → masing-masing AudioClip untuk efek
-/// </summary>
+/// </summary> 
 public class AudioManager : MonoBehaviour
 {
     public static AudioManager Instance { get; private set; }
@@ -29,6 +29,18 @@ public class AudioManager : MonoBehaviour
     public AudioClip sfxBossGroan;
     public AudioClip sfxVictory;
     public AudioClip sfxNeutral;
+
+    [Header("SFX — Kategori Pilihan Dialog")]
+    [Tooltip("SFX saat pemain pilih jawaban AMAN (jingle positif singkat). Kosong = pakai sfxCorrect.")]
+    public AudioClip sfxAman;
+    [Tooltip("SFX saat pemain pilih jawaban RAGU (nada netral). Kosong = pakai sfxNeutral.")]
+    public AudioClip sfxRagu;
+    [Tooltip("SFX saat pemain pilih jawaban BAHAYA (buzzer rendah). Kosong = pakai sfxWrong.")]
+    public AudioClip sfxBahaya;
+    [Tooltip("SFX saat pemain klik tombol LAPOR untuk recovery skor.")]
+    public AudioClip sfxLapor;
+    [Tooltip("SFX saat lencana / achievement diraih. Kosong = pakai sfxCorrect.")]
+    public AudioClip sfxAchievement;
 
     // ══════════════════════════════════════════════════════════════════════
     void Awake()
@@ -116,4 +128,24 @@ public class AudioManager : MonoBehaviour
     public void BossGroan()  => PlaySFX(sfxBossGroan);
     public void Victory()    => PlaySFX(sfxVictory);
     public void Neutral()    => PlaySFX(sfxNeutral);
+
+    // ── Per Kategori Pilihan ──────────────────────────────────────────────
+    public void PlayAman()        => PlaySFX(sfxAman        != null ? sfxAman        : sfxCorrect);
+    public void PlayRagu()        => PlaySFX(sfxRagu        != null ? sfxRagu        : sfxNeutral);
+    public void PlayBahaya()      => PlaySFX(sfxBahaya      != null ? sfxBahaya      : sfxWrong);
+    public void PlayLapor()       => PlaySFX(sfxLapor       != null ? sfxLapor       : sfxCorrect);
+    public void PlayAchievement() => PlaySFX(sfxAchievement != null ? sfxAchievement : sfxCorrect);
+
+    /// Putar SFX sesuai kategori "AMAN" | "RAGU" | "BAHAYA" | "LAPOR".
+    public void PlayKategori(string kategori)
+    {
+        switch (kategori)
+        {
+            case "AMAN":   PlayAman();   break;
+            case "RAGU":   PlayRagu();   break;
+            case "BAHAYA": PlayBahaya(); break;
+            case "LAPOR":  PlayLapor();  break;
+            default:       Neutral();    break;
+        }
+    }
 }

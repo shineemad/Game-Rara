@@ -65,6 +65,49 @@ public class HUDManager : MonoBehaviour
     public Color gaugeFillColor   = new Color(0.96f, 0.45f, 0.10f, 1f);
     public Color gaugeEmptyColor  = new Color(0.10f, 0.05f, 0.02f, 1f);
 
+    // ══════════════════════════════════════════════════════════════════════
+    // INSPECTOR — KUSTOMISASI NAVBAR PROGRESS HARI (H1/H2/H3)
+    // Semua field ini bisa diubah di Inspector & di-Apply LANGSUNG saat Play
+    // lewat tombol konteks "▶ Apply Custom Navbar" (klik kanan komponen).
+    // ══════════════════════════════════════════════════════════════════════
+    [Header("Navbar Hari — Label Teks")]
+    [Tooltip("Label di bawah tiap lingkaran. 3 elemen → H1, H2, H3 (bisa diganti)")]
+    public string[] dayLabels = { "H1", "H2", "H3" };
+
+    [Header("Navbar Hari — Ukuran Font")]
+    [Tooltip("Ukuran font angka di dalam lingkaran (1, 2, 3)")]
+    [Range(8, 60)] public int dayNumFontSize   = 22;
+    [Tooltip("Ukuran font label di bawah lingkaran (H1, H2, H3)")]
+    [Range(8, 60)] public int dayLabelFontSize = 19;
+
+    [Header("Navbar Hari — Ukuran Lingkaran")]
+    [Tooltip("Diameter lingkaran hari dalam pixel")]
+    [Range(20f, 120f)] public float dayCircleSize = 50f;
+
+    [Header("Navbar Hari — Posisi Horizontal (X)")]
+    [Tooltip("Posisi X lingkaran H1 (fraksi 0=kiri, 1=kanan panel center)")]
+    [Range(0f, 1f)] public float dayCircleX1 = 0.15f;
+    [Tooltip("Posisi X lingkaran H2")]
+    [Range(0f, 1f)] public float dayCircleX2 = 0.50f;
+    [Tooltip("Posisi X lingkaran H3")]
+    [Range(0f, 1f)] public float dayCircleX3 = 0.85f;
+
+    [Header("Navbar Hari — Warna (di luar Active/Inactive)")]
+    [Tooltip("Warna teks angka saat hari AKTIF (dalam lingkaran)")]
+    public Color dayNumColorActive   = Color.black;
+    [Tooltip("Warna teks angka saat hari NON-AKTIF")]
+    public Color dayNumColorInactive = new Color(0.62f, 0.62f, 0.65f, 0.85f);
+    [Tooltip("Warna teks label (H1/H2/H3) saat hari NON-AKTIF")]
+    public Color dayLabelColorInactive = new Color(0.48f, 0.48f, 0.52f, 0.85f);
+
+    [Header("Navbar Hari — Tebal Garis Konektor")]
+    [Tooltip("Tinggi (tebal) garis penghubung antar lingkaran")]
+    [Range(2f, 30f)] public float dayLineThickness = 12f;
+
+    [Header("Navbar Hari — Live Edit")]
+    [Tooltip("Centang: tiap perubahan Inspector langsung diterapkan saat Play tanpa restart")]
+    public bool liveEditNavbar = true;
+
     [Header("Intro Hari")]
     public float introDuration     = 2.8f;
     public float introFadeDuration = 0.5f;
@@ -168,6 +211,33 @@ public class HUDManager : MonoBehaviour
         if (buildHUDAtRuntime)
             BuildHUD();
         Refresh();
+
+        // Inisialisasi tracker — biar Update() tahu nilai awal hari
+        if (GameState.Instance != null)
+            _lastTrackedDay = GameState.Instance.day;
+    }
+
+    // ── Tracker perubahan hari ────────────────────────────────────────────
+    // Diperiksa tiap frame supaya navbar (H1/H2/H3) langsung pindah aktif
+    // begitu GameState.Instance.day berubah — tidak perlu lagi memanggil
+    // HUDManager.Instance.Refresh() secara manual di setiap controller.
+    private int _lastTrackedDay = -1;
+
+    void Update()
+    {
+        var gs = GameState.Instance;
+        if (gs == null) return;
+
+        // Day berubah → refresh seluruh HUD (lingkaran H1/H2/H3 + label + lokasi)
+        if (gs.day != _lastTrackedDay)
+        {
+            _lastTrackedDay = gs.day;
+            Debug.Log($"[HUDManager] Day berubah → {gs.day}. Refresh navbar (H1/H2/H3).");
+            Refresh();
+        }
+
+        // Live edit: terapkan perubahan Inspector ke navbar secara real-time
+        if (liveEditNavbar) ApplyNavbarCustomization();
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -240,19 +310,183 @@ public class HUDManager : MonoBehaviour
                 _dayCircles[i].color = active ? dayActiveColor : dayInactiveColor;
 
             if (_dayNums != null && i < _dayNums.Length && _dayNums[i] != null)
-                _dayNums[i].color = active
-                    ? Color.black
-                    : new Color(0.62f, 0.62f, 0.65f, 0.85f);
+                _dayNums[i].color = active ? dayNumColorActive : dayNumColorInactive;
 
             if (_dayLabels != null && i < _dayLabels.Length && _dayLabels[i] != null)
-                _dayLabels[i].color = active
-                    ? dayActiveColor
-                    : new Color(0.48f, 0.48f, 0.52f, 0.85f);
+                _dayLabels[i].color = active ? dayActiveColor : dayLabelColorInactive;
 
             if (_dayLines != null && i < _dayLines.Length && _dayLines[i] != null)
                 _dayLines[i].color = done ? dayActiveColor : dayInactiveColor;
         }
     }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // TRANSISI HARI — API publik dipanggil saat tombol "LANJUT HARI X" diklik
+    // Logika tersentralisasi di sini supaya tidak tersebar di banyak script.
+    // ══════════════════════════════════════════════════════════════════════
+
+    [Header("Transisi Hari — Animasi Highlight")]
+    [Tooltip("Centang: saat masuk hari baru, lingkaran hari tersebut berkedip emas → ukuran membesar lalu kembali normal.")]
+    public bool   animasiTransisiHari = true;
+    [Tooltip("Durasi animasi highlight (detik) saat masuk hari baru.")]
+    [Range(0.1f, 2f)] public float durasiHighlightHari = 0.6f;
+    [Tooltip("Skala maksimum lingkaran saat dianimasi (1.0 = ukuran normal, 1.4 = membesar 40%).")]
+    [Range(1f, 2f)] public float skalaPuncakHighlight = 1.35f;
+
+    private Coroutine _coHighlightHari;
+
+    /// <summary>
+    /// Dipanggil saat user MENEKAN TOMBOL "LANJUT HARI X" — menandakan
+    /// bahwa hari sudah berganti. Method ini:
+    ///   1. Set GameState.Instance.day = dayNumber
+    ///   2. Refresh seluruh HUD (skor, nyawa, lokasi, lingkaran H1/H2/H3)
+    ///   3. Putar animasi highlight pada lingkaran hari baru (opsional)
+    ///
+    /// Aman dipanggil berkali-kali — tidak akan terjadi double-refresh.
+    /// </summary>
+    // Tracker hari terakhir yang animasinya sudah dimainkan — cegah animasi
+    // diputar dua kali bila EnterDay() dipanggil berurutan dari dua jalur
+    // berbeda (mis. Day1SummaryScreen → DayTransitionManager → keduanya call).
+    private int _lastAnimatedDay = -1;
+
+    public void EnterDay(int dayNumber)
+    {
+        dayNumber = Mathf.Clamp(dayNumber, 1, 3);
+
+        var gs = GameState.Instance;
+        if (gs == null)
+        {
+            Debug.LogWarning($"[HUDManager] EnterDay({dayNumber}) dipanggil tapi GameState.Instance NULL.");
+            return;
+        }
+
+        int hariSebelum = gs.day;
+        bool hariBerubah = (hariSebelum != dayNumber);
+
+        // 1. Sinkronkan state
+        if (hariBerubah)
+        {
+            Debug.Log($"[HUDManager] EnterDay: hari {hariSebelum} → {dayNumber} (set GameState.day)");
+            gs.day = dayNumber;
+        }
+        else
+        {
+            Debug.Log($"[HUDManager] EnterDay({dayNumber}) — hari sudah sesuai, refresh navbar saja.");
+        }
+
+        // 2. Update tracker supaya Update() tidak men-trigger refresh kedua
+        _lastTrackedDay = dayNumber;
+
+        // 3. Refresh seluruh HUD
+        Refresh();
+
+        // 4. Animasi highlight — hanya kalau memang hari baru (atau pertama kali)
+        bool perluAnimasi = animasiTransisiHari && (hariBerubah || _lastAnimatedDay != dayNumber);
+        if (perluAnimasi && _dayCircles != null && isActiveAndEnabled)
+        {
+            int idx = dayNumber - 1;
+            if (idx >= 0 && idx < _dayCircles.Length && _dayCircles[idx] != null)
+            {
+                _lastAnimatedDay = dayNumber;
+                if (_coHighlightHari != null) StopCoroutine(_coHighlightHari);
+                _coHighlightHari = StartCoroutine(CoHighlightHari(_dayCircles[idx].rectTransform));
+            }
+        }
+    }
+
+    /// <summary>Shortcut: dipanggil saat tombol "LANJUT HARI 2" diklik.</summary>
+    public void OnLanjutHari2() => EnterDay(2);
+
+    /// <summary>Shortcut: dipanggil saat tombol "LANJUT HARI 3" diklik.</summary>
+    public void OnLanjutHari3() => EnterDay(3);
+
+    private IEnumerator CoHighlightHari(RectTransform rt)
+    {
+        if (rt == null) yield break;
+
+        float t = 0f;
+        Vector3 baseScale = Vector3.one;
+        rt.localScale = baseScale;
+
+        while (t < durasiHighlightHari)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(t / durasiHighlightHari);
+            // Kurva: cepat membesar 0→1 (ease-out), lalu balik 1→0 (ease-in)
+            float bell = 1f - Mathf.Abs(2f * p - 1f);
+            float eased = bell * bell * (3f - 2f * bell);
+            float scale = Mathf.Lerp(1f, skalaPuncakHighlight, eased);
+            rt.localScale = baseScale * scale;
+            yield return null;
+        }
+        rt.localScale = baseScale;
+        _coHighlightHari = null;
+    }
+
+    [ContextMenu("▶ Test: Masuk Hari 2")]
+    void Ctx_TestEnterDay2() => EnterDay(2);
+
+    [ContextMenu("▶ Test: Masuk Hari 3")]
+    void Ctx_TestEnterDay3() => EnterDay(3);
+
+    // ══════════════════════════════════════════════════════════════════════
+    // KUSTOMISASI LIVE — terapkan perubahan Inspector tanpa rebuild HUD
+    // Dipanggil tiap frame jika liveEditNavbar = true, atau manual dari
+    // tombol konteks "▶ Apply Custom Navbar".
+    // ══════════════════════════════════════════════════════════════════════
+    public void ApplyNavbarCustomization()
+    {
+        if (_dayCircles == null) return;
+        float[] nx = { Mathf.Clamp01(dayCircleX1), Mathf.Clamp01(dayCircleX2), Mathf.Clamp01(dayCircleX3) };
+
+        // Lingkaran: ukuran + posisi X
+        for (int i = 0; i < _dayCircles.Length; i++)
+        {
+            if (_dayCircles[i] == null) continue;
+            var rt = _dayCircles[i].rectTransform;
+            rt.sizeDelta = new Vector2(dayCircleSize, dayCircleSize);
+            rt.anchorMin = rt.anchorMax = new Vector2(nx[i], 0.72f);
+        }
+
+        // Nomor: ukuran font
+        if (_dayNums != null)
+            foreach (var n in _dayNums) if (n != null) n.fontSize = dayNumFontSize;
+
+        // Label: teks + ukuran font + posisi X
+        if (_dayLabels != null)
+        {
+            for (int i = 0; i < _dayLabels.Length; i++)
+            {
+                if (_dayLabels[i] == null) continue;
+                _dayLabels[i].fontSize = dayLabelFontSize;
+                if (dayLabels != null && i < dayLabels.Length && !string.IsNullOrEmpty(dayLabels[i]))
+                    _dayLabels[i].text = dayLabels[i];
+                var lblRT = _dayLabels[i].rectTransform;
+                lblRT.anchorMin = new Vector2(nx[i] - 0.10f, 0.00f);
+                lblRT.anchorMax = new Vector2(nx[i] + 0.10f, 0.36f);
+            }
+        }
+
+        // Garis konektor: tebal + posisi X mengikuti lingkaran
+        if (_dayLines != null)
+        {
+            float lineHalfFrac = Mathf.Clamp(dayLineThickness / 96f, 0.02f, 0.30f) * 0.5f;
+            float lineCenterY  = 0.66f;
+            for (int i = 0; i < _dayLines.Length; i++)
+            {
+                if (_dayLines[i] == null) continue;
+                var lrt = _dayLines[i].rectTransform;
+                lrt.anchorMin = new Vector2(nx[i] + 0.11f,     lineCenterY - lineHalfFrac);
+                lrt.anchorMax = new Vector2(nx[i + 1] - 0.11f, lineCenterY + lineHalfFrac);
+            }
+        }
+
+        // Refresh warna sesuai hari aktif
+        if (GameState.Instance != null) UpdateDayProgress(GameState.Instance.day);
+    }
+
+    [ContextMenu("▶ Apply Custom Navbar")]
+    void Ctx_ApplyNavbar() => ApplyNavbarCustomization();
 
     /// Perbarui Voice Meter tiap frame.
     /// value = VoiceMeter.NormalizedLevel (0–1 amplitudo RMS mentah).
@@ -567,18 +801,21 @@ public class HUDManager : MonoBehaviour
             new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
             new Vector2(0f, -6f), new Vector2(360f, 92f));
 
-        float[] nx = { 0.15f, 0.50f, 0.85f };
+        float[] nx = { Mathf.Clamp01(dayCircleX1), Mathf.Clamp01(dayCircleX2), Mathf.Clamp01(dayCircleX3) };
         _dayCircles = new Image[3];
         _dayNums    = new TextMeshProUGUI[3];
         _dayLabels  = new TextMeshProUGUI[3];
         _dayLines   = new Image[2];
 
         // Garis konektor (di belakang lingkaran, dibuat lebih dulu)
+        // Tebal garis dihitung dari dayLineThickness (px) → fraksi tinggi panel (96px)
+        float lineHalfFrac = Mathf.Clamp(dayLineThickness / 96f, 0.02f, 0.30f) * 0.5f;
+        float lineCenterY  = 0.66f;
         for (int i = 0; i < 2; i++)
         {
             var lineRT  = Rect(center, "Line" + i,
-                new Vector2(nx[i] + 0.11f, 0.60f),
-                new Vector2(nx[i + 1] - 0.11f, 0.72f));
+                new Vector2(nx[i] + 0.11f, lineCenterY - lineHalfFrac),
+                new Vector2(nx[i + 1] - 0.11f, lineCenterY + lineHalfFrac));
             var lineImg = lineRT.gameObject.AddComponent<Image>();
             lineImg.color = dayInactiveColor;
             _dayLines[i]  = lineImg;
@@ -593,7 +830,7 @@ public class HUDManager : MonoBehaviour
             var circRT = circGO.AddComponent<RectTransform>();
             circRT.anchorMin        = circRT.anchorMax = new Vector2(nx[i], 0.72f);
             circRT.pivot            = new Vector2(0.5f, 0.5f);
-            circRT.sizeDelta        = new Vector2(50f, 50f);
+            circRT.sizeDelta        = new Vector2(dayCircleSize, dayCircleSize);
             circRT.anchoredPosition = Vector2.zero;
             var circImg   = circGO.AddComponent<Image>();
             circImg.sprite = _sCircle;
@@ -601,8 +838,8 @@ public class HUDManager : MonoBehaviour
             _dayCircles[i] = circImg;
 
             // Nomor dalam lingkaran
-            var numTMP = Tmp(circGO, "Num", (i + 1).ToString(), 22,
-                (i == 0) ? Color.black : new Color(0.65f, 0.65f, 0.65f, 0.9f));
+            var numTMP = Tmp(circGO, "Num", (i + 1).ToString(), dayNumFontSize,
+                (i == 0) ? dayNumColorActive : dayNumColorInactive);
             numTMP.alignment = TextAlignmentOptions.Center;
             numTMP.fontStyle = FontStyles.Bold;
             numTMP.rectTransform.anchorMin = Vector2.zero;
@@ -610,9 +847,11 @@ public class HUDManager : MonoBehaviour
             numTMP.rectTransform.offsetMin = numTMP.rectTransform.offsetMax = Vector2.zero;
             _dayNums[i] = numTMP;
 
-            // Label "H1/H2/H3" di bawah lingkaran
-            var lblTMP = Tmp(center, "Label" + i, "H" + (i + 1), 19,
-                (i == 0) ? dayActiveColor : new Color(0.48f, 0.48f, 0.52f, 0.9f));
+            // Label "H1/H2/H3" di bawah lingkaran — teks bisa dikustom via dayLabels[]
+            string lbl = (dayLabels != null && i < dayLabels.Length && !string.IsNullOrEmpty(dayLabels[i]))
+                         ? dayLabels[i] : ("H" + (i + 1));
+            var lblTMP = Tmp(center, "Label" + i, lbl, dayLabelFontSize,
+                (i == 0) ? dayActiveColor : dayLabelColorInactive);
             lblTMP.alignment = TextAlignmentOptions.Center;
             lblTMP.fontStyle = FontStyles.Bold;
             var lblRT = lblTMP.rectTransform;

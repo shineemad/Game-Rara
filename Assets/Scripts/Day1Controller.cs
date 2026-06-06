@@ -657,6 +657,7 @@ public class Day1Controller : MonoBehaviour
         {
             dialogActive = false;
             enc3Done     = true;
+            currentPhase = Phase.Walking3;  // izinkan EduCard trigger dari CheckEncounterTriggers
         });
     }
 
@@ -710,6 +711,10 @@ public class Day1Controller : MonoBehaviour
                     onSelect = () =>
                     {
                         Debug.Log($"[Day1] onSelect dipanggil: label={labelPilihan} | kategori={kategori} | GameState={GameState.Instance != null} | HUD={HUDManager.Instance != null}");
+
+                        // SFX per kategori (AMAN/RAGU/BAHAYA)
+                        AudioManager.Instance?.PlayKategori(kategori);
+
                         // Hitung poin — kustom hanya jika dicentang di Inspector
                         int poinDapat;
                         if (pakaiKustom)
@@ -796,6 +801,17 @@ public class Day1Controller : MonoBehaviour
         }, () => { selesai = true; dialogActive = false; });
 
         yield return new WaitUntil(() => selesai);
+
+        // Setelah feedback BAHAYA → tawarkan recovery via tombol LAPOR
+        if (kategori == "BAHAYA" && (GameState.Instance?.IsAlive() ?? false))
+        {
+            bool laporDone = false;
+            LaporButtonUI.Show(
+                onLapor: () => laporDone = true,
+                onSkip:  () => laporDone = true);
+            yield return new WaitUntil(() => laporDone);
+        }
+
         onSelesai?.Invoke();
     }
 

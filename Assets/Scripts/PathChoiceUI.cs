@@ -228,13 +228,13 @@ public class PathChoiceUI : MonoBehaviour
     public bool debugLog = false;
 
     [Header("── MOBILE ──")]
-    [Tooltip("Hormati Safe Area (notch/punch hole) di mobile.")]
-    public bool  useSafeArea       = true;
+    [Tooltip("Hormati Safe Area (notch/punch hole) di mobile. Matikan kalau panel ter-clamp di Game View kecil.")]
+    public bool  useSafeArea       = false;
     [Tooltip("Minimum touch target untuk tombol (px). Default 96 untuk anak.")]
     public float minTouchTargetPx  = 96f;
-    [Tooltip("Auto-batasi panel agar tidak melebihi layar. 0.92 = max 92% lebar.")]
-    [Range(0.5f, 1f)] public float maxPanelWidthScreenRatio  = 0.92f;
-    [Range(0.5f, 1f)] public float maxPanelHeightScreenRatio = 0.85f;
+    [Tooltip("Auto-batasi panel agar tidak melebihi layar. 1.0 = boleh sebesar layar penuh.")]
+    [Range(0.5f, 1f)] public float maxPanelWidthScreenRatio  = 1f;
+    [Range(0.5f, 1f)] public float maxPanelHeightScreenRatio = 1f;
 
     [Header("── EVENTS — sambungkan ke Day1Controller ──")]
     [Tooltip("Dipanggil saat pemain memilih Jalan Ramai")]
@@ -293,6 +293,76 @@ public class PathChoiceUI : MonoBehaviour
 
         // Pastikan EventSystem ada — tanpa ini tombol UI tidak akan merespons klik.
         EnsureEventSystem();
+
+        // Auto-hookup ref UI yang masih kosong (panel, overlay, tombol) supaya
+        // bagian "Ukuran Sprite" & "Posisi Tombol" langsung bekerja saat Play
+        // walau user belum drag manual ke Inspector.
+        AutoHookupMissingRefs();
+
+        // Apply sekali di Start agar nilai Inspector langsung kelihatan tanpa menunggu trigger.
+        ReapplyAllCustomization();
+    }
+
+    // Cari & isi field ref yang masih null. Aman dipanggil berulang (idempotent).
+    void AutoHookupMissingRefs()
+    {
+        // Panel — pakai auto-detect berdasarkan luas Image terbesar.
+        if (panelRootRef == null)
+        {
+            var rt = AutoFindPanelRectTransform();
+            if (rt != null)
+            {
+                panelRootRef = rt.gameObject;
+                Debug.Log("[PathChoiceUI] Auto-hookup panelRootRef → " + rt.name);
+            }
+        }
+
+        // Overlay — cari Image stretch fullscreen bernama "Overlay" / "Dim" / sejenis.
+        if (overlayImageRef == null)
+        {
+            Transform searchRoot = uiRootRef != null ? uiRootRef.transform
+                                  : (panelRootRef != null ? panelRootRef.transform.root : null);
+            if (searchRoot != null)
+            {
+                var imgs = searchRoot.GetComponentsInChildren<Image>(true);
+                foreach (var img in imgs)
+                {
+                    string n = img.name.ToLower();
+                    if (n.Contains("overlay") || n.Contains("dim") || n.Contains("backdrop"))
+                    {
+                        overlayImageRef = img;
+                        Debug.Log("[PathChoiceUI] Auto-hookup overlayImageRef → " + img.name);
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Tombol Safe/Danger — cari child by name di hierarki panel.
+        if (btnSafeRef == null)
+        {
+            var t = FindRT(null, "BtnSafe");
+            if (t != null) btnSafeRef = t.GetComponent<Button>();
+            if (btnSafeRef != null) Debug.Log("[PathChoiceUI] Auto-hookup btnSafeRef → " + btnSafeRef.name);
+        }
+        if (btnDangerRef == null)
+        {
+            var t = FindRT(null, "BtnDanger");
+            if (t != null) btnDangerRef = t.GetComponent<Button>();
+            if (btnDangerRef != null) Debug.Log("[PathChoiceUI] Auto-hookup btnDangerRef → " + btnDangerRef.name);
+        }
+
+        // Daftarkan listener tombol kalau belum (di Mode A SetupEditorRefs sudah handle, ini fallback).
+        if (btnSafeRef != null)
+        {
+            btnSafeRef.onClick.RemoveListener(OnSafeButton);
+            btnSafeRef.onClick.AddListener(OnSafeButton);
+        }
+        if (btnDangerRef != null)
+        {
+            btnDangerRef.onClick.RemoveListener(OnDangerButton);
+            btnDangerRef.onClick.AddListener(OnDangerButton);
+        }
     }
 
     // Auto-buat EventSystem jika scene tidak punya satupun.
@@ -354,6 +424,8 @@ public class PathChoiceUI : MonoBehaviour
     }
 
     // ══════ Safe Area (notch handling) ══════
+    // BUKAN mengubah field panelSize (yang diatur user di Inspector), tapi hanya membatasi
+    // ukuran AKTUAL saat diterapkan ke RectTransform di ApplySpriteSizes (via GetSafePanelSize).
     Rect lastSafeArea = Rect.zero;
     void ApplySafeAreaIfNeeded()
     {
@@ -361,15 +433,20 @@ public class PathChoiceUI : MonoBehaviour
         Rect sa = Screen.safeArea;
         if (sa == lastSafeArea) return;
         lastSafeArea = sa;
+        // Tidak perlu lakukan apa-apa di sini — clamping dilakukan saat apply di GetSafePanelSize().
+    }
 
-        if (overrideSpriteSize)
-        {
-            float maxW = sa.width  * maxPanelWidthScreenRatio;
-            float maxH = sa.height * maxPanelHeightScreenRatio;
-            panelSize = new Vector2(
-                Mathf.Min(panelSize.x, maxW),
-                Mathf.Min(panelSize.y, maxH));
-        }
+    // Hitung ukuran panel final, dibatasi safe area jika useSafeArea aktif.
+    // Field panelSize TIDAK diubah — hanya return value yang di-clamp.
+    Vector2 GetSafePanelSize()
+    {
+        if (!useSafeArea) return panelSize;
+        Rect sa = Screen.safeArea;
+        float maxW = sa.width  * maxPanelWidthScreenRatio;
+        float maxH = sa.height * maxPanelHeightScreenRatio;
+        return new Vector2(
+            Mathf.Min(panelSize.x, maxW),
+            Mathf.Min(panelSize.y, maxH));
     }
 
     // ──────────── CONTEXT MENU UNTUK TEST SAAT PLAY ────────────
@@ -398,6 +475,231 @@ public class PathChoiceUI : MonoBehaviour
         HidePanel();
         shown = false;
         triggered = false;
+    }
+
+    /// <summary>
+    /// Atur otomatis ukuran & posisi tombol agar masuk ke dalam panel.
+    /// Berguna kalau angka tombol jauh lebih besar dari panel sehingga tidak terlihat.
+    /// Hasil: 2 tombol horizontal di bawah panel, masing-masing ~45% lebar panel.
+    /// </summary>
+    [ContextMenu("▶ Auto-Fit: Pasang Tombol Di Dalam Panel")]
+    public void AutoFitButtonsToPanel()
+    {
+        // Hitung ukuran panel — pakai panelSize (dari override) atau dari RectTransform aktual.
+        Vector2 ps = panelSize;
+        RectTransform panelRT = null;
+        if (panelRootRef != null)   panelRT = panelRootRef.GetComponent<RectTransform>();
+        else if (panelRoot != null) panelRT = panelRoot.GetComponent<RectTransform>();
+        if (panelRT != null && panelRT.sizeDelta.x > 50f && panelRT.sizeDelta.y > 50f)
+            ps = panelRT.sizeDelta;
+
+        // 2 tombol horizontal di bagian bawah panel, padding 8%.
+        float bw = ps.x * 0.42f;      // lebar tiap tombol
+        float bh = ps.y * 0.18f;      // tinggi tiap tombol
+        float gap = ps.x * 0.04f;      // jarak antar tombol
+        float yPos = -ps.y * 0.32f;    // posisi vertikal (di bawah tengah panel)
+
+        overrideButtonLayout    = true;
+        safeButtonAnchoredPos   = new Vector2(-(bw * 0.5f + gap * 0.5f), yPos);
+        safeButtonSize          = new Vector2(bw, bh);
+        dangerButtonAnchoredPos = new Vector2( (bw * 0.5f + gap * 0.5f), yPos);
+        dangerButtonSize        = new Vector2(bw, bh);
+
+        Debug.Log("[PathChoiceUI] Auto-Fit selesai. Panel=" + ps + "  Safe pos=" + safeButtonAnchoredPos + " size=" + safeButtonSize + "  Danger pos=" + dangerButtonAnchoredPos + " size=" + dangerButtonSize);
+
+        if (Application.isPlaying)
+            ReapplyAllCustomization();
+    }
+
+    /// <summary>
+    /// Sembunyikan latar Image kedua tombol (alpha=0) tapi tetap menerima klik.
+    /// Berguna kalau ribbon tombol sudah "baked" di sprite panel — tombol UI cukup jadi area klik invisible.
+    /// </summary>
+    [ContextMenu("▶ Buat Tombol Transparan (klik tetap aktif)")]
+    public void MakeButtonsInvisibleButClickable()
+    {
+        SetButtonAlpha(btnSafeRef,   0f);
+        SetButtonAlpha(btnDangerRef, 0f);
+        Debug.Log("[PathChoiceUI] Tombol di-set transparan. Raycast Target tetap ON — klik tetap berfungsi.");
+    }
+
+    /// <summary>
+    /// Kembalikan latar Image tombol jadi terlihat (alpha=1).
+    /// </summary>
+    [ContextMenu("▶ Tampilkan Lagi Latar Tombol")]
+    public void ShowButtonBackgrounds()
+    {
+        SetButtonAlpha(btnSafeRef,   1f);
+        SetButtonAlpha(btnDangerRef, 1f);
+    }
+
+    void SetButtonAlpha(Button b, float a)
+    {
+        if (b == null) return;
+        var img = b.GetComponent<Image>();
+        if (img == null) return;
+        var c = img.color; c.a = a; img.color = c;
+        img.raycastTarget = true; // pastikan tetap menerima klik
+    }
+
+    /// <summary>
+    /// Diagnostic khusus untuk bagian "Ukuran Sprite".
+    /// Print ukuran AKTUAL panel/overlay setelah ApplySpriteSizes dipanggil.
+    /// Kalau RectTransform-nya tidak berubah → ada parent dengan LayoutGroup
+    /// atau panelRootRef menunjuk ke GameObject yang salah.
+    /// </summary>
+    [ContextMenu("▶ Diagnostic: Cek Ukuran Sprite Aktual")]
+    public void DiagnosticSpriteSize()
+    {
+        Debug.Log("════════ DIAGNOSTIC UKURAN SPRITE ════════");
+        Debug.Log("overrideSpriteSize = " + overrideSpriteSize + "  (HARUS true agar nilai diterapkan)");
+        Debug.Log("Inspector → panelSize=" + panelSize + "  panelAnchoredPos=" + panelAnchoredPos + "  panelScale=" + panelScale);
+        Debug.Log("Inspector → overlaySize=" + overlaySize + "  overlayStretch=" + overlayStretchFullscreen);
+        Debug.Log("Inspector → safeButtonScale=" + safeButtonScale + "  dangerButtonScale=" + dangerButtonScale);
+
+        // Panel
+        RectTransform panelRT = null;
+        string panelSource = "NULL";
+        if (panelRootRef != null)   { panelRT = panelRootRef.GetComponent<RectTransform>(); panelSource = "panelRootRef → " + panelRootRef.name; }
+        else if (panelRoot != null) { panelRT = panelRoot.GetComponent<RectTransform>();    panelSource = "panelRoot (Mode B) → " + panelRoot.name; }
+        Debug.Log("─── PANEL ───");
+        Debug.Log("  Source        : " + panelSource);
+        if (panelRT != null)
+        {
+            Debug.Log("  AKTUAL pos    = " + panelRT.anchoredPosition);
+            Debug.Log("  AKTUAL size   = " + panelRT.sizeDelta);
+            Debug.Log("  AKTUAL scale  = " + panelRT.localScale.x);
+            Debug.Log("  Parent name   = " + (panelRT.parent != null ? panelRT.parent.name : "(none)"));
+            CheckParentLayout(panelRT);
+            // Cek anchor — kalau stretch, sizeDelta jadi offset, bukan ukuran absolut!
+            if (panelRT.anchorMin != panelRT.anchorMax)
+                Debug.LogWarning("  ⚠ Anchor STRETCH (" + panelRT.anchorMin + " → " + panelRT.anchorMax + ") — sizeDelta jadi offset, bukan ukuran piksel. ApplySpriteSizes akan set anchor ke center.");
+        }
+        else Debug.LogWarning("  Panel RT NULL — drag Panel Root Ref di Inspector!");
+
+        // Overlay
+        Debug.Log("─── OVERLAY ───");
+        RectTransform ovRT = null;
+        string ovSource = "NULL";
+        if (overlayImageRef != null) { ovRT = overlayImageRef.GetComponent<RectTransform>(); ovSource = "overlayImageRef → " + overlayImageRef.name; }
+        else
+        {
+            var t = FindRT(null, "Overlay");
+            if (t != null) { ovRT = t; ovSource = "auto-found 'Overlay' child"; }
+        }
+        Debug.Log("  Source        : " + ovSource);
+        if (ovRT != null)
+        {
+            Debug.Log("  AKTUAL size   = " + ovRT.sizeDelta);
+        }
+
+        // Buttons (untuk scale)
+        Debug.Log("─── TOMBOL (scale) ───");
+        var safeRT   = FindRT(btnSafeRef   != null ? btnSafeRef.transform   : null, "BtnSafe");
+        var dangerRT = FindRT(btnDangerRef != null ? btnDangerRef.transform : null, "BtnDanger");
+        if (safeRT   != null) Debug.Log("  Safe   AKTUAL scale = " + safeRT.localScale.x);
+        if (dangerRT != null) Debug.Log("  Danger AKTUAL scale = " + dangerRT.localScale.x);
+        Debug.Log("════════════════════════════════════════════");
+    }
+
+    /// <summary>
+    /// Auto-detect: cari Image dengan sprite TERBESAR di hierarki Canvas, anggap itu panel.
+    /// Lalu set panelRootRef otomatis. Berguna kalau bingung GameObject mana yang sebenarnya panel.
+    /// </summary>
+    [ContextMenu("▶ Auto-Detect: Cari & Pasang Panel Root Ref")]
+    public void AutoDetectPanelRoot()
+    {
+        Transform searchRoot = null;
+        if (uiRootRef != null) searchRoot = uiRootRef.transform.root;
+        else if (panelRootRef != null) searchRoot = panelRootRef.transform.root;
+        else
+        {
+            var anyCanvas = FindFirstObjectByType<Canvas>();
+            if (anyCanvas != null) searchRoot = anyCanvas.transform;
+        }
+        if (searchRoot == null) { Debug.LogWarning("[PathChoiceUI] Tidak ada Canvas ditemukan."); return; }
+
+        Image best = null;
+        float bestArea = 0f;
+        var imgs = searchRoot.GetComponentsInChildren<Image>(true);
+        foreach (var img in imgs)
+        {
+            if (img.sprite == null) continue;
+            var rt = img.rectTransform;
+            float a = Mathf.Abs(rt.rect.width * rt.rect.height);
+            if (a > bestArea) { bestArea = a; best = img; }
+        }
+        if (best == null) { Debug.LogWarning("[PathChoiceUI] Tidak ada Image bersprite ditemukan."); return; }
+
+        panelRootRef = best.gameObject;
+        Debug.Log("[PathChoiceUI] panelRootRef di-set ke: " + best.name + "  (area=" + bestArea.ToString("F0") + ", parent=" + (best.transform.parent != null ? best.transform.parent.name : "(none)") + ")");
+        if (Application.isPlaying) ReapplyAllCustomization();
+    }
+
+    /// <summary>
+    /// Tekan untuk paksa apply Ukuran Sprite SEKARANG dengan log verbose tiap langkah.
+    /// </summary>
+    [ContextMenu("▶ Force Apply: Ukuran Sprite Sekarang")]
+    public void ForceApplySpriteSizesNow()
+    {
+        if (!overrideSpriteSize)
+        {
+            overrideSpriteSize = true;
+            Debug.LogWarning("[PathChoiceUI] overrideSpriteSize otomatis dicentang.");
+        }
+        bool prev = debugLog;
+        debugLog = true;
+        ApplySpriteSizes();
+        debugLog = prev;
+        DiagnosticSpriteSize();
+    }
+
+    /// <summary>
+    /// List SEMUA Image bersprite di Canvas — terurut dari TERBESAR.
+    /// Pakai ini untuk melihat semua "kandidat panel" dan tahu mana yang sedang dipakai script.
+    /// </summary>
+    [ContextMenu("▶ Diagnostic: List Semua Image Bersprite")]
+    public void DiagnosticListAllSprites()
+    {
+        Transform searchRoot = null;
+        if (uiRootRef    != null) searchRoot = uiRootRef.transform;
+        else if (panelRootRef != null) searchRoot = panelRootRef.transform.root;
+        else
+        {
+            var anyCanvas = FindFirstObjectByType<Canvas>();
+            if (anyCanvas != null) searchRoot = anyCanvas.transform;
+        }
+        if (searchRoot == null) { Debug.LogWarning("[PathChoiceUI] Tidak ada Canvas ditemukan."); return; }
+
+        var imgs = searchRoot.GetComponentsInChildren<Image>(true);
+        var list = new System.Collections.Generic.List<(Image img, float area)>();
+        foreach (var img in imgs)
+        {
+            if (img.sprite == null) continue;
+            var rt = img.rectTransform;
+            float a = Mathf.Abs(rt.rect.width * rt.rect.height);
+            list.Add((img, a));
+        }
+        list.Sort((a, b) => b.area.CompareTo(a.area));
+
+        Debug.Log("════════ DAFTAR SEMUA IMAGE BERSPRITE (root: " + searchRoot.name + ") ════════");
+        Debug.Log("Total ditemukan: " + list.Count);
+        int currentPanelId = panelRootRef != null ? panelRootRef.GetInstanceID() : 0;
+        for (int i = 0; i < list.Count; i++)
+        {
+            var (img, area) = list[i];
+            var rt = img.rectTransform;
+            bool isTarget = img.gameObject.GetInstanceID() == currentPanelId;
+            string marker = isTarget ? " ★ ← PANEL ROOT REF saat ini" : "";
+            string stretch = (rt.anchorMin == Vector2.zero && rt.anchorMax == Vector2.one) ? " [STRETCH]" : "";
+            Debug.Log(string.Format("  #{0} {1}{2}  size={3}  pos={4}  sprite='{5}'  area={6:F0}  parent='{7}'{8}",
+                i, img.name, stretch, rt.sizeDelta, rt.anchoredPosition,
+                img.sprite.name, area,
+                rt.parent != null ? rt.parent.name : "(none)", marker));
+        }
+        Debug.Log("Cara pakai: lihat # yang sebenarnya panel ramai/bingkai kayu yang kamu lihat di game.");
+        Debug.Log("Lalu Drag GameObject itu ke field 'Panel Root Ref' di Inspector PathChoiceUI.");
+        Debug.Log("════════════════════════════════════════════════════════════════════");
     }
 
     [ContextMenu("▶ Diagnostic: Lihat Apa Yang Ditemukan")]
@@ -621,52 +923,81 @@ public class PathChoiceUI : MonoBehaviour
 
     void ApplyCustomSprites()
     {
-        // Panel background
+        // Panel background — cari Image di GameObject yang sama ATAU di child.
         if (panelBgSprite != null)
         {
-            var img = (panelRootRef != null) ? panelRootRef.GetComponent<Image>()
-                                              : (panelRoot != null ? panelRoot.GetComponent<Image>() : null);
+            Image img = ResolveImage(panelRootRef, panelRoot, "Panel");
             if (img != null) SetSpriteOnImage(img, panelBgSprite);
+            else if (debugLog) Debug.LogWarning("[PathChoiceUI] panelBgSprite di-set tapi tidak ketemu Image target. Drag Panel Root Ref di Inspector.");
         }
 
-        // Overlay
+        // Overlay — cek overlayImageRef (Mode A), uiRootRef child, uiRoot child (Mode B), recursive.
         if (overlayBgSprite != null)
         {
             Image ov = overlayImageRef;
-            if (ov == null && uiRoot != null)
+            if (ov == null)
             {
-                var t = uiRoot.transform.Find("Overlay");
+                var t = FindRT(null, "Overlay");
                 if (t != null) ov = t.GetComponent<Image>();
             }
             if (ov != null) SetSpriteOnImage(ov, overlayBgSprite);
+            else if (debugLog) Debug.LogWarning("[PathChoiceUI] overlayBgSprite di-set tapi Overlay tidak ketemu. Drag Overlay Image Ref di Inspector.");
         }
 
-        // Tombol Safe
+        // Tombol Safe — pakai FindRT recursive supaya nemu meski tombol bersarang dalam.
         if (safeButtonSprite != null)
         {
-            Image img = (btnSafeRef != null) ? btnSafeRef.GetComponent<Image>() : null;
-            if (img == null && panelRoot != null)
-            {
-                var t = panelRoot.transform.Find("BtnSafe");
-                if (t != null) img = t.GetComponent<Image>();
-            }
+            Image img = ResolveButtonImage(btnSafeRef, "BtnSafe");
             if (img != null) SetSpriteOnImage(img, safeButtonSprite);
+            else if (debugLog) Debug.LogWarning("[PathChoiceUI] safeButtonSprite di-set tapi BtnSafe tidak ketemu. Drag Btn Safe Ref di Inspector.");
         }
 
-        // Tombol Danger
+        // Tombol Danger — sama seperti Safe.
         if (dangerButtonSprite != null)
         {
-            Image img = (btnDangerRef != null) ? btnDangerRef.GetComponent<Image>() : null;
-            if (img == null && panelRoot != null)
-            {
-                var t = panelRoot.transform.Find("BtnDanger");
-                if (t != null) img = t.GetComponent<Image>();
-            }
+            Image img = ResolveButtonImage(btnDangerRef, "BtnDanger");
             if (img != null) SetSpriteOnImage(img, dangerButtonSprite);
+            else if (debugLog) Debug.LogWarning("[PathChoiceUI] dangerButtonSprite di-set tapi BtnDanger tidak ketemu. Drag Btn Danger Ref di Inspector.");
         }
 
         // Terapkan ukuran sprite (panel, overlay, scale tombol)
         ApplySpriteSizes();
+    }
+
+    // Helper: cari Image di refA / refB ATAU di anaknya (pertama yang punya Image).
+    // childName dipakai sebagai fallback recursive search.
+    Image ResolveImage(GameObject refA, GameObject refB, string childName)
+    {
+        GameObject src = refA != null ? refA : refB;
+        if (src != null)
+        {
+            var img = src.GetComponent<Image>();
+            if (img != null) return img;
+            img = src.GetComponentInChildren<Image>(true);
+            if (img != null) return img;
+        }
+        var t = FindRT(null, childName);
+        if (t != null) return t.GetComponent<Image>();
+        return null;
+    }
+
+    Image ResolveButtonImage(Button btnRef, string childName)
+    {
+        if (btnRef != null)
+        {
+            var img = btnRef.GetComponent<Image>();
+            if (img != null) return img;
+            img = btnRef.GetComponentInChildren<Image>(true);
+            if (img != null) return img;
+        }
+        var t = FindRT(null, childName);
+        if (t != null)
+        {
+            var img = t.GetComponent<Image>();
+            if (img != null) return img;
+            return t.GetComponentInChildren<Image>(true);
+        }
+        return null;
     }
 
     void ApplySpriteSizes()
@@ -677,6 +1008,17 @@ public class PathChoiceUI : MonoBehaviour
         RectTransform panelRT = null;
         if (panelRootRef != null)   panelRT = panelRootRef.GetComponent<RectTransform>();
         else if (panelRoot != null) panelRT = panelRoot.GetComponent<RectTransform>();
+        // Fallback: kalau panelRootRef belum di-assign user, auto-detect dari Canvas.
+        if (panelRT == null)
+        {
+            var auto = AutoFindPanelRectTransform();
+            if (auto != null)
+            {
+                panelRT = auto;
+                panelRootRef = auto.gameObject; // simpan untuk pakai berikutnya
+                Debug.LogWarning("[PathChoiceUI] panelRootRef kosong — auto-detect ke: " + auto.name);
+            }
+        }
         if (panelRT != null)
         {
             DisableLayoutOnParent(panelRT);
@@ -685,9 +1027,9 @@ public class PathChoiceUI : MonoBehaviour
             panelRT.anchorMax = new Vector2(0.5f, 0.5f);
             panelRT.pivot     = new Vector2(0.5f, 0.5f);
             panelRT.anchoredPosition = panelAnchoredPos;
-            panelRT.sizeDelta        = panelSize;
+            panelRT.sizeDelta        = GetSafePanelSize();
             panelRT.localScale       = Vector3.one * panelScale;
-            if (debugLog) Debug.Log($"[PathChoiceUI] Panel rect → pos={panelAnchoredPos} size={panelSize} scale={panelScale}");
+            if (debugLog) Debug.Log($"[PathChoiceUI] Panel rect → pos={panelAnchoredPos} size={panelRT.sizeDelta} (Inspector={panelSize}) scale={panelScale}");
         }
         else if (debugLog) Debug.LogWarning("[PathChoiceUI] Panel RT tidak ditemukan — drag Panel Root Ref di Inspector.");
 
@@ -724,6 +1066,37 @@ public class PathChoiceUI : MonoBehaviour
 
         RectTransform dangerRT = FindRT(btnDangerRef != null ? btnDangerRef.transform : null, "BtnDanger");
         if (dangerRT != null) dangerRT.localScale = Vector3.one * dangerButtonScale;
+    }
+
+    // Cari Image dengan luas TERBESAR di hierarki Canvas terdekat — anggap sebagai panel.
+    // Skip Overlay (anchor stretch fullscreen) agar tidak salah pilih.
+    RectTransform AutoFindPanelRectTransform()
+    {
+        Transform searchRoot = null;
+        if (uiRootRef    != null) searchRoot = uiRootRef.transform;
+        else if (panelRootRef != null) searchRoot = panelRootRef.transform.root;
+        else if (uiRoot != null) searchRoot = uiRoot.transform;
+        else
+        {
+            var anyCanvas = FindFirstObjectByType<Canvas>();
+            if (anyCanvas != null) searchRoot = anyCanvas.transform;
+        }
+        if (searchRoot == null) return null;
+
+        Image best = null;
+        float bestArea = 0f;
+        var imgs = searchRoot.GetComponentsInChildren<Image>(true);
+        foreach (var img in imgs)
+        {
+            if (img.sprite == null) continue;
+            var rt = img.rectTransform;
+            // Skip Image yang stretch fullscreen (kemungkinan Overlay/UIRoot)
+            if (rt.anchorMin == Vector2.zero && rt.anchorMax == Vector2.one) continue;
+            if (rt.name.ToLower().Contains("overlay")) continue;
+            float a = Mathf.Abs(rt.rect.width * rt.rect.height);
+            if (a > bestArea) { bestArea = a; best = img; }
+        }
+        return best != null ? best.rectTransform : null;
     }
 
     void SetSpriteOnImage(Image img, Sprite sp)

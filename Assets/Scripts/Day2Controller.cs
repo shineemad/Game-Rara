@@ -1,0 +1,800 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
+
+/// <summary>
+/// Day2Controller — Orkestrator alur Hari 2: angkot jurusan sekolah.
+///
+/// State machine 6 fase:
+///   Intro \u2192 Halte \u2192 Angkot (pilih kursi) \u2192 Quiz Zona Tubuh
+///   \u2192 ChatSim WhatsApp \u2192 Lapor \u2192 EduCard \u2192 Summary
+///
+/// Background dibangun procedural (gradient + bentuk sederhana) per fase.
+/// Tiap fase punya komponen sendiri (HalteDialog, AngkotSeatPicker, dll)
+/// yang dipanggil via OnSelesai callback supaya alur tetap linear.
+///
+/// Cara pakai:
+///   1. Buat Scene "Day2.unity" + tambahkan GameState/AudioManager/SceneLoader
+///   2. GameObject \u2192 Create Empty \u2192 "Day2Controller" \u2192 Add Component
+///   3. Drag referensi setiap fase (atau biarkan auto-find)
+///   4. Klik Play \u2192 controller akan jalan otomatis dari fase Intro
+/// </summary>
+public class Day2Controller : MonoBehaviour
+{
+    public static Day2Controller Instance { get; private set; }
+
+    public enum Phase
+    {
+        None,
+        Intro,
+        Narasi,
+        Halte,
+        Angkot,
+        Quiz,
+        ChatSim,
+        Lapor,
+        EduCard,
+        Summary,
+        Done
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // INSPECTOR
+    // ══════════════════════════════════════════════════════════════════════
+
+    [Header("Auto-Start")]
+    [Tooltip("Mulai otomatis dari fase Intro saat scene aktif.")]
+    public bool autoStart = true;
+    [Tooltip("Skip fase ini (untuk debug).")]
+    public Phase mulaiDariFase = Phase.Intro;
+
+    [Header("Referensi Fase (kosongkan = auto-find)")]
+    public Day2NarasiAwal     narasiAwal;
+    public HalteDialog        haltDialog;
+    public AngkotSeatPicker   angkotSeatPicker;
+    public ZonaTubuhQuiz      zonaTubuhQuiz;
+    public ChatSimWhatsApp    chatSim;
+    public LaporTeriakButton  laporButton;
+    public EduCardDay2        eduCard;
+    public Day2SummaryScreen  summaryScreen;
+
+    [Header("Backdrop Procedural")]
+    [Tooltip("Background utama dibuat dari script ini (gradient warna per fase).")]
+    public bool buatBackdropProcedural = true;
+    [Tooltip("Sorting order Canvas backdrop. Default -100 (paling belakang).")]
+    public int backdropSortingOrder = -100;
+
+    [Header("Warna Backdrop Per Fase")]
+    public Color warnaIntro    = new Color(0.55f, 0.78f, 0.95f, 1f);   // langit pagi
+    public Color warnaHalte    = new Color(0.45f, 0.62f, 0.78f, 1f);   // sedikit lebih gelap
+    public Color warnaAngkot   = new Color(0.18f, 0.14f, 0.10f, 1f);   // interior coklat
+    public Color warnaQuiz     = new Color(0.10f, 0.16f, 0.30f, 1f);   // ungu gelap
+    public Color warnaChatSim  = new Color(0.05f, 0.18f, 0.22f, 1f);   // WhatsApp dark
+    public Color warnaLapor    = new Color(0.20f, 0.05f, 0.05f, 1f);   // merah gelap urgensi
+    public Color warnaEduCard  = new Color(0.05f, 0.10f, 0.08f, 1f);   // hijau gelap
+
+    [Header("Label Fase (info di pojok atas)")]
+    public bool tampilkanLabelFase = true;
+    public Color warnaLabelFase = new Color(1f, 0.85f, 0.25f, 0.85f);
+    public int   ukuranLabelFase = 22;
+
+    [Header("Intro Slide (sebelum Halte) — STYLE DAY 1 PROLOG")]
+    [Tooltip("Judul kecil di atas narasi (gold). Kosongkan = sembunyikan.")]
+    public string introJudul = "HARI 2 · PERSIAPAN";
+    [TextArea(2, 6)]
+    [Tooltip("Narasi pembuka Day 2.")]
+    public string introNarasi = "🚌  Hari ke-2.\nRara mau naik angkot ke sekolah.\nDi halte ramai — tapi ada yang merhatiin dari tadi...";
+    [Tooltip("Teks tombol mulai.")]
+    public string introTombolTeks = "▶  MULAI";
+    [Tooltip("Detik minimum sebelum tombol Mulai bisa diklik.")]
+    public float  introMinDetik   = 1.5f;
+
+    [Header("Intro Slide — Warna (custom seperti Day 1)")]
+    [Tooltip("Warna judul (default: kuning emas Day 1).")]
+    public Color introJudulWarna  = new Color(1f, 0.84f, 0f, 1f);          // #FFD700
+    [Tooltip("Warna narasi (default: putih).")]
+    public Color introWarna       = new Color(1f, 1f, 1f, 1f);
+    [Tooltip("Warna background panel (RGBA).")]
+    public Color introPanelWarna  = new Color(0f, 0f, 0f, 0.92f);
+    [Tooltip("Warna border ornamen (kuning Day 1).")]
+    public Color introBorderWarna = new Color(1f, 0.85f, 0.2f, 1f);
+    [Tooltip("Warna background tombol Mulai.")]
+    public Color introBtnWarna    = new Color(0.18f, 0.62f, 0.32f, 1f);
+    [Tooltip("Warna teks tombol Mulai.")]
+    public Color introBtnTextWarna = Color.white;
+    [Tooltip("Warna overlay dim di belakang panel.")]
+    public Color introDimWarna    = new Color(0f, 0f, 0f, 0.70f);
+
+    [Header("Intro Slide — Ukuran Font")]
+    public int introUkuran        = 28;   // narasi
+    public int introJudulUkuran   = 38;   // judul
+    public int introBtnUkuran     = 26;   // teks tombol
+
+    [Header("Intro Slide — Layout Panel (px referensi 1920x1080)")]
+    [Tooltip("Lebar panel intro (px).")]
+    public float introPanelLebar  = 1100f;
+    [Tooltip("Tinggi panel intro (px).")]
+    public float introPanelTinggi = 380f;
+    [Tooltip("Padding horizontal teks dari tepi panel.")]
+    public float introPaddingH    = 60f;
+    [Tooltip("Padding vertikal teks dari tepi atas/bawah panel.")]
+    public float introPaddingV    = 50f;
+
+    [Header("Intro Slide — Layout Tombol Mulai (px)")]
+    public float introBtnLebar  = 320f;
+    public float introBtnTinggi = 64f;
+    [Tooltip("Jarak tombol dari tepi bawah panel (px).")]
+    public float introBtnOffsetBawah = 28f;
+
+    [Header("Intro Slide — Sprite Opsional")]
+    [Tooltip("Sprite background panel intro (opsional). Kalau null, pakai warna solid + outline.")]
+    public Sprite introPanelSprite;
+    [Tooltip("Sprite background tombol Mulai (opsional). Kalau null, pakai warna solid.")]
+    public Sprite introBtnSprite;
+
+    [Header("Intro Slide — Input")]
+    [Tooltip("SPACE / ENTER juga bisa lanjut (selain tombol Mulai).")]
+    public bool introAdvanceOnKeyboard = true;
+
+    // ══════════════════════════════════════════════════════════════════════
+    // OVERLAY JUDUL HARI (style Day1Intro — fully customizable + sprite support)
+    // ══════════════════════════════════════════════════════════════════════
+
+    [Header("──────── OVERLAY JUDUL HARI ────────")]
+    [Tooltip("Tampilkan overlay judul (HARI 2 + lokasi + ornamen) sebelum panel intro. Style sama Day1Intro.")]
+    public bool tampilkanOverlayJudul = true;
+    [Tooltip("Baris pertama judul besar (mis. 'HARI 2').")]
+    public string barisPertama = "HARI 2";
+    [Tooltip("Baris kedua judul (mis. 'Naik Angkot ke Sekolah').")]
+    public string barisKedua   = "Naik Angkot ke Sekolah";
+    [Tooltip("Teks lokasi yang tampil di bawah judul.")]
+    public string teksLokasi   = "Angkot Jurusan Sekolah";
+    [Tooltip("Teks kecil paling bawah overlay.")]
+    public string teksHint     = "Bersiaplah...";
+
+    [Header("Warna Overlay")]
+    [Tooltip("Warna background gelap overlay (kalau sprite null).")]
+    public Color warnaBackground = new Color(0f, 0f, 0.04f, 0.90f);
+    [Tooltip("Warna teks judul (kuning emas).")]
+    public Color warnaTeksJudul  = new Color(0.95f, 0.78f, 0.10f, 1f);
+    [Tooltip("Warna teks lokasi.")]
+    public Color warnaTeksLokasi = Color.white;
+    [Tooltip("Warna garis dekoratif horizontal.")]
+    public Color warnaGaris      = new Color(0.95f, 0.78f, 0.10f, 0.70f);
+
+    [Header("Ukuran Font Overlay")]
+    public int ukuranFontJudul   = 72;
+    public int ukuranFontLokasi  = 36;
+
+    [Header("Durasi Overlay (detik)")]
+    [Tooltip("Berapa lama overlay tampil penuh sebelum fade out.")]
+    public float durasiTampil    = 2.8f;
+    [Tooltip("Durasi animasi fade in dan fade out.")]
+    public float durasiTransisi  = 0.5f;
+
+    [Header("Overlay — Sprite (opsional)")]
+    [Tooltip("Sprite background overlay judul. Kalau di-set, override warnaBackground. Drag dari sprites/UI day 1/6.png untuk match Day 1.")]
+    public Sprite overlayBgSprite;
+    [Tooltip("Path default sprite background (relatif Assets/) untuk auto-load Editor.")]
+    public string overlayBgSpritePath = "sprites/UI day 1/6.png";
+
+    [Header("Font (opsional)")]
+    public TMP_FontAsset fontAsset;
+
+    [Header("Event")]
+    public UnityEngine.Events.UnityEvent onPhaseChanged;
+
+    // ── runtime ───────────────────────────────────────────────────────────
+    private Phase      _fase = Phase.None;
+    private GameObject _backdropGO;
+    private Image      _backdropImg;
+    private TextMeshProUGUI _labelFase;
+    private GameObject _introPanel;
+
+    /// <summary>
+    /// Sembunyikan/munculkan backdrop procedural runtime.
+    /// Dipanggil oleh fase yang punya BG sprite world space sendiri
+    /// (mis. Day2NarasiAwal) supaya canvas biru tidak menutupi sprite.
+    /// </summary>
+    public void SetBackdropAktif(bool aktif)
+    {
+        if (_backdropGO != null) _backdropGO.SetActive(aktif);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    void Awake()
+    {
+        Instance = this;
+    }
+
+    void OnDestroy()
+    {
+        if (Instance == this) Instance = null;
+    }
+
+    IEnumerator Start()
+    {
+        var gs = GameState.Instance;
+
+        // PENTING: jangan hijack Day 1. Day2Controller hanya boleh aktif kalau
+        // pemain memang sedang di Day 2 (gs.day == 2). DayTransitionManager
+        // akan set gs.day = 2 SEBELUM meng-enable Day2_Root, jadi pada saat itu
+        // Start() ini boleh lanjut. Tanpa pengecekan ini, panel Intro full-screen
+        // (dim raycastTarget=true di sortingOrder 980) akan memblokir SEMUA klik
+        // tombol Day 1.
+        if (autoStart && gs != null && gs.day != 2)
+        {
+            Debug.Log("[Day2Controller] gs.day = " + gs.day + " (≠ 2). Day2Controller diam dulu, menunggu DayTransitionManager.LanjutKeDay2().");
+            yield break;
+        }
+
+        if (gs != null) gs.day = 2;
+
+        // Sinkronkan HUD: progress hari H1→H2, label lokasi, dst.
+        if (HUDManager.Instance != null) HUDManager.Instance.Refresh();
+
+        // BGM Day 2 (kalau ada track)
+        if (AudioManager.Instance != null)
+        {
+            try { AudioManager.Instance.PlayBGM(AudioManager.BGMTrack.Day2); }
+            catch { /* ignore kalau enum berbeda */ }
+        }
+
+        if (buatBackdropProcedural) BuildBackdrop();
+        if (tampilkanLabelFase)     BuildLabelFase();
+
+        AutoFindRefs();
+
+        // Tunggu 1 frame supaya semua Start() lain jalan dulu
+        yield return null;
+
+        if (autoStart) GotoFase(mulaiDariFase);
+    }
+
+    /// <summary>
+    /// Dipanggil oleh DayTransitionManager.LanjutKeDay2() untuk memulai Day 2
+    /// secara eksplisit. Idempotent: kalau sudah jalan, tidak akan dobel.
+    /// </summary>
+    public void TriggerStart()
+    {
+        if (_fase != Phase.None && _fase != Phase.Done) return; // sudah jalan
+        StartCoroutine(StartManual());
+    }
+
+    IEnumerator StartManual()
+    {
+        var gs = GameState.Instance;
+        if (gs != null) gs.day = 2;
+
+        // Sinkronkan HUD: H1→H2 + label lokasi Day 2.
+        if (HUDManager.Instance != null) HUDManager.Instance.Refresh();
+
+        if (AudioManager.Instance != null)
+        {
+            try { AudioManager.Instance.PlayBGM(AudioManager.BGMTrack.Day2); }
+            catch { }
+        }
+
+        if (buatBackdropProcedural && _backdropGO == null) BuildBackdrop();
+        if (tampilkanLabelFase     && _labelFase  == null) BuildLabelFase();
+
+        AutoFindRefs();
+        yield return null;
+        GotoFase(mulaiDariFase);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // PUBLIC API
+    // ══════════════════════════════════════════════════════════════════════
+    public Phase CurrentPhase => _fase;
+
+    public void GotoFase(Phase next)
+    {
+        // SAFETY NET: pastikan gs.day=2 + HUD ter-refresh tiap fase Day 2.
+        // Berguna kalau user enable Day2_Root langsung tanpa lewat DayTransitionManager,
+        // atau kalau HUDManager baru selesai BuildHUD setelah Day2Controller.Start.
+        var gs = GameState.Instance;
+        if (gs != null && gs.day != 2) gs.day = 2;
+        if (HUDManager.Instance != null) HUDManager.Instance.Refresh();
+
+        StopAllCoroutines();
+        StartCoroutine(RunFase(next));
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // STATE MACHINE
+    // ══════════════════════════════════════════════════════════════════════
+    IEnumerator RunFase(Phase next)
+    {
+        _fase = next;
+        UpdateBackdrop(next);
+        UpdateLabelFase(next);
+        onPhaseChanged?.Invoke();
+
+        Debug.Log($"[Day2Controller] \u2192 Fase: {next}");
+
+        switch (next)
+        {
+            case Phase.Intro:
+                // Hanya overlay judul singkat (ala referensi web). Tidak ada panel intro tombol MULAI.
+                if (tampilkanOverlayJudul) yield return TampilkanOverlayJudul();
+                GotoFase(Phase.Narasi);
+                break;
+
+            case Phase.Narasi:
+                if (narasiAwal == null)
+                {
+                    Debug.LogWarning("[Day2] Day2NarasiAwal tidak ada \u2014 skip ke Halte.");
+                    GotoFase(Phase.Halte);
+                    break;
+                }
+                narasiAwal.Mulai(() => GotoFase(Phase.Halte));
+                break;
+
+            case Phase.Halte:
+                if (haltDialog == null) { Debug.LogWarning("[Day2] HalteDialog tidak ada \u2014 skip ke Angkot."); GotoFase(Phase.Angkot); break; }
+                haltDialog.Mulai(() => GotoFase(Phase.Angkot));
+                break;
+
+            case Phase.Angkot:
+                if (angkotSeatPicker == null) { Debug.LogWarning("[Day2] AngkotSeatPicker tidak ada \u2014 skip ke Quiz."); GotoFase(Phase.Quiz); break; }
+                angkotSeatPicker.Mulai(() => GotoFase(Phase.Quiz));
+                break;
+
+            case Phase.Quiz:
+                if (zonaTubuhQuiz == null) { Debug.LogWarning("[Day2] ZonaTubuhQuiz tidak ada \u2014 skip ke ChatSim."); GotoFase(Phase.ChatSim); break; }
+                zonaTubuhQuiz.Mulai(() => GotoFase(Phase.ChatSim));
+                break;
+
+            case Phase.ChatSim:
+                if (chatSim == null) { Debug.LogWarning("[Day2] ChatSimWhatsApp tidak ada \u2014 skip ke Lapor."); GotoFase(Phase.Lapor); break; }
+                chatSim.Mulai(() => GotoFase(Phase.Lapor));
+                break;
+
+            case Phase.Lapor:
+                if (laporButton == null) { Debug.LogWarning("[Day2] LaporTeriakButton tidak ada \u2014 skip ke EduCard."); GotoFase(Phase.EduCard); break; }
+                laporButton.Mulai(() => GotoFase(Phase.EduCard));
+                break;
+
+            case Phase.EduCard:
+                if (eduCard == null) { Debug.LogWarning("[Day2] EduCardDay2 tidak ada \u2014 skip ke Summary."); GotoFase(Phase.Summary); break; }
+                eduCard.onLanjut.AddListener(() => GotoFase(Phase.Summary));
+                eduCard.Tampilkan();
+                break;
+
+            case Phase.Summary:
+                if (summaryScreen != null) summaryScreen.Tampilkan();
+                else if (SceneLoader.Instance != null) SceneLoader.Instance.LoadScene("Day3");
+                _fase = Phase.Done;
+                break;
+        }
+        yield break;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // AUTO-FIND
+    // ══════════════════════════════════════════════════════════════════════
+    void AutoFindRefs()
+    {
+        if (narasiAwal       == null) narasiAwal       = FindFirstObjectByType<Day2NarasiAwal>(FindObjectsInactive.Include);
+        if (haltDialog       == null) haltDialog       = FindFirstObjectByType<HalteDialog>(FindObjectsInactive.Include);
+        if (angkotSeatPicker == null) angkotSeatPicker = FindFirstObjectByType<AngkotSeatPicker>(FindObjectsInactive.Include);
+        if (zonaTubuhQuiz    == null) zonaTubuhQuiz    = FindFirstObjectByType<ZonaTubuhQuiz>(FindObjectsInactive.Include);
+        if (chatSim          == null) chatSim          = FindFirstObjectByType<ChatSimWhatsApp>(FindObjectsInactive.Include);
+        if (laporButton      == null) laporButton      = FindFirstObjectByType<LaporTeriakButton>(FindObjectsInactive.Include);
+        if (eduCard          == null) eduCard          = FindFirstObjectByType<EduCardDay2>(FindObjectsInactive.Include);
+        if (summaryScreen    == null) summaryScreen    = FindFirstObjectByType<Day2SummaryScreen>(FindObjectsInactive.Include);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // BACKDROP PROCEDURAL
+    // ══════════════════════════════════════════════════════════════════════
+    void BuildBackdrop()
+    {
+        _backdropGO = new GameObject("Day2_Backdrop");
+        var canvas = _backdropGO.AddComponent<Canvas>();
+        canvas.renderMode  = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = backdropSortingOrder;
+        var scaler = _backdropGO.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.matchWidthOrHeight  = 0.5f;
+
+        var bgGO = new GameObject("BG");
+        bgGO.transform.SetParent(_backdropGO.transform, false);
+        _backdropImg = bgGO.AddComponent<Image>();
+        _backdropImg.color = warnaIntro;
+        _backdropImg.raycastTarget = false;
+        var rt = bgGO.GetComponent<RectTransform>();
+        rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
+
+        // Lantai gelap di bawah untuk depth (procedural ground strip)
+        var floor = new GameObject("Floor");
+        floor.transform.SetParent(_backdropGO.transform, false);
+        var fImg = floor.AddComponent<Image>();
+        fImg.color = new Color(0f, 0f, 0f, 0.35f);
+        fImg.raycastTarget = false;
+        var frt = floor.GetComponent<RectTransform>();
+        frt.anchorMin = new Vector2(0f, 0f);
+        frt.anchorMax = new Vector2(1f, 0.18f);
+        frt.offsetMin = Vector2.zero; frt.offsetMax = Vector2.zero;
+    }
+
+    void BuildLabelFase()
+    {
+        var canvasGO = new GameObject("Day2_LabelFase_Canvas");
+        var canvas = canvasGO.AddComponent<Canvas>();
+        canvas.renderMode  = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 950; // di atas backdrop, di bawah dialog
+        var scaler = canvasGO.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+
+        var labelGO = new GameObject("LabelFase");
+        labelGO.transform.SetParent(canvasGO.transform, false);
+        var tmp = labelGO.AddComponent<TextMeshProUGUI>();
+        if (fontAsset != null) tmp.font = fontAsset;
+        else if (TMP_Settings.defaultFontAsset != null) tmp.font = TMP_Settings.defaultFontAsset;
+        tmp.fontSize = ukuranLabelFase;
+        tmp.color    = warnaLabelFase;
+        tmp.fontStyle = FontStyles.Bold;
+        tmp.text     = "";
+        tmp.raycastTarget = false;
+        var rt = tmp.rectTransform;
+        rt.anchorMin = new Vector2(0f, 1f);
+        rt.anchorMax = new Vector2(0f, 1f);
+        rt.pivot     = new Vector2(0f, 1f);
+        rt.sizeDelta = new Vector2(520f, 40f);
+        rt.anchoredPosition = new Vector2(30f, -25f);
+        _labelFase = tmp;
+    }
+
+    void UpdateBackdrop(Phase p)
+    {
+        if (_backdropImg == null) return;
+        Color c = p switch
+        {
+            Phase.Intro   => warnaIntro,
+            Phase.Halte   => warnaHalte,
+            Phase.Angkot  => warnaAngkot,
+            Phase.Quiz    => warnaQuiz,
+            Phase.ChatSim => warnaChatSim,
+            Phase.Lapor   => warnaLapor,
+            Phase.EduCard => warnaEduCard,
+            _             => _backdropImg.color
+        };
+        StopCoroutine(nameof(LerpBackdrop));
+        StartCoroutine(LerpBackdrop(c, 0.6f));
+    }
+
+    IEnumerator LerpBackdrop(Color target, float dur)
+    {
+        Color from = _backdropImg.color;
+        float t = 0f;
+        while (t < dur)
+        {
+            t += Time.deltaTime;
+            _backdropImg.color = Color.Lerp(from, target, t / dur);
+            yield return null;
+        }
+        _backdropImg.color = target;
+    }
+
+    void UpdateLabelFase(Phase p)
+    {
+        if (_labelFase == null) return;
+        string lokasi = p switch
+        {
+            Phase.Intro   => "Hari 2 \u00B7 Persiapan",
+            Phase.Halte   => "Hari 2 \u00B7 Halte Angkot",
+            Phase.Angkot  => "Hari 2 \u00B7 Di Dalam Angkot",
+            Phase.Quiz    => "Hari 2 \u00B7 Quiz Zona Tubuh",
+            Phase.ChatSim => "Hari 2 \u00B7 Chat WhatsApp",
+            Phase.Lapor   => "Hari 2 \u00B7 Lapor",
+            Phase.EduCard => "Hari 2 \u00B7 Kartu Edukasi",
+            _             => ""
+        };
+        _labelFase.text = lokasi;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // INTRO PANEL — style DAY 1 PROLOG (gold border + dark panel + title/body/btn)
+    // Semua nilai bisa di-custom dari Inspector header "Intro Slide".
+    // ══════════════════════════════════════════════════════════════════════
+    IEnumerator TampilkanIntro()
+    {
+        _introPanel = new GameObject("Day2_IntroPanel");
+        var canvas = _introPanel.AddComponent<Canvas>();
+        canvas.renderMode  = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 980;
+        var scaler = _introPanel.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        _introPanel.AddComponent<GraphicRaycaster>();
+
+        // ── Dim overlay (full-screen) ──────────────────────────────────
+        var dim = new GameObject("Dim");
+        dim.transform.SetParent(_introPanel.transform, false);
+        var drt = dim.AddComponent<RectTransform>();
+        drt.anchorMin = Vector2.zero; drt.anchorMax = Vector2.one;
+        drt.offsetMin = Vector2.zero; drt.offsetMax = Vector2.zero;
+        var dImg = dim.AddComponent<Image>();
+        dImg.color = introDimWarna;
+        dImg.raycastTarget = true;   // tangkap klik agar tidak tembus ke world
+
+        // ── Card panel (style Day 1: dark + outline gold) ──────────────
+        var card = new GameObject("Card");
+        card.transform.SetParent(_introPanel.transform, false);
+        var crt = card.AddComponent<RectTransform>();
+        crt.anchorMin = new Vector2(0.5f, 0.5f);
+        crt.anchorMax = new Vector2(0.5f, 0.5f);
+        crt.pivot     = new Vector2(0.5f, 0.5f);
+        crt.sizeDelta = new Vector2(introPanelLebar, introPanelTinggi);
+        var cImg = card.AddComponent<Image>();
+        if (introPanelSprite != null)
+        {
+            cImg.sprite = introPanelSprite;
+            cImg.type   = Image.Type.Simple;
+            cImg.color  = Color.white;
+        }
+        else
+        {
+            cImg.color = introPanelWarna;
+            var outl = card.AddComponent<Outline>();
+            outl.effectColor    = introBorderWarna;
+            outl.effectDistance = new Vector2(3f, -3f);
+        }
+        cImg.raycastTarget = false;
+
+        float pH = introPaddingH;
+        float pV = introPaddingV;
+
+        // ── Judul (gold, atas-tengah) — sembunyikan kalau kosong ───────
+        if (!string.IsNullOrEmpty(introJudul))
+        {
+            var titleGO = new GameObject("Judul");
+            titleGO.transform.SetParent(card.transform, false);
+            var titleTMP = titleGO.AddComponent<TextMeshProUGUI>();
+            if (fontAsset != null) { titleTMP.font = fontAsset; if (fontAsset.material != null) titleTMP.fontSharedMaterial = fontAsset.material; }
+            else if (TMP_Settings.defaultFontAsset != null) titleTMP.font = TMP_Settings.defaultFontAsset;
+            titleTMP.text      = introJudul;
+            titleTMP.fontSize  = introJudulUkuran;
+            titleTMP.color     = introJudulWarna;
+            titleTMP.fontStyle = FontStyles.Bold;
+            titleTMP.alignment = TextAlignmentOptions.Top;
+            titleTMP.textWrappingMode = TextWrappingModes.Normal;
+            titleTMP.raycastTarget = false;
+            var trtJ = titleTMP.rectTransform;
+            trtJ.anchorMin = new Vector2(0f, 1f); trtJ.anchorMax = new Vector2(1f, 1f);
+            trtJ.pivot     = new Vector2(0.5f, 1f);
+            trtJ.offsetMin = new Vector2(pH, -(pV + introJudulUkuran + 12f));
+            trtJ.offsetMax = new Vector2(-pH, -pV);
+        }
+
+        // ── Narasi (putih, tengah) ─────────────────────────────────────
+        var txtGO = new GameObject("Narasi");
+        txtGO.transform.SetParent(card.transform, false);
+        var tmp = txtGO.AddComponent<TextMeshProUGUI>();
+        if (fontAsset != null) { tmp.font = fontAsset; if (fontAsset.material != null) tmp.fontSharedMaterial = fontAsset.material; }
+        else if (TMP_Settings.defaultFontAsset != null) tmp.font = TMP_Settings.defaultFontAsset;
+        tmp.text      = introNarasi;
+        tmp.fontSize  = introUkuran;
+        tmp.color     = introWarna;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.textWrappingMode = TextWrappingModes.Normal;
+        tmp.raycastTarget = false;
+        var trt = tmp.rectTransform;
+        trt.anchorMin = new Vector2(0f, 0f); trt.anchorMax = new Vector2(1f, 1f);
+        // Sisakan ruang untuk judul (atas) & tombol (bawah)
+        float topReserve = string.IsNullOrEmpty(introJudul) ? pV : (pV + introJudulUkuran + 18f);
+        float botReserve = introBtnTinggi + introBtnOffsetBawah + 16f;
+        trt.offsetMin = new Vector2(pH, botReserve);
+        trt.offsetMax = new Vector2(-pH, -topReserve);
+
+        // ── Tombol MULAI (hijau / sprite custom) ───────────────────────
+        var btnGO = new GameObject("MulaiBtn");
+        btnGO.transform.SetParent(card.transform, false);
+        var brt = btnGO.AddComponent<RectTransform>();
+        brt.anchorMin = new Vector2(0.5f, 0f);
+        brt.anchorMax = new Vector2(0.5f, 0f);
+        brt.pivot     = new Vector2(0.5f, 0f);
+        brt.sizeDelta = new Vector2(introBtnLebar, introBtnTinggi);
+        brt.anchoredPosition = new Vector2(0f, introBtnOffsetBawah);
+        var bImg = btnGO.AddComponent<Image>();
+        if (introBtnSprite != null)
+        {
+            bImg.sprite = introBtnSprite;
+            bImg.type   = Image.Type.Simple;
+            bImg.color  = Color.white;
+        }
+        else
+        {
+            bImg.color = introBtnWarna;
+            var bOutl = btnGO.AddComponent<Outline>();
+            bOutl.effectColor    = new Color(introBtnWarna.r + 0.25f, introBtnWarna.g + 0.25f, introBtnWarna.b + 0.25f, 1f);
+            bOutl.effectDistance = new Vector2(2f, -2f);
+        }
+        var btn = btnGO.AddComponent<Button>();
+        btn.targetGraphic = bImg;
+
+        var btnTxtGO = new GameObject("Label");
+        btnTxtGO.transform.SetParent(btnGO.transform, false);
+        var btmp = btnTxtGO.AddComponent<TextMeshProUGUI>();
+        if (fontAsset != null) { btmp.font = fontAsset; if (fontAsset.material != null) btmp.fontSharedMaterial = fontAsset.material; }
+        else if (TMP_Settings.defaultFontAsset != null) btmp.font = TMP_Settings.defaultFontAsset;
+        btmp.text      = introTombolTeks;
+        btmp.fontSize  = introBtnUkuran;
+        btmp.color     = introBtnTextWarna;
+        btmp.alignment = TextAlignmentOptions.Center;
+        btmp.fontStyle = FontStyles.Bold;
+        btmp.raycastTarget = false;
+        var btrt = btmp.rectTransform;
+        btrt.anchorMin = Vector2.zero; btrt.anchorMax = Vector2.one;
+        btrt.offsetMin = Vector2.zero; btrt.offsetMax = Vector2.zero;
+
+        bool clicked = false;
+        float startTime = Time.time;
+        btn.onClick.AddListener(() =>
+        {
+            if (Time.time - startTime < introMinDetik) return;
+            AudioManager.Instance?.Click();
+            clicked = true;
+        });
+
+        // ── Wait loop: keyboard SPACE/ENTER juga bisa lanjut ──────────
+        while (!clicked)
+        {
+            if (introAdvanceOnKeyboard && Time.time - startTime >= introMinDetik)
+            {
+                if (Input.GetKeyDown(KeyCode.Space)
+                 || Input.GetKeyDown(KeyCode.Return)
+                 || Input.GetKeyDown(KeyCode.KeypadEnter))
+                {
+                    AudioManager.Instance?.Click();
+                    clicked = true;
+                    break;
+                }
+            }
+            yield return null;
+        }
+
+        if (_introPanel != null) Destroy(_introPanel);
+        _introPanel = null;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // OVERLAY JUDUL HARI — tampil sebelum panel intro (style Day 1)
+    // Mendukung sprite background + ornamen garis + judul/lokasi/hint.
+    // Semua bisa di-custom dari Inspector header "OVERLAY JUDUL HARI".
+    // ══════════════════════════════════════════════════════════════════════
+    IEnumerator TampilkanOverlayJudul()
+    {
+        var cGO = new GameObject("Day2_OverlayJudul");
+        var cv  = cGO.AddComponent<Canvas>();
+        cv.renderMode   = RenderMode.ScreenSpaceOverlay;
+        cv.sortingOrder = 985;
+        var sc = cGO.AddComponent<CanvasScaler>();
+        sc.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        sc.referenceResolution = new Vector2(1920f, 1080f);
+        sc.matchWidthOrHeight  = 0.5f;
+        cGO.AddComponent<GraphicRaycaster>();
+
+        var cg = cGO.AddComponent<CanvasGroup>();
+        cg.alpha          = 0f;
+        cg.blocksRaycasts = false;
+
+        // Background — sprite jika tersedia, fallback warna solid
+        var bgImg = OvBuatImage(cGO.transform, "BG", Vector2.zero, Vector2.one, warnaBackground);
+        if (overlayBgSprite != null)
+        {
+            bgImg.sprite         = overlayBgSprite;
+            bgImg.type           = Image.Type.Simple;
+            bgImg.color          = Color.white;
+            bgImg.preserveAspect = false;
+        }
+
+        // Garis dekoratif atas
+        OvBuatImage(cGO.transform, "GarisAtas",
+            new Vector2(0.08f, 0.685f), new Vector2(0.92f, 0.690f), warnaGaris);
+
+        // Garis dekoratif bawah
+        OvBuatImage(cGO.transform, "GarisBawah",
+            new Vector2(0.08f, 0.295f), new Vector2(0.92f, 0.300f), warnaGaris);
+
+        // Baris pertama (mis. "HARI 2:")
+        OvBuatTMP(cGO.transform, "Judul1",
+            new Vector2(0.05f, 0.565f), new Vector2(0.95f, 0.685f),
+            barisPertama + ":", ukuranFontJudul + 8, warnaTeksJudul, true);
+
+        // Baris kedua (mis. "Naik Angkot ke Sekolah")
+        OvBuatTMP(cGO.transform, "Judul2",
+            new Vector2(0.05f, 0.44f), new Vector2(0.95f, 0.565f),
+            barisKedua, ukuranFontJudul, warnaTeksJudul, true);
+
+        // Lokasi
+        OvBuatTMP(cGO.transform, "Lokasi",
+            new Vector2(0.05f, 0.31f), new Vector2(0.95f, 0.43f),
+            "\uD83D\uDCCD  " + teksLokasi, ukuranFontLokasi, warnaTeksLokasi, false);
+
+        // Hint kecil
+        OvBuatTMP(cGO.transform, "Hint",
+            new Vector2(0.15f, 0.22f), new Vector2(0.85f, 0.305f),
+            teksHint, 22, new Color(1f, 1f, 1f, 0.45f), false);
+
+        // Fade in
+        for (float t = 0f; t < durasiTransisi; t += Time.deltaTime)
+        { cg.alpha = t / durasiTransisi; yield return null; }
+        cg.alpha = 1f;
+
+        // Tahan
+        yield return new WaitForSeconds(durasiTampil);
+
+        // Fade out
+        for (float t = 0f; t < durasiTransisi; t += Time.deltaTime)
+        { cg.alpha = 1f - t / durasiTransisi; yield return null; }
+        cg.alpha = 0f;
+
+        Destroy(cGO);
+    }
+
+    // ── Helper UI untuk overlay judul ───────────────────────────────────
+    Image OvBuatImage(Transform parent, string name, Vector2 ancMin, Vector2 ancMax, Color warna)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        var rt = go.AddComponent<RectTransform>();
+        rt.anchorMin = ancMin; rt.anchorMax = ancMax;
+        rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
+        var img = go.AddComponent<Image>();
+        img.color = warna;
+        img.raycastTarget = false;
+        return img;
+    }
+
+    TextMeshProUGUI OvBuatTMP(Transform parent, string name,
+        Vector2 ancMin, Vector2 ancMax,
+        string text, int fontSize, Color color, bool bold)
+    {
+        var go = new GameObject(name);
+        go.transform.SetParent(parent, false);
+        var rt = go.AddComponent<RectTransform>();
+        rt.anchorMin = ancMin; rt.anchorMax = ancMax;
+        rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
+        var tmp = go.AddComponent<TextMeshProUGUI>();
+        if (fontAsset != null) { tmp.font = fontAsset; if (fontAsset.material != null) tmp.fontSharedMaterial = fontAsset.material; }
+        else if (TMP_Settings.defaultFontAsset != null) tmp.font = TMP_Settings.defaultFontAsset;
+        tmp.text = text;
+        tmp.fontSize = fontSize;
+        tmp.color = color;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.textWrappingMode = TextWrappingModes.Normal;
+        tmp.raycastTarget = false;
+        if (bold) tmp.fontStyle = FontStyles.Bold;
+        return tmp;
+    }
+
+#if UNITY_EDITOR
+    // Auto-load sprite overlay default saat komponen ditambahkan / Reset
+    void Reset()
+    {
+        TryLoadOverlayBgSpriteDefault();
+    }
+
+    [ContextMenu("\u25b6 Muat Sprite Overlay BG Default (UI day 1/6.png)")]
+    void TryLoadOverlayBgSpriteDefault()
+    {
+        if (overlayBgSprite != null) return;
+        if (string.IsNullOrEmpty(overlayBgSpritePath)) return;
+        var sp = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>("Assets/" + overlayBgSpritePath);
+        if (sp != null)
+        {
+            overlayBgSprite = sp;
+            UnityEditor.EditorUtility.SetDirty(this);
+            Debug.Log($"[Day2Controller] Overlay BG sprite di-assign: {sp.name}");
+        }
+    }
+#endif
+}
