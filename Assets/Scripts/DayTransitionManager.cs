@@ -163,6 +163,10 @@ public class DayTransitionManager : MonoBehaviour
                 try { AudioManager.Instance.PlayBGM(AudioManager.BGMTrack.Day3); }
                 catch { /* ignore */ }
             }
+
+            // Trigger Day3Controller secara eksplisit (idempotent) — sama seperti Day 2.
+            if (Day3Controller.Instance != null)
+                Day3Controller.Instance.TriggerStart();
         }
         else
         {

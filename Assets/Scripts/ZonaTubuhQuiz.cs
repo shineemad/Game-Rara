@@ -78,6 +78,189 @@ public class ZonaTubuhQuiz : MonoBehaviour
     public string tombolLanjutTeks = "\u25B6  Lanjut";
     public Color  warnaLanjut = new Color(0.18f, 0.62f, 0.32f, 1f);
 
+    [Header("BG Fullscreen Device (opsional)")]
+    [Tooltip("Sprite latar FULLSCREEN device (stretch ke seluruh layar). Tampil paling belakang.\n" +
+             "Kosongkan = latar polos / dipakai default.")]
+    public Sprite bgFullscreenSprite;
+    [Tooltip("Jaga aspek rasio sprite saat di-stretch fullscreen (mencegah gepeng).")]
+    public bool   bgFullscreenPreserveAspect = false;
+
+    // ══════════════════════════════════════════════════════════════════════
+    // NARASI INTRO — baris narasi yang muncul SEBELUM quiz dimulai
+    // ══════════════════════════════════════════════════════════════════════
+    [System.Serializable]
+    public class BarisNarasiQuiz
+    {
+        [Tooltip("Nama pembicara di banner (mis. 'Rara', 'Narasi').")]
+        public string pembicara = "Rara";
+        [TextArea(2, 5)]
+        [Tooltip("Isi teks narasi.")]
+        public string teks = "";
+    }
+
+    [Header("Narasi Intro (sebelum quiz) — sambungan setelah AngkotSeatPicker")]
+    [Tooltip("FALLBACK narasi intro. Dipakai HANYA jika:\n" +
+             "  \u2022 GameState.seatCategory kosong, ATAU\n" +
+             "  \u2022 Varian narasi spesifik di bawah (Aman/Ragu/Bahaya) kosong.\n" +
+             "Kalau pemain sudah pilih kursi di AngkotSeatPicker, sistem akan otomatis\n" +
+             "memilih narasiIntroAman / narasiIntroRagu / narasiIntroBahaya yang relevan.")]
+    public BarisNarasiQuiz[] narasiIntro = new BarisNarasiQuiz[]
+    {
+        new BarisNarasiQuiz { pembicara = "Narasi",
+            teks = "Pintu angkot ditutup. Mesin menderu pelan, lalu mulai melaju membelah jalanan pagi." },
+        new BarisNarasiQuiz { pembicara = "Narasi",
+            teks = "Untuk mengisi waktu, Rara mengeluarkan buku catatan PR Kesehatan dari tas. Bab terakhir: \u201CKenali Batas Tubuhmu\u201D." }
+    };
+
+    [Header("Narasi Intro — Varian per Kursi (otomatis dipilih dari GameState.seatCategory)")]
+    [Tooltip("Narasi kalau pemain memilih kursi AMAN (Dekat Pintu / dekat supir).\n" +
+             "Tone: tenang, lega, percaya diri. Kosong = pakai 'narasiIntro' default.")]
+    public BarisNarasiQuiz[] narasiIntroAman = new BarisNarasiQuiz[]
+    {
+        new BarisNarasiQuiz { pembicara = "Narasi",
+            teks = "Pintu angkot ditutup. Rara duduk di kursi paling depan, tepat di samping pak supir \u2014 posisi paling aman, mudah dilihat semua orang." },
+        new BarisNarasiQuiz { pembicara = "Rara",
+            teks = "\"Alhamdulillah\u2026 \uD83D\uDE0C dari sini aku bisa lihat semua penumpang yang naik. Pria asing tadi juga nggak ikut. Aku tenang sekarang.\"" },
+        new BarisNarasiQuiz { pembicara = "Narasi",
+            teks = "Karena perjalanan masih jauh, Rara mengeluarkan buku catatan PR Kesehatan. Bab terakhir: \u201CKenali Batas Tubuhmu \u2014 Mana yang Boleh, Mana yang Tidak\u201D." },
+        new BarisNarasiQuiz { pembicara = "Rara",
+            teks = "\"Besok ulangan bab ini. Mumpung tenang, mending latihan dulu sekarang.\"" }
+    };
+
+    [Tooltip("Narasi kalau pemain memilih kursi RAGU (Tengah, terjepit ibu-ibu).\n" +
+             "Tone: sedikit canggung tapi tetap ada saksi. Kosong = pakai 'narasiIntro' default.")]
+    public BarisNarasiQuiz[] narasiIntroRagu = new BarisNarasiQuiz[]
+    {
+        new BarisNarasiQuiz { pembicara = "Narasi",
+            teks = "Rara duduk di bangku tengah, terjepit di antara dua ibu-ibu yang sibuk menjaga keranjang belanjaan. Sesekali siku mereka menyenggol tas Rara." },
+        new BarisNarasiQuiz { pembicara = "Rara",
+            teks = "\"Hmm\u2026 \uD83D\uDE10 posisi ini agak susah kalau aku mau turun cepat. Tapi setidaknya banyak orang dewasa di sekitarku \u2014 nggak akan ada yang berani macam-macam.\"" },
+        new BarisNarasiQuiz { pembicara = "Narasi",
+            teks = "Untuk mengisi waktu sambil duduk diam, Rara mengeluarkan buku catatan PR Kesehatan dari tas. Bab terakhir: \u201CKenali Batas Tubuhmu\u201D." },
+        new BarisNarasiQuiz { pembicara = "Rara",
+            teks = "\"Besok ulangan bab ini. Mending dipelajari sekarang \u2014 biar nggak gugup besok.\"" }
+    };
+
+    [Tooltip("Narasi kalau pemain memilih kursi BAHAYA (Pojok Belakang, sepi).\n" +
+             "Tone: tegang, takut, peringatan. Kosong = pakai 'narasiIntro' default.")]
+    public BarisNarasiQuiz[] narasiIntroBahaya = new BarisNarasiQuiz[]
+    {
+        new BarisNarasiQuiz { pembicara = "Narasi",
+            teks = "Rara duduk di pojok belakang. Lampu di area ini redup. Seorang pria asing duduk hanya sebangku darinya \u2014 dan terus melirik ke arahnya tanpa bicara." },
+        new BarisNarasiQuiz { pembicara = "Rara",
+            teks = "\"(Ya Allah\u2026 \uD83D\uDE28 kenapa aku pilih di sini. Jantungku dag-dig-dug. Aku nggak berani noleh ke samping.)\"" },
+        new BarisNarasiQuiz { pembicara = "Narasi",
+            teks = "Untuk mengalihkan rasa takutnya, Rara cepat-cepat mengeluarkan buku catatan PR Kesehatan dari tas." },
+        new BarisNarasiQuiz { pembicara = "Rara",
+            teks = "\"Bab \u2018Kenali Batas Tubuhmu\u2019\u2026 mungkin ini saatnya aku benar-benar paham \u2014 siapa yang BOLEH dan TIDAK BOLEH menyentuhku.\"" }
+    };
+
+    [Header("Narasi Outro (setelah quiz, sebelum ChatSim WhatsApp) — jembatan ke fase ChatSim")]
+    [Tooltip("Baris narasi muncul SETELAH pemain klik tombol Lanjut di layar hasil quiz,\n" +
+             "SEBELUM callback _onSelesai (yang memicu ChatSim WhatsApp).\n" +
+             "Konteks: Rara turun di sekolah, masuk jam istirahat, lalu HP-nya bergetar \u2014\n" +
+             "pesan dari nomor tak dikenal. Ini memberi context kenapa tiba-tiba muncul\n" +
+             "WhatsApp dari 'Pria Asing Halte'.\n" +
+             "Kosongkan = langsung ke ChatSim tanpa narasi outro.")]
+    public BarisNarasiQuiz[] narasiOutro = new BarisNarasiQuiz[]
+    {
+        new BarisNarasiQuiz { pembicara = "Narasi",
+            teks = "Angkot berhenti tepat di depan gerbang sekolah. Rara turun, mengangguk sopan ke sopir, lalu berjalan cepat menuju kelas. \u2014 Akhirnya sampai dengan selamat." },
+        new BarisNarasiQuiz { pembicara = "Rara",
+            teks = "\"Fyuh\u2026 \uD83D\uDE0C selamat. Pelajaran pertama hampir mulai \u2014 mending fokus dulu, mikir pria tadi nanti aja.\"" },
+        new BarisNarasiQuiz { pembicara = "Narasi",
+            teks = "Beberapa jam berlalu. Bel istirahat berbunyi. Rara duduk di kantin dengan sekotak susu \u2014 lalu HP di sakunya bergetar pelan: \uD83D\uDCF2 \u2026 \u2026" },
+        new BarisNarasiQuiz { pembicara = "Rara",
+            teks = "\"Hah? Pesan WhatsApp\u2026 dari nomor yang nggak aku simpan. \uD83D\uDE2C\nFoto profilnya kosong. Kok\u2026 dia bisa tau nomorku?\"" },
+        new BarisNarasiQuiz { pembicara = "Narasi",
+            teks = "Dengan tangan sedikit gemetar, Rara membuka pesan itu\u2026" }
+    };
+
+    [Tooltip("Detik per karakter saat narasi diketik. 0 = langsung penuh (skip animasi).")]
+    [Range(0f, 0.15f)] public float kecepatanKetikNarasi = 0.025f;
+    [Tooltip("Jeda setelah ketikan selesai sebelum hint 'klik untuk lanjut' muncul.")]
+    [Range(0f, 1f)]    public float delaySetelahKetikNarasi = 0.12f;
+    [Tooltip("Klik / SPACE saat sedang mengetik akan langsung menampilkan teks penuh.")]
+    public bool        bolehSkipKetikNarasi = true;
+
+    [Header("Narasi Intro \u2014 Style Box (mirror Day 1 Intro)")]
+    [Tooltip("Sprite bingkai box dialog (mirror Day 1 Intro: 'UI day 1/8.png').\n" +
+             "Kosong = pakai panel polos + outline.")]
+    public Sprite narasiBoxDialogSprite;
+    [Tooltip("Path sprite bingkai box dialog untuk auto-load di Editor.")]
+    public string narasiBoxDialogSpritePath = "sprites/UI day 1/8.png";
+    [Tooltip("Sprite banner nama pembicara (opsional). Kosong = pakai warna polos.")]
+    public Sprite narasiNameBannerSprite;
+    [Tooltip("Portrait untuk pembicara 'Rara'. Auto-load dari Day1Intro kalau ada.")]
+    public Sprite narasiPortraitRara;
+    [Tooltip("Portrait untuk pembicara 'Narasi' (siluet Rara).")]
+    public Sprite narasiPortraitNarasi;
+    [Tooltip("Sprite latar fullscreen khusus layar narasi intro/outro.\n" +
+             "Kosong = pakai 'bgFullscreenSprite' yang sama dengan layar quiz.")]
+    public Sprite narasiBgFullscreenSprite;
+    public Color  narasiPanelWarna  = new Color(0f, 0f, 0f, 0f);
+    public Color  narasiBorderWarna = new Color(1f, 0.85f, 0.30f, 1f);
+    public Color  narasiBannerWarna = new Color(0.14f, 0.09f, 0.01f, 0f);
+    public Color  narasiNamaWarna   = new Color(1f, 0.85f, 0.30f, 1f);
+    public Color  narasiTeksWarna   = new Color(1f, 0.96f, 0.88f, 1f);
+    public Color  narasiHintWarna   = new Color(1f, 1f, 1f, 0.55f);
+    public Color  narasiPortraitFallbackWarna = new Color(0.85f, 0.55f, 0.75f, 1f);
+    public int    narasiUkuranNama  = 30;
+    public int    narasiUkuranTeks  = 30;
+    public int    narasiUkuranHint  = 18;
+    public string narasiTeksHint    = "\u25BC SPACE / Klik untuk lanjut";
+
+    [Header("Narasi Intro \u2014 Anchor Box (mirror Day 1 Intro)")]
+    [Range(0f, 1f)] public float narasiPanelCenterX    = 0.5f;
+    [Range(0f, 1f)] public float narasiPanelCenterY    = 0.16f;
+    [Range(0f, 1f)] public float narasiPanelWidthFrac  = 0.972f;
+    [Range(0f, 1f)] public float narasiPanelHeightFrac = 0.291f;
+    [Range(0f, 1f)] public float narasiPortraitCenterX = 0.14f;
+    [Range(0f, 1f)] public float narasiPortraitCenterY = 0.584f;
+    [Range(0f, 1f)] public float narasiPortraitSizeW   = 0.189f;
+    [Range(0f, 1f)] public float narasiPortraitSizeH   = 0.56f;
+    public bool                 narasiPortraitPreserveAspect = false;
+    public Vector2              narasiBannerAnchorMin = new Vector2(0.11f, 0.11f);
+    public Vector2              narasiBannerAnchorMax = new Vector2(0.253f, 0.333f);
+    public Vector2              narasiTextAnchorMin   = new Vector2(0.31f, 0.55f);
+    public Vector2              narasiTextAnchorMax   = new Vector2(0.84f, 0.76f);
+    [Range(0f, 1f)] public float narasiHintCenterX     = 0.798f;
+    [Range(0f, 1f)] public float narasiHintCenterY     = 0.242f;
+    [Range(0f, 1f)] public float narasiHintSizeW       = 0.296f;
+    [Range(0f, 1f)] public float narasiHintSizeH       = 0.12f;
+
+    // ══════════════════════════════════════════════════════════════════════
+    // TUTORIAL MODAL — panel "🧩 QUIZ: KENALI BATAS TUBUH!" + tombol "▶ SIAP, MULAI!"
+    // Mirror Day2.js _showInlineTutorial — muncul SETELAH narasi, SEBELUM quiz UI.
+    // ══════════════════════════════════════════════════════════════════════
+    [Header("Tutorial Modal (sebelum kartu chip muncul)")]
+    [Tooltip("Tampilkan tutorial modal setelah narasi dan SEBELUM kartu chip muncul. " +
+             "Mirror Day2.js _showInlineTutorial.")]
+    public bool    tampilkanTutorial = true;
+    [Tooltip("Judul tutorial modal.")]
+    public string  tutorialJudul = "\uD83E\uDDE9 QUIZ: KENALI BATAS TUBUH!";
+    [Tooltip("Body tutorial modal — instruksi singkat. Pakai \\n untuk newline.")]
+    [TextArea(3, 8)]
+    public string  tutorialBody  =
+        "Geser / drag nama bagian tubuh ke zona yang sesuai!\n\n" +
+        "\u2705 ZONA AMAN = boleh disentuh teman & keluarga\n" +
+        "\u274C ZONA BAHAYA = area privat, NGGAK BOLEH!\n\n" +
+        "\u23F0 Waktu: 15 detik — cepat!";
+    [Tooltip("Label tombol mulai.")]
+    public string  tutorialTombol = "\u25B6  SIAP, MULAI!";
+
+    [Header("Tutorial Modal — Style")]
+    public Color tutorialPanelWarna   = new Color(0.07f, 0.13f, 0.27f, 0.97f);
+    public Color tutorialBorderWarna  = new Color(0.33f, 0.67f, 1f, 0.90f);
+    public Color tutorialJudulWarna   = new Color(1f, 0.84f, 0f, 1f);
+    public Color tutorialBodyWarna    = new Color(0.80f, 0.87f, 1f, 1f);
+    public Color tutorialTombolBg     = new Color(0f, 0.40f, 0.20f, 0.90f);
+    public Color tutorialTombolBorder = new Color(0.27f, 1f, 0.53f, 0.70f);
+    public Color tutorialTombolTeks   = new Color(0.27f, 1f, 0.53f, 1f);
+    public int   tutorialUkuranJudul  = 30;
+    public int   tutorialUkuranBody   = 22;
+    public int   tutorialUkuranTombol = 22;
+
     [Header("Font")]
     public TMP_FontAsset fontAsset;
 
@@ -99,12 +282,471 @@ public class ZonaTubuhQuiz : MonoBehaviour
     private Sprite     _roundedSprite;
     private Canvas     _canvasComp;
 
+    // State narasi intro (typewriter)
+    private GameObject      _narasiCanvasGO;
+    private TextMeshProUGUI _narasiNamaTMP;
+    private TextMeshProUGUI _narasiTeksTMP;
+    private TextMeshProUGUI _narasiHintTMP;
+    private Image           _narasiPortraitImg;
+    private bool _ketikSelesai;
+    private bool _skipKetik;
+
     // ══════════════════════════════════════════════════════════════════════
     public void Mulai(Action onSelesai)
     {
         _onSelesai = onSelesai;
+        AutoResolveNarasiAssets();
+        var narasiAktif = PilihNarasiIntroBerdasarkanKursi();
+        if (narasiAktif != null && narasiAktif.Length > 0)
+            StartCoroutine(JalankanNarasiLaluQuiz(narasiAktif));
+        else if (tampilkanTutorial)
+            StartCoroutine(TampilkanTutorialLaluQuiz());
+        else
+            MulaiQuizLangsung();
+    }
+
+    /// <summary>
+    /// Auto-cari sprite box dialog + portrait dari Day1Intro yang ada di scene,
+    /// supaya saat runtime ZonaTubuhQuiz langsung punya look sama dengan Day1Intro
+    /// tanpa harus assign manual di Inspector.
+    /// </summary>
+    void AutoResolveNarasiAssets()
+    {
+        var d1 = FindFirstObjectByType<Day1Intro>(FindObjectsInactive.Include);
+        if (d1 != null)
+        {
+            if (narasiBoxDialogSprite == null && d1.boxDialogSprite != null)
+                narasiBoxDialogSprite = d1.boxDialogSprite;
+            if (narasiNameBannerSprite == null && d1.nameBannerSprite != null)
+                narasiNameBannerSprite = d1.nameBannerSprite;
+            if (narasiPortraitRara == null && d1.portraitRara != null)
+                narasiPortraitRara = d1.portraitRara;
+            if (narasiPortraitNarasi == null && d1.portraitNarasi != null)
+                narasiPortraitNarasi = d1.portraitNarasi;
+        }
+        // Fallback: kalau ada Day2NarasiAwal aktif, ikut ambil sprite-nya
+        if (narasiBoxDialogSprite == null || narasiPortraitRara == null)
+        {
+            var d2 = FindFirstObjectByType<Day2NarasiAwal>(FindObjectsInactive.Include);
+            if (d2 != null)
+            {
+                if (narasiBoxDialogSprite == null && d2.panelSprite != null)
+                    narasiBoxDialogSprite = d2.panelSprite;
+                if (narasiNameBannerSprite == null && d2.nameBannerSprite != null)
+                    narasiNameBannerSprite = d2.nameBannerSprite;
+                if (narasiPortraitRara == null && d2.portraitRara != null)
+                    narasiPortraitRara = d2.portraitRara;
+                if (narasiPortraitNarasi == null && d2.portraitNarasi != null)
+                    narasiPortraitNarasi = d2.portraitNarasi;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Pilih array narasi intro yang relevan berdasarkan
+    /// <c>GameState.seatCategory</c> yang di-set oleh AngkotSeatPicker:
+    ///   AMAN   \u2192 narasiIntroAman
+    ///   RAGU   \u2192 narasiIntroRagu
+    ///   BAHAYA \u2192 narasiIntroBahaya
+    /// Kalau varian-nya kosong (atau seatCategory belum di-set), fallback ke
+    /// <c>narasiIntro</c> default.
+    /// </summary>
+    BarisNarasiQuiz[] PilihNarasiIntroBerdasarkanKursi()
+    {
+        var gs = GameState.Instance;
+        string kategori = gs != null ? (gs.seatCategory ?? "") : "";
+        BarisNarasiQuiz[] varian = null;
+        switch (kategori)
+        {
+            case "AMAN":   varian = narasiIntroAman;   break;
+            case "RAGU":   varian = narasiIntroRagu;   break;
+            case "BAHAYA": varian = narasiIntroBahaya; break;
+        }
+        if (varian != null && varian.Length > 0)
+        {
+            Debug.Log($"[ZonaTubuhQuiz] Pilih narasi intro varian '{kategori}' ({varian.Length} baris).");
+            return varian;
+        }
+        if (!string.IsNullOrEmpty(kategori))
+            Debug.Log($"[ZonaTubuhQuiz] seatCategory='{kategori}' tapi variannya kosong \u2192 fallback narasiIntro default.");
+        return narasiIntro;
+    }
+
+    void MulaiQuizLangsung()
+    {
         BuildScene();
         StartCoroutine(TimerCoroutine());
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // NARASI INTRO — overlay dialog + typewriter, klik untuk skip/lanjut
+    // ══════════════════════════════════════════════════════════════════════
+    IEnumerator JalankanNarasiLaluQuiz(BarisNarasiQuiz[] narasiAktif)
+    {
+        BuildNarasiCanvas();
+        for (int i = 0; i < narasiAktif.Length; i++)
+        {
+            var baris = narasiAktif[i];
+            if (baris == null) continue;
+            if (_narasiNamaTMP != null) _narasiNamaTMP.text = (baris.pembicara ?? "").ToUpper();
+            UpdateNarasiPortrait(baris.pembicara);
+            yield return KetikTeksNarasi(baris.teks ?? "");
+            yield return TungguTapNarasi();
+        }
+        if (_narasiCanvasGO != null) Destroy(_narasiCanvasGO);
+        _narasiCanvasGO = null;
+
+        if (tampilkanTutorial)
+            yield return TampilkanTutorialLaluQuiz();
+        else
+            MulaiQuizLangsung();
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // NARASI OUTRO — jembatan setelah quiz, sebelum ChatSim WhatsApp
+    // Pemain klik "Lanjut" di layar hasil → narasi outro muncul (Rara sampai
+    // sekolah, HP bergetar) → setelah selesai, _onSelesai() dipanggil
+    // (memicu fase berikutnya di Day2Controller, biasanya ChatSim).
+    // ══════════════════════════════════════════════════════════════════════
+    IEnumerator JalankanNarasiOutroLaluSelesai()
+    {
+        // Hancurkan canvas quiz dulu supaya outro tampil di layar bersih.
+        if (_canvasGO != null) Destroy(_canvasGO);
+        _canvasGO = null;
+        // Beri 1 frame agar Destroy benar-benar diproses.
+        yield return null;
+
+        BuildNarasiCanvas();
+        for (int i = 0; i < narasiOutro.Length; i++)
+        {
+            var baris = narasiOutro[i];
+            if (baris == null) continue;
+            if (_narasiNamaTMP != null) _narasiNamaTMP.text = (baris.pembicara ?? "").ToUpper();
+            UpdateNarasiPortrait(baris.pembicara);
+            yield return KetikTeksNarasi(baris.teks ?? "");
+            yield return TungguTapNarasi();
+        }
+        if (_narasiCanvasGO != null) Destroy(_narasiCanvasGO);
+        _narasiCanvasGO = null;
+
+        _onSelesai?.Invoke();
+    }
+
+    IEnumerator KetikTeksNarasi(string teks)
+    {
+        if (_narasiTeksTMP == null) yield break;
+        _ketikSelesai = false;
+        _skipKetik    = false;
+        if (_narasiHintTMP != null) _narasiHintTMP.gameObject.SetActive(false);
+
+        if (kecepatanKetikNarasi <= 0f)
+        {
+            _narasiTeksTMP.text = teks;
+        }
+        else
+        {
+            _narasiTeksTMP.text = "";
+            for (int i = 0; i < teks.Length; i++)
+            {
+                if (bolehSkipKetikNarasi && _skipKetik) { _narasiTeksTMP.text = teks; break; }
+                _narasiTeksTMP.text += teks[i];
+                yield return new WaitForSeconds(kecepatanKetikNarasi);
+            }
+        }
+        _ketikSelesai = true;
+        if (delaySetelahKetikNarasi > 0f) yield return new WaitForSeconds(delaySetelahKetikNarasi);
+        if (_narasiHintTMP != null) _narasiHintTMP.gameObject.SetActive(true);
+    }
+
+    IEnumerator TungguTapNarasi()
+    {
+        while (true)
+        {
+            bool ditekan = Input.GetMouseButtonDown(0)
+                        || Input.GetKeyDown(KeyCode.Space)
+                        || Input.GetKeyDown(KeyCode.Return)
+                        || Input.GetKeyDown(KeyCode.KeypadEnter);
+            if (ditekan)
+            {
+                if (bolehSkipKetikNarasi && !_ketikSelesai) _skipKetik = true;
+                else if (_ketikSelesai)                     break;
+            }
+            yield return null;
+        }
+        AudioManager.Instance?.Click();
+        yield return new WaitForSeconds(0.05f);
+    }
+
+    void BuildNarasiCanvas()
+    {
+        _narasiCanvasGO = new GameObject("ZonaTubuhQuiz_NarasiCanvas");
+        var cv = _narasiCanvasGO.AddComponent<Canvas>();
+        cv.renderMode   = RenderMode.ScreenSpaceOverlay;
+        cv.sortingOrder = sortingOrder + 5; // di atas quiz canvas
+        var sc = _narasiCanvasGO.AddComponent<CanvasScaler>();
+        sc.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        sc.referenceResolution = new Vector2(1920f, 1080f);
+        sc.matchWidthOrHeight  = 0.5f;
+        _narasiCanvasGO.AddComponent<GraphicRaycaster>();
+
+        // ── BG fullscreen device (sprite latar Day 2) ──
+        // Pakai narasiBgFullscreenSprite kalau diisi; fallback ke bgFullscreenSprite
+        // (sprite yang sama dipakai layar quiz). Kalau dua-duanya kosong → dim hitam.
+        Sprite bgSprite = narasiBgFullscreenSprite != null ? narasiBgFullscreenSprite : bgFullscreenSprite;
+        var bg = new GameObject("BG_Fullscreen");
+        bg.transform.SetParent(_narasiCanvasGO.transform, false);
+        var bgRT = bg.AddComponent<RectTransform>();
+        bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;
+        bgRT.offsetMin = bgRT.offsetMax = Vector2.zero;
+        var bgImg = bg.AddComponent<Image>();
+        if (bgSprite != null)
+        {
+            bgImg.sprite         = bgSprite;
+            bgImg.preserveAspect = bgFullscreenPreserveAspect;
+            bgImg.color          = Color.white;
+        }
+        else
+        {
+            bgImg.color = new Color(0f, 0f, 0f, 0.55f);
+        }
+        bgImg.raycastTarget = false;
+
+        // ── Panel utama (anchor fraksi layar, mirror Day1Intro) ──
+        float pxMin = narasiPanelCenterX - narasiPanelWidthFrac  * 0.5f;
+        float pyMin = narasiPanelCenterY - narasiPanelHeightFrac * 0.5f;
+        float pxMax = narasiPanelCenterX + narasiPanelWidthFrac  * 0.5f;
+        float pyMax = narasiPanelCenterY + narasiPanelHeightFrac * 0.5f;
+
+        var panel = new GameObject("Panel");
+        panel.transform.SetParent(_narasiCanvasGO.transform, false);
+        var prt = panel.AddComponent<RectTransform>();
+        prt.anchorMin = new Vector2(pxMin, pyMin);
+        prt.anchorMax = new Vector2(pxMax, pyMax);
+        prt.offsetMin = prt.offsetMax = Vector2.zero;
+
+        var pImg = panel.AddComponent<Image>();
+        if (narasiBoxDialogSprite != null)
+        {
+            pImg.sprite = narasiBoxDialogSprite;
+            pImg.type   = Image.Type.Sliced;
+            pImg.color  = Color.white;
+        }
+        else
+        {
+            pImg.color = narasiPanelWarna;
+            var outl = panel.AddComponent<Outline>();
+            outl.effectColor    = narasiBorderWarna;
+            outl.effectDistance = new Vector2(2f, -2f);
+        }
+        // Klik panel = skip / lanjut (raycast aktif untuk klik di seluruh box)
+        pImg.raycastTarget = true;
+
+        // ── Portrait kiri (siluet pembicara) ──
+        var portGO = new GameObject("Portrait");
+        portGO.transform.SetParent(panel.transform, false);
+        var portRT = portGO.AddComponent<RectTransform>();
+        portRT.anchorMin = new Vector2(
+            narasiPortraitCenterX - narasiPortraitSizeW * 0.5f,
+            narasiPortraitCenterY - narasiPortraitSizeH * 0.5f);
+        portRT.anchorMax = new Vector2(
+            narasiPortraitCenterX + narasiPortraitSizeW * 0.5f,
+            narasiPortraitCenterY + narasiPortraitSizeH * 0.5f);
+        portRT.offsetMin = portRT.offsetMax = Vector2.zero;
+        _narasiPortraitImg = portGO.AddComponent<Image>();
+        _narasiPortraitImg.preserveAspect = narasiPortraitPreserveAspect;
+        _narasiPortraitImg.color          = narasiPortraitFallbackWarna;
+        _narasiPortraitImg.raycastTarget  = false;
+
+        // ── Banner nama (kiri-bawah panel) ──
+        var banner = new GameObject("BannerNama");
+        banner.transform.SetParent(panel.transform, false);
+        var brt = banner.AddComponent<RectTransform>();
+        brt.anchorMin = narasiBannerAnchorMin;
+        brt.anchorMax = narasiBannerAnchorMax;
+        brt.offsetMin = brt.offsetMax = Vector2.zero;
+        var bImg = banner.AddComponent<Image>();
+        if (narasiNameBannerSprite != null)
+        {
+            bImg.sprite = narasiNameBannerSprite;
+            bImg.type   = Image.Type.Sliced;
+            bImg.color  = Color.white;
+        }
+        else
+        {
+            bImg.color = narasiBannerWarna;
+        }
+        bImg.raycastTarget = false;
+
+        _narasiNamaTMP = BuatTeks(banner.transform, "Nama", "",
+            narasiUkuranNama, narasiNamaWarna, FontStyles.Bold);
+        _narasiNamaTMP.alignment = TextAlignmentOptions.MidlineLeft;
+        _narasiNamaTMP.margin    = new Vector4(12f, 0f, 4f, 0f);
+        var nrt = _narasiNamaTMP.rectTransform;
+        nrt.anchorMin = Vector2.zero; nrt.anchorMax = Vector2.one;
+        nrt.offsetMin = nrt.offsetMax = Vector2.zero;
+
+        // ── Area teks (kanan portrait) ──
+        _narasiTeksTMP = BuatTeks(panel.transform, "Teks", "",
+            narasiUkuranTeks, narasiTeksWarna, FontStyles.Normal);
+        _narasiTeksTMP.alignment           = TextAlignmentOptions.TopLeft;
+        _narasiTeksTMP.textWrappingMode    = TMPro.TextWrappingModes.Normal;
+        _narasiTeksTMP.overflowMode        = TextOverflowModes.Ellipsis;
+        var trt = _narasiTeksTMP.rectTransform;
+        trt.anchorMin = narasiTextAnchorMin;
+        trt.anchorMax = narasiTextAnchorMax;
+        trt.offsetMin = trt.offsetMax = Vector2.zero;
+
+        // ── Hint (kanan-bawah panel) ──
+        _narasiHintTMP = BuatTeks(panel.transform, "Hint", narasiTeksHint,
+            narasiUkuranHint, narasiHintWarna, FontStyles.Italic);
+        _narasiHintTMP.alignment = TextAlignmentOptions.MidlineRight;
+        var hrt = _narasiHintTMP.rectTransform;
+        hrt.anchorMin = new Vector2(
+            narasiHintCenterX - narasiHintSizeW * 0.5f,
+            narasiHintCenterY - narasiHintSizeH * 0.5f);
+        hrt.anchorMax = new Vector2(
+            narasiHintCenterX + narasiHintSizeW * 0.5f,
+            narasiHintCenterY + narasiHintSizeH * 0.5f);
+        hrt.offsetMin = hrt.offsetMax = Vector2.zero;
+        _narasiHintTMP.gameObject.SetActive(false);
+    }
+
+    /// <summary>Pilih portrait berdasarkan nama pembicara (mirror Day1Intro/Day2NarasiAwal).</summary>
+    void UpdateNarasiPortrait(string pembicara)
+    {
+        if (_narasiPortraitImg == null) return;
+        string p = (pembicara ?? "").ToLower();
+        Sprite sp = null;
+        if (p.Contains("narasi"))
+            sp = narasiPortraitNarasi != null ? narasiPortraitNarasi : narasiPortraitRara;
+        else // Rara atau default
+            sp = narasiPortraitRara != null ? narasiPortraitRara : narasiPortraitNarasi;
+
+        if (sp != null)
+        {
+            _narasiPortraitImg.sprite  = sp;
+            _narasiPortraitImg.color   = Color.white;
+            _narasiPortraitImg.enabled = true;
+        }
+        else
+        {
+            // Fallback: tampilkan kotak warna polos supaya tata letak tetap konsisten
+            _narasiPortraitImg.sprite  = null;
+            _narasiPortraitImg.color   = narasiPortraitFallbackWarna;
+            _narasiPortraitImg.enabled = true;
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // TUTORIAL MODAL — panel "🧩 QUIZ: KENALI BATAS TUBUH!" + tombol "▶ SIAP, MULAI!"
+    // ══════════════════════════════════════════════════════════════════════
+    IEnumerator TampilkanTutorialLaluQuiz()
+    {
+        bool siap = false;
+        var tutorialGO = BuildTutorialModal(() => siap = true);
+        while (!siap) yield return null;
+        if (tutorialGO != null) Destroy(tutorialGO);
+        // Beri 1 frame agar modal benar-benar destroyed sebelum quiz scene dibangun
+        yield return null;
+        MulaiQuizLangsung();
+    }
+
+    GameObject BuildTutorialModal(Action onSiap)
+    {
+        var canvasGO = new GameObject("ZonaTubuhQuiz_TutorialCanvas");
+        var cv = canvasGO.AddComponent<Canvas>();
+        cv.renderMode   = RenderMode.ScreenSpaceOverlay;
+        cv.sortingOrder = sortingOrder + 6; // di atas narasi & quiz
+        var sc = canvasGO.AddComponent<CanvasScaler>();
+        sc.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        sc.referenceResolution = new Vector2(1920f, 1080f);
+        sc.matchWidthOrHeight  = 0.5f;
+        canvasGO.AddComponent<GraphicRaycaster>();
+
+        // Dim fullscreen
+        var dim = new GameObject("Dim");
+        dim.transform.SetParent(canvasGO.transform, false);
+        var dimRT = dim.AddComponent<RectTransform>();
+        dimRT.anchorMin = Vector2.zero; dimRT.anchorMax = Vector2.one;
+        dimRT.offsetMin = dimRT.offsetMax = Vector2.zero;
+        var dimImg = dim.AddComponent<Image>();
+        dimImg.color = new Color(0f, 0f, 0f, 0.75f);
+        dimImg.raycastTarget = true; // blokir input di belakang
+
+        // Panel utama (ukuran ~ 50% × 60% layar)
+        var panel = new GameObject("Panel");
+        panel.transform.SetParent(canvasGO.transform, false);
+        var prt = panel.AddComponent<RectTransform>();
+        prt.anchorMin = new Vector2(0.5f, 0.5f);
+        prt.anchorMax = new Vector2(0.5f, 0.5f);
+        prt.pivot     = new Vector2(0.5f, 0.5f);
+        prt.sizeDelta = new Vector2(900f, 560f);
+        prt.anchoredPosition = Vector2.zero;
+        var pImg = panel.AddComponent<Image>();
+        pImg.color = tutorialPanelWarna;
+        var outl = panel.AddComponent<Outline>();
+        outl.effectColor    = tutorialBorderWarna;
+        outl.effectDistance = new Vector2(3f, -3f);
+
+        // Judul
+        var judul = BuatTeks(panel.transform, "Judul", tutorialJudul,
+            tutorialUkuranJudul, tutorialJudulWarna, FontStyles.Bold);
+        judul.alignment = TextAlignmentOptions.Center;
+        var jrt = judul.rectTransform;
+        jrt.anchorMin = new Vector2(0f, 1f);
+        jrt.anchorMax = new Vector2(1f, 1f);
+        jrt.pivot     = new Vector2(0.5f, 1f);
+        jrt.sizeDelta = new Vector2(0f, 80f);
+        jrt.anchoredPosition = new Vector2(0f, -30f);
+
+        // Body
+        var body = BuatTeks(panel.transform, "Body", tutorialBody,
+            tutorialUkuranBody, tutorialBodyWarna, FontStyles.Normal);
+        body.alignment        = TextAlignmentOptions.Center;
+        body.textWrappingMode = TMPro.TextWrappingModes.Normal;
+        body.lineSpacing      = 6f;
+        var brt = body.rectTransform;
+        brt.anchorMin = new Vector2(0.05f, 0.20f);
+        brt.anchorMax = new Vector2(0.95f, 0.82f);
+        brt.offsetMin = brt.offsetMax = Vector2.zero;
+
+        // Tombol "▶ SIAP, MULAI!"
+        var btnGO = new GameObject("BtnSiap");
+        btnGO.transform.SetParent(panel.transform, false);
+        var btnRT = btnGO.AddComponent<RectTransform>();
+        btnRT.anchorMin = new Vector2(0.5f, 0f);
+        btnRT.anchorMax = new Vector2(0.5f, 0f);
+        btnRT.pivot     = new Vector2(0.5f, 0f);
+        btnRT.sizeDelta = new Vector2(380f, 70f);
+        btnRT.anchoredPosition = new Vector2(0f, 38f);
+        var btnImg = btnGO.AddComponent<Image>();
+        btnImg.color = tutorialTombolBg;
+        var btnOutl = btnGO.AddComponent<Outline>();
+        btnOutl.effectColor    = tutorialTombolBorder;
+        btnOutl.effectDistance = new Vector2(2f, -2f);
+        var btn = btnGO.AddComponent<Button>();
+        btn.transition    = Selectable.Transition.ColorTint;
+        btn.targetGraphic = btnImg;
+        var cb = btn.colors;
+        cb.normalColor      = tutorialTombolBg;
+        cb.highlightedColor = new Color(tutorialTombolBg.r * 1.2f, tutorialTombolBg.g * 1.2f, tutorialTombolBg.b * 1.2f, tutorialTombolBg.a);
+        cb.pressedColor     = new Color(tutorialTombolBg.r * 0.7f, tutorialTombolBg.g * 0.7f, tutorialTombolBg.b * 0.7f, tutorialTombolBg.a);
+        btn.colors = cb;
+
+        var btnLbl = BuatTeks(btnGO.transform, "Label", tutorialTombol,
+            tutorialUkuranTombol, tutorialTombolTeks, FontStyles.Bold);
+        btnLbl.alignment = TextAlignmentOptions.Center;
+        var brtl = btnLbl.rectTransform;
+        brtl.anchorMin = Vector2.zero; brtl.anchorMax = Vector2.one;
+        brtl.offsetMin = brtl.offsetMax = Vector2.zero;
+
+        btn.onClick.AddListener(() =>
+        {
+            AudioManager.Instance?.Click();
+            onSiap?.Invoke();
+        });
+
+        return canvasGO;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -118,6 +760,20 @@ public class ZonaTubuhQuiz : MonoBehaviour
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
         _canvasGO.AddComponent<GraphicRaycaster>();
+
+        // BG Fullscreen device (opsional, paling belakang).
+        if (bgFullscreenSprite != null)
+        {
+            var fs = new GameObject("BG_Fullscreen");
+            fs.transform.SetParent(_canvasGO.transform, false);
+            var fsImg = fs.AddComponent<Image>();
+            fsImg.sprite         = bgFullscreenSprite;
+            fsImg.preserveAspect = bgFullscreenPreserveAspect;
+            fsImg.raycastTarget  = false;
+            var fsRt = fs.GetComponent<RectTransform>();
+            fsRt.anchorMin = Vector2.zero; fsRt.anchorMax = Vector2.one;
+            fsRt.offsetMin = Vector2.zero; fsRt.offsetMax = Vector2.zero;
+        }
 
         // Pastikan ada EventSystem (untuk drag)
         if (FindFirstObjectByType<EventSystem>() == null)
@@ -346,8 +1002,19 @@ public class ZonaTubuhQuiz : MonoBehaviour
         btn.onClick.AddListener(() =>
         {
             AudioManager.Instance?.Click();
-            if (_canvasGO != null) Destroy(_canvasGO);
-            _onSelesai?.Invoke();
+            if (narasiOutro != null && narasiOutro.Length > 0)
+            {
+                // Jangan langsung selesai — tampilkan narasi jembatan ke ChatSim
+                // ("Rara sampai sekolah, HP bergetar..."). Tombol di-disable dulu
+                // supaya tidak bisa di-spam-klik.
+                btn.interactable = false;
+                StartCoroutine(JalankanNarasiOutroLaluSelesai());
+            }
+            else
+            {
+                if (_canvasGO != null) Destroy(_canvasGO);
+                _onSelesai?.Invoke();
+            }
         });
 
         string label = semuaBenar
@@ -411,7 +1078,6 @@ public class DraggableChip : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     private CanvasGroup _cg;
     private Vector2 _posAwal;
     private Transform _parentAwal;
-    private bool _dropAccepted;
 
     void Awake()
     {
@@ -442,7 +1108,6 @@ public class DraggableChip : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         bool accepted = quiz.CekDrop(data, eventData.position);
         if (accepted)
         {
-            _dropAccepted = true;
             // Disable & fade
             _cg.interactable = false;
             chipImage.color = new Color(chipImage.color.r, chipImage.color.g, chipImage.color.b, 0.4f);

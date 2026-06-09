@@ -23,7 +23,7 @@ MonoBehaviour:
   portraitSizeW: 0.189
   portraitSizeH: 0.56
   portraitPreserveAspect: 0
-  bannerAnchorMin: {x: 0.1, y: 0.1}
+  bannerAnchorMin: {x: 0.11, y: 0.11}
   bannerAnchorMax: {x: 0.253, y: 0.333}
   textAnchorMin: {x: 0.31, y: 0.55}
   textAnchorMax: {x: 0.84, y: 0.76}

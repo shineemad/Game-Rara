@@ -53,6 +53,44 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
     [TextArea(2, 4)]
     public string reaksiGagal     = "\u2716 Kamu nggak berani teriak. Lain kali, beranikan diri ya!";
 
+    // ═════════════════════════════════════════════════════════════════════
+    // ADEGAN PENGEJARAN MOTOR (Day 2 — setelah pesan ChatSim)
+    // Pria asing dari halte mengikuti Rara naik motor sampai depan sekolah.
+    // BERANI teriak → polisi patroli pagi datang (AMAN).
+    // TIDAK teriak (tombol Diam / waktu habis) → alur berbeda (BAHAYA, -1 nyawa).
+    // ═════════════════════════════════════════════════════════════════════
+    [Header("Adegan Pengejaran Motor (Day 2)")]
+    [Tooltip("Aktifkan supaya fase ini memakai narasi 'pria asing mengejar pakai motor' + alur bercabang.")]
+    public bool tampilkanNarasiPengejaran = true;
+    [Tooltip("Judul kartu saat adegan pengejaran motor.")]
+    public string pengejaranJudul = "\uD83C\uDFCD\uFE0F DIA MENGIKUTIMU!";
+    [TextArea(3, 6)]
+    [Tooltip("Deskripsi adegan. {DURASI} diganti durasi tahan tombol teriak.")]
+    public string pengejaranDeskripsi =
+        "Begitu turun dari angkot, HP Rara bergetar — pesan dari pria asing di halte tadi!\n" +
+        "Tak lama, motornya berhenti tepat di depan Rara. Dia benar-benar mengikutimu!\n\n" +
+        "TAHAN tombol TERIAK \"TOLONG!\" sebelum waktu habis ({DURASI} dtk).";
+    [TextArea(2, 5)]
+    [Tooltip("Reaksi saat BERHASIL teriak (polisi patroli datang).")]
+    public string pengejaranReaksiBerhasil =
+        "\u2713 Rara berteriak \"TOLONG!\" sekencang-kencangnya! Ternyata ada PAK POLISI yang " +
+        "sedang patroli pagi di depan sekolah. Beliau langsung menghampiri — pria asing itu kabur ketakutan!";
+    [TextArea(2, 5)]
+    [Tooltip("Reaksi saat TIDAK teriak / waktu habis (alur berbeda).")]
+    public string pengejaranReaksiGagal =
+        "\u2716 Rara terlalu takut untuk teriak. Pria asing makin mendekat dan mencoba menarik tangannya. " +
+        "Untung seorang guru piket lewat dan pria itu pergi — tapi Rara sudah sangat ketakutan. Lain kali, berani TERIAK ya!";
+    [Tooltip("Kategori pilihan saat gagal/tidak teriak.")]
+    public string kategoriGagal = "BAHAYA";
+    [Tooltip("Kurangi 1 nyawa saat gagal/tidak teriak.")]
+    public bool kurangiNyawaSaatGagal = true;
+
+    [Header("Tombol 'Diam saja' (pilih TIDAK teriak)")]
+    [Tooltip("Tampilkan tombol supaya pemain bisa memilih tidak teriak — memicu alur berbeda.")]
+    public bool tampilkanTombolDiam = true;
+    public string diamLabel = "\uD83D\uDE10  Diam saja, takut...";
+    public Color  warnaDiam  = new Color(0.55f, 0.45f, 0.20f, 1f);
+
     [Header("Tombol Lanjut")]
     public string tombolLanjutTeks = "\u25B6  Lanjut ke Kartu Edukasi";
     public Color  warnaLanjut      = new Color(0.20f, 0.62f, 0.86f, 1f);
@@ -121,7 +159,8 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         cRT.sizeDelta = new Vector2(1100f, 720f);
 
         // Judul
-        var j = BuatTeks(card.transform, "Judul", judulTeks, judulUkuran, judulWarna, FontStyles.Bold);
+        string judulFinal = tampilkanNarasiPengejaran ? pengejaranJudul : judulTeks;
+        var j = BuatTeks(card.transform, "Judul", judulFinal, judulUkuran, judulWarna, FontStyles.Bold);
         j.alignment = TextAlignmentOptions.Center;
         var jrt = j.rectTransform;
         jrt.anchorMin = new Vector2(0f, 1f); jrt.anchorMax = new Vector2(1f, 1f);
@@ -130,7 +169,8 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         jrt.offsetMax = new Vector2(-40f, -25f);
 
         // Deskripsi
-        string desc = deskripsiTeks.Replace("{DURASI}", durasiTahan.ToString("0.0"));
+        string descSumber = tampilkanNarasiPengejaran ? pengejaranDeskripsi : deskripsiTeks;
+        string desc = descSumber.Replace("{DURASI}", durasiTahan.ToString("0.0"));
         var d = BuatTeks(card.transform, "Desc", desc, deskripsiUkuran, deskripsiWarna, FontStyles.Normal);
         d.alignment = TextAlignmentOptions.Center;
         var drt = d.rectTransform;
@@ -199,7 +239,36 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         fRT.pivot = new Vector2(0f, 0.5f);
         fRT.offsetMin = new Vector2(2f, 2f); fRT.offsetMax = new Vector2(2f, -2f);
         fRT.sizeDelta = new Vector2(0f, 0f);
-    }
+        // ── Tombol "Diam saja" (memilih TIDAK teriak → alur berbeda) ──────
+        if (tampilkanTombolDiam)
+        {
+            var diamGO = new GameObject("TombolDiam");
+            diamGO.transform.SetParent(card.transform, false);
+            var dImg = diamGO.AddComponent<Image>();
+            dImg.sprite = GetRoundedSprite();
+            dImg.color  = warnaDiam;
+            dImg.type   = Image.Type.Sliced;
+            var dRT = diamGO.GetComponent<RectTransform>();
+            dRT.anchorMin = new Vector2(0.5f, 0f); dRT.anchorMax = new Vector2(0.5f, 0f);
+            dRT.pivot = new Vector2(0.5f, 0f);
+            dRT.sizeDelta = new Vector2(440f, 54f);
+            dRT.anchoredPosition = new Vector2(0f, 35f);
+
+            var dBtn = diamGO.AddComponent<Button>();
+            dBtn.targetGraphic = dImg;
+            dBtn.onClick.AddListener(() =>
+            {
+                AudioManager.Instance?.Click();
+                Selesaikan(false);
+            });
+
+            var dLab = BuatTeks(diamGO.transform, "Label", diamLabel, 20, Color.white, FontStyles.Bold);
+            dLab.alignment = TextAlignmentOptions.Center;
+            dLab.raycastTarget = false;
+            var dlrt = dLab.rectTransform;
+            dlrt.anchorMin = Vector2.zero; dlrt.anchorMax = Vector2.one;
+            dlrt.offsetMin = Vector2.zero; dlrt.offsetMax = Vector2.zero;
+        }    }
 
     // ══════════════════════════════════════════════════════════════════════
     public void OnPointerDown(PointerEventData eventData) { if (!_selesai) _ditekan = true; }
@@ -264,8 +333,8 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         {
             if (gs != null)
             {
-                gs.score += bonusBerhasil;
-                gs.AddChoice(2, "Lapor: berani teriak ke polisi", "AMAN", bonusBerhasil);
+                // AddChoice sudah menambah skor (override = bonusBerhasil); jangan dobel.
+                gs.AddChoice(2, "Teriak minta tolong saat dikejar pria asing", "AMAN", bonusBerhasil);
                 if (!gs.achievements.Contains(achievementName))
                 {
                     gs.achievements.Add(achievementName);
@@ -279,7 +348,15 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         }
         else
         {
-            if (gs != null) gs.AddChoice(2, "Lapor: gagal/waktu habis", "RAGU", 0);
+            if (gs != null)
+            {
+                gs.AddChoice(2, "Tidak berani teriak saat dikejar pria asing", kategoriGagal, 0);
+                if (kurangiNyawaSaatGagal)
+                {
+                    gs.LoseLife();
+                    HUDManager.Instance?.UpdateHearts(gs.lives, gs.maxLives);
+                }
+            }
             if (AudioManager.Instance != null && AudioManager.Instance.sfxWrong != null)
                 AudioManager.Instance.sfxSource.PlayOneShot(AudioManager.Instance.sfxWrong);
         }
@@ -295,6 +372,7 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         {
             var btnT = card.Find("TombolTeriak"); if (btnT != null) Destroy(btnT.gameObject);
             var bar  = card.Find("BarBG");        if (bar  != null) Destroy(bar.gameObject);
+            var diam = card.Find("TombolDiam");   if (diam != null) Destroy(diam.gameObject);
         }
         if (_timerText != null) _timerText.text = "";
 
@@ -312,9 +390,11 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         rt.pivot = new Vector2(0.5f, 0.5f);
         rt.sizeDelta = new Vector2(900f, 380f);
 
+        string rBerhasil = tampilkanNarasiPengejaran ? pengejaranReaksiBerhasil : reaksiBerhasil;
+        string rGagal    = tampilkanNarasiPengejaran ? pengejaranReaksiGagal    : reaksiGagal;
         var teks = BuatTeks(panel.transform, "Teks",
-            _berhasil ? reaksiBerhasil + (bonusBerhasil > 0 ? $"\n\n<color=#FFD24A>+{bonusBerhasil} poin</color>" : "")
-                       : reaksiGagal,
+            _berhasil ? rBerhasil + (bonusBerhasil > 0 ? $"\n\n<color=#FFD24A>+{bonusBerhasil} poin</color>" : "")
+                       : rGagal,
             24, new Color(1f,1f,0.92f,1f), FontStyles.Normal);
         teks.alignment = TextAlignmentOptions.Center;
         var trt = teks.rectTransform;

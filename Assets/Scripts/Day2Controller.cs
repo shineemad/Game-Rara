@@ -75,6 +75,31 @@ public class Day2Controller : MonoBehaviour
     public Color warnaLapor    = new Color(0.20f, 0.05f, 0.05f, 1f);   // merah gelap urgensi
     public Color warnaEduCard  = new Color(0.05f, 0.10f, 0.08f, 1f);   // hijau gelap
 
+    // ═════════════════════════════════════════════════════════════════════
+    // BACKGROUND SPRITE PER FASE (opsional)
+    // Kosongkan = pakai warna solid di atas. Isi dengan sprite kamu sendiri
+    // (drag PNG/JPG dari folder Assets/sprites) untuk latar bergambar per fase.
+    // ═════════════════════════════════════════════════════════════════════
+    [Header("Background Sprite Per Fase (opsional — kosong = pakai warna)")]
+    [Tooltip("Drag sprite latar untuk tiap fase. Kalau kosong, backdrop pakai warna solid di atas.")]
+    public Sprite bgIntroSprite;
+    public Sprite bgHalteSprite;
+    public Sprite bgAngkotSprite;
+    public Sprite bgQuizSprite;
+    public Sprite bgChatSimSprite;
+    public Sprite bgLaporSprite;
+    public Sprite bgEduCardSprite;
+
+    [Header("Background Sprite — Pengaturan")]
+    [Tooltip("Tipe render sprite latar: Simple (regang penuh) cocok untuk foto, Sliced untuk panel 9-slice.")]
+    public Image.Type bgSpriteType = Image.Type.Simple;
+    [Tooltip("Warna tint sprite latar (putih = warna asli sprite).")]
+    public Color bgSpriteTint = Color.white;
+    [Tooltip("Sembunyikan strip lantai gelap saat sprite latar dipakai.")]
+    public bool sembunyikanFloorSaatAdaSprite = true;
+    [Tooltip("Durasi crossfade saat ganti sprite latar antar fase (detik).")]
+    public float bgSpriteFadeDetik = 0.6f;
+
     [Header("Label Fase (info di pojok atas)")]
     public bool tampilkanLabelFase = true;
     public Color warnaLabelFase = new Color(1f, 0.85f, 0.25f, 0.85f);
@@ -190,6 +215,8 @@ public class Day2Controller : MonoBehaviour
     private Phase      _fase = Phase.None;
     private GameObject _backdropGO;
     private Image      _backdropImg;
+    private Image      _bgSpriteImg;   // layer sprite latar di atas warna solid
+    private Image      _floorImg;      // strip lantai gelap (bisa disembunyikan saat ada sprite)
     private TextMeshProUGUI _labelFase;
     private GameObject _introPanel;
 
@@ -411,16 +438,89 @@ public class Day2Controller : MonoBehaviour
         rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
         rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
 
+        // Layer SPRITE latar (di atas warna solid). Kosong saat tidak ada sprite.
+        var spriteGO = new GameObject("BG_Sprite");
+        spriteGO.transform.SetParent(_backdropGO.transform, false);
+        _bgSpriteImg = spriteGO.AddComponent<Image>();
+        _bgSpriteImg.color = bgSpriteTint;
+        _bgSpriteImg.type  = bgSpriteType;
+        _bgSpriteImg.preserveAspect = false;
+        _bgSpriteImg.raycastTarget = false;
+        _bgSpriteImg.enabled = false; // diaktifkan kalau fase punya sprite
+        var srt = spriteGO.GetComponent<RectTransform>();
+        srt.anchorMin = Vector2.zero; srt.anchorMax = Vector2.one;
+        srt.offsetMin = Vector2.zero; srt.offsetMax = Vector2.zero;
+
         // Lantai gelap di bawah untuk depth (procedural ground strip)
         var floor = new GameObject("Floor");
         floor.transform.SetParent(_backdropGO.transform, false);
-        var fImg = floor.AddComponent<Image>();
-        fImg.color = new Color(0f, 0f, 0f, 0.35f);
-        fImg.raycastTarget = false;
+        _floorImg = floor.AddComponent<Image>();
+        _floorImg.color = new Color(0f, 0f, 0f, 0.35f);
+        _floorImg.raycastTarget = false;
         var frt = floor.GetComponent<RectTransform>();
         frt.anchorMin = new Vector2(0f, 0f);
         frt.anchorMax = new Vector2(1f, 0.18f);
         frt.offsetMin = Vector2.zero; frt.offsetMax = Vector2.zero;
+
+        // Terapkan kondisi awal sesuai fase pertama (Intro)
+        ApplyBackdropSprite(Phase.Intro, instan: true);
+    }
+
+    // Pilih sprite latar untuk fase tertentu (null kalau fase tidak punya sprite).
+    Sprite SpriteUntukFase(Phase p) => p switch
+    {
+        Phase.Intro   => bgIntroSprite,
+        Phase.Halte   => bgHalteSprite,
+        Phase.Angkot  => bgAngkotSprite,
+        Phase.Quiz    => bgQuizSprite,
+        Phase.ChatSim => bgChatSimSprite,
+        Phase.Lapor   => bgLaporSprite,
+        Phase.EduCard => bgEduCardSprite,
+        _             => null
+    };
+
+    // Pasang/lepas sprite latar sesuai fase. instan=true langsung tanpa fade.
+    void ApplyBackdropSprite(Phase p, bool instan = false)
+    {
+        if (_bgSpriteImg == null) return;
+        Sprite s = SpriteUntukFase(p);
+
+        if (s == null)
+        {
+            _bgSpriteImg.enabled = false;
+            if (_floorImg != null) _floorImg.enabled = true;
+            return;
+        }
+
+        _bgSpriteImg.sprite = s;
+        _bgSpriteImg.type   = bgSpriteType;
+        _bgSpriteImg.enabled = true;
+        if (_floorImg != null) _floorImg.enabled = !sembunyikanFloorSaatAdaSprite;
+
+        if (instan || bgSpriteFadeDetik <= 0f)
+        {
+            _bgSpriteImg.color = bgSpriteTint;
+        }
+        else
+        {
+            StopCoroutine(nameof(FadeBgSprite));
+            StartCoroutine(FadeBgSprite());
+        }
+    }
+
+    IEnumerator FadeBgSprite()
+    {
+        Color target = bgSpriteTint;
+        Color from   = new Color(target.r, target.g, target.b, 0f);
+        float t = 0f;
+        _bgSpriteImg.color = from;
+        while (t < bgSpriteFadeDetik)
+        {
+            t += Time.deltaTime;
+            _bgSpriteImg.color = Color.Lerp(from, target, t / bgSpriteFadeDetik);
+            yield return null;
+        }
+        _bgSpriteImg.color = target;
     }
 
     void BuildLabelFase()
@@ -468,6 +568,9 @@ public class Day2Controller : MonoBehaviour
         };
         StopCoroutine(nameof(LerpBackdrop));
         StartCoroutine(LerpBackdrop(c, 0.6f));
+
+        // Ganti sprite latar (kalau fase ini punya sprite custom)
+        ApplyBackdropSprite(p);
     }
 
     IEnumerator LerpBackdrop(Color target, float dur)
@@ -696,13 +799,8 @@ public class Day2Controller : MonoBehaviour
             bgImg.preserveAspect = false;
         }
 
-        // Garis dekoratif atas
-        OvBuatImage(cGO.transform, "GarisAtas",
-            new Vector2(0.08f, 0.685f), new Vector2(0.92f, 0.690f), warnaGaris);
-
-        // Garis dekoratif bawah
-        OvBuatImage(cGO.transform, "GarisBawah",
-            new Vector2(0.08f, 0.295f), new Vector2(0.92f, 0.300f), warnaGaris);
+        // Garis dekoratif atas & bawah dihilangkan — sprite background (sprites/UI day 1/6.png)
+        // sudah punya ornamen border sendiri, jadi 2 garis kuning ini bikin double & ganggu visual.
 
         // Baris pertama (mis. "HARI 2:")
         OvBuatTMP(cGO.transform, "Judul1",

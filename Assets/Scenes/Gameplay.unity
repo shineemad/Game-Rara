@@ -372,20 +372,20 @@ MonoBehaviour:
   warnaChatSim: {r: 0.05, g: 0.18, b: 0.22, a: 1}
   warnaLapor: {r: 0.2, g: 0.05, b: 0.05, a: 1}
   warnaEduCard: {r: 0.05, g: 0.1, b: 0.08, a: 1}
-  tampilkanLabelFase: 1
-  warnaLabelFase: {r: 1, g: 0.85, b: 0.25, a: 0.85}
+  tampilkanLabelFase: 0
+  warnaLabelFase: {r: 1, g: 0.85, b: 0.25, a: 0}
   ukuranLabelFase: 22
   introJudul: 
   introNarasi: 
   introTombolTeks: 
   introMinDetik: 1.5
-  introJudulWarna: {r: 1, g: 0.84, b: 0, a: 1}
+  introJudulWarna: {r: 1, g: 0.84, b: 0, a: 0}
   introWarna: {r: 1, g: 1, b: 1, a: 1}
-  introPanelWarna: {r: 0, g: 0, b: 0, a: 0.92}
-  introBorderWarna: {r: 1, g: 0.85, b: 0.2, a: 1}
+  introPanelWarna: {r: 0, g: 0, b: 0, a: 0}
+  introBorderWarna: {r: 1, g: 0.85, b: 0.2, a: 0}
   introBtnWarna: {r: 0.18, g: 0.62, b: 0.32, a: 1}
   introBtnTextWarna: {r: 1, g: 1, b: 1, a: 1}
-  introDimWarna: {r: 0, g: 0, b: 0, a: 0.7}
+  introDimWarna: {r: 0, g: 0, b: 0, a: 0}
   introUkuran: 28
   introJudulUkuran: 38
   introBtnUkuran: 26
@@ -439,31 +439,57 @@ MonoBehaviour:
   cameraOrthoNarasi: 30.99461
   kameraZoomFaktor: 1
   nonaktifkanCameraFollow: 1
+  narasi:
+  - pembicara: Rara
+    teks: "\"Bismillah, aku pasti bisa!\nHaltenya udah dekat \u2014 ayo cepat!\""
+    portrait: {fileID: 0}
+    latarFullscreen: {fileID: -8868803461578586678, guid: ec41554393752fc4e9f706976243d35f, type: 3}
+  - pembicara: Rara
+    teks: "\"Tapi\u2026 kok jalan ini sepi banget ya?\nAku harus tetap waspada.\""
+    portrait: {fileID: 0}
+    latarFullscreen: {fileID: 77423184151155997, guid: 17819bcbeba26c148a9d0b38fe2705f1, type: 3}
   narasiLines:
-  - "\"Bismillah, aku pasti bisa! \U0001F624\nHaltenya ada di ujung jalan \u2014
-    ayo cepat sebelum angkotnya pergi!\""
-  - "\"Tapi\u2026 kok jalan ini sepi banget ya?\nAku harus tetap waspada \u2014 siapa
-    tahu ada yang aneh.\""
+  - "\"Bismillah, aku pasti bisa!\nHaltenya udah dekat \u2014 ayo cepat!\""
+  - "\"Tapi\u2026 kok jalan ini sepi banget ya?\nAku harus tetap waspada.\""
   speakerName: Rara
-  portraitSprite: {fileID: 0}
-  portraitFallbackWarna: {r: 0.85, g: 0.55, b: 0.75, a: 1}
+  layout: {fileID: 0}
   panelSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
-  warnaPanel: {r: 0.18, g: 0.08, b: 0.1, a: 0.95}
-  warnaOutline: {r: 0.95, g: 0.78, b: 0.1, a: 1}
-  warnaNamaSpeaker: {r: 0.95, g: 0.78, b: 0.1, a: 1}
-  warnaTeks: {r: 1, g: 1, b: 1, a: 1}
+  panelSpritePath: sprites/UI day 1/8.png
+  nameBannerSprite: {fileID: 0}
+  portraitRara: {fileID: 0}
+  portraitNarasi: {fileID: 0}
+  portraitSprite: {fileID: 0}
+  panelCenterX: 0.5
+  panelCenterY: 0.16
+  panelWidthFrac: 0.972
+  panelHeightFrac: 0.291
+  portraitCenterX: 0.14
+  portraitCenterY: 0.584
+  portraitSizeW: 0.189
+  portraitSizeH: 0.56
+  portraitPreserveAspect: 0
+  bannerAnchorMin: {x: 0.11, y: 0.11}
+  bannerAnchorMax: {x: 0.253, y: 0.333}
+  textAnchorMin: {x: 0.31, y: 0.55}
+  textAnchorMax: {x: 0.84, y: 0.76}
+  hintCenterX: 0.798
+  hintCenterY: 0.242
+  hintSizeW: 0.296
+  hintSizeH: 0.12
+  warnaPanel: {r: 0, g: 0, b: 0, a: 0}
+  warnaOutline: {r: 1, g: 0.85, b: 0.3, a: 1}
+  warnaBanner: {r: 0.14, g: 0.09, b: 0.01, a: 0}
+  warnaNamaSpeaker: {r: 1, g: 0.85, b: 0.3, a: 1}
+  warnaTeks: {r: 1, g: 0.96, b: 0.88, a: 1}
   warnaHintLanjut: {r: 1, g: 1, b: 1, a: 0.55}
-  panelTinggi: 280
-  panelMarginH: 40
-  panelMarginBawah: 30
-  portraitUkuran: 160
+  portraitFallbackWarna: {r: 0.85, g: 0.55, b: 0.75, a: 1}
   fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   ukuranNama: 30
-  ukuranTeks: 26
-  ukuranHint: 20
-  kecepatanKetik: 0.022
+  ukuranTeks: 30
+  ukuranHint: 18
+  kecepatanKetik: 0.025
   delaySetelahKetik: 0.15
-  teksHintLanjut: "\u25BC ketuk lanjut"
+  teksHintLanjut: "\u25BC SPACE / Klik untuk lanjut"
   bgSpritePath: sprites/UI day 2/BG day 2.png
 --- !u!1 &170856211
 GameObject:
@@ -732,7 +758,7 @@ Transform:
   m_GameObject: {fileID: 290949760}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.26873237, y: -6.7265205, z: 0}
+  m_LocalPosition: {x: -0.14, y: -7.17, z: 0}
   m_LocalScale: {x: 2.3891387, y: 0.10425406, z: 1.5077463}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1003,6 +1029,61 @@ Transform:
   - {fileID: 749377152}
   m_Father: {fileID: 1256300576}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &374072421
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 374072422}
+  - component: {fileID: 374072423}
+  m_Layer: 0
+  m_Name: dialog manajer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &374072422
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 374072421}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -138.01224, y: 18.045948, z: -0.52695787}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1413649927}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &374072423
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 374072421}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f939555629510ae4ba077c56ae43d255, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  layout: {fileID: 11400000, guid: fa6df614259f73c45b7d990cce56ec0b, type: 2}
+  sembunyikanLatarNama: 0
+  dialogPanel: {fileID: 0}
+  speakerText: {fileID: 0}
+  dialogText: {fileID: 0}
+  portraitImage: {fileID: 0}
+  continueButton: {fileID: 0}
+  choicePanel: {fileID: 0}
+  choiceButtonPrefab: {fileID: 0}
+  portraits: []
+  typeSpeed: 0.025
 --- !u!1 &396292393
 GameObject:
   m_ObjectHideFlags: 0
@@ -1032,7 +1113,7 @@ Transform:
   m_GameObject: {fileID: 396292393}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.8708, y: 0.4432, z: -0.0252}
+  m_LocalPosition: {x: -4.82, y: 0.26, z: -0.0252}
   m_LocalScale: {x: 0.11685194, y: 0.11330549, z: 0.11330549}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1149,7 +1230,7 @@ SpriteRenderer:
   m_SortingLayer: 2
   m_SortingOrder: 0
   m_Sprite: {fileID: -855298285791758126, guid: 3e34398a24c4bff4fa36a35301520ea1, type: 3}
-  m_Color: {r: 0.72, g: 0.72, b: 0.72, a: 1}
+  m_Color: {r: 0.75, g: 0.75, b: 0.75, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -1326,7 +1407,7 @@ Transform:
   m_GameObject: {fileID: 452308644}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 13.33, y: -5.33, z: 0}
+  m_LocalPosition: {x: 13.68, y: -5.65, z: 0}
   m_LocalScale: {x: 0.17421862, y: 0.17421862, z: 0.17421862}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1439,12 +1520,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lines:
   - speakerName: Pemotor
-    profile: {fileID: -855298285791758126, guid: d7ceffcd3effdfb47873a6705e22d046, type: 3}
+    profile: {fileID: 0}
     text: Hei adek! Mau bareng om ke sekolah? Naik motor lebih cepat lho daripada
       jalan kaki.
     choices: []
   - speakerName: Pemotor
-    profile: {fileID: -855298285791758126, guid: d7ceffcd3effdfb47873a6705e22d046, type: 3}
+    profile: {fileID: 0}
     text: Tenang aja, om kenal sama gurumu kok. Ayo cepetan, nanti telat.
     choices:
     - label: Tidak, terima kasih. Saya jalan saja.
@@ -1473,22 +1554,28 @@ MonoBehaviour:
   editHeadline: 
   editBody: 
   editProfile: {fileID: 0}
-  showBannerBg: 1
+  showBannerBg: 0
   fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
-  layout: {fileID: 11400000, guid: fa6df614259f73c45b7d990cce56ec0b, type: 2}
+  speakerFontAsset: {fileID: 0}
+  textFontAsset: {fileID: 0}
+  hintFontAsset: {fileID: 0}
+  layout: {fileID: 0}
+  useLayoutAsset: 0
+  liveEditLayout: 1
+  previewPanelInPlay: 0
   dialogBoxSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
   nameBannerSprite: {fileID: 0}
   boxDialogSpritePath: sprites/UI day 1/8.png
   panelCenterX: 0.5
-  panelCenterY: 0.219
-  panelWidthFrac: 0.939
-  panelHeightFrac: 0.395
+  panelCenterY: 0.16
+  panelWidthFrac: 0.972
+  panelHeightFrac: 0.291
   portraitCenterX: 0.14
   portraitCenterY: 0.584
   portraitSizeW: 0.189
   portraitSizeH: 0.56
   portraitPreserveAspect: 0
-  bannerAnchorMin: {x: 0.1, y: 0.1}
+  bannerAnchorMin: {x: 0.03, y: 0.1}
   bannerAnchorMax: {x: 0.253, y: 0.333}
   textAnchorMin: {x: 0.31, y: 0.55}
   textAnchorMax: {x: 0.84, y: 0.76}
@@ -2159,6 +2246,175 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1413649927}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &542756717
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 542756718}
+  - component: {fileID: 542756719}
+  m_Layer: 0
+  m_Name: HalteDialog
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &542756718
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 542756717}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1897304800}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &542756719
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 542756717}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e3afd90368865f47b3140fb434c58b5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  raraSprite: {fileID: 0}
+  priaAsingSprite: {fileID: 0}
+  halteBackgroundSprite: {fileID: 0}
+  halteBackgroundPos: {x: 0, y: 0}
+  halteBackgroundSize: {x: 1920, y: 1080}
+  halteBackgroundTint: {r: 1, g: 1, b: 1, a: 1}
+  halteBackgroundPreserveAspect: 0
+  halteBackgroundStretchFull: 0
+  haltePhase1Sprite: {fileID: 0}
+  haltePhase2Sprite: {fileID: 0}
+  haltePhase3Sprite: {fileID: 0}
+  raraPos: {x: -380, y: -120}
+  raraSize: {x: 360, y: 480}
+  raraTint: {r: 1, g: 1, b: 1, a: 1}
+  priaPos: {x: 380, y: -120}
+  priaSize: {x: 360, y: 480}
+  priaTint: {r: 1, g: 1, b: 1, a: 1}
+  atapSprite: {fileID: 0}
+  atapPos: {x: 0, y: 290}
+  atapSize: {x: 1500, y: 50}
+  tiangKiriSprite: {fileID: 0}
+  tiangKiriPos: {x: -720, y: 0}
+  tiangKiriSize: {x: 34, y: 600}
+  tiangKananSprite: {fileID: 0}
+  tiangKananPos: {x: 720, y: 0}
+  tiangKananSize: {x: 34, y: 600}
+  bangkuSprite: {fileID: 0}
+  bangkuPos: {x: 0, y: -240}
+  bangkuSize: {x: 1400, y: 26}
+  papanInfoSprite: {fileID: 0}
+  papanInfoPos: {x: -540, y: 200}
+  papanInfoSize: {x: 280, y: 110}
+  papanInfoText: 'HALTE
+
+    ANGKOT'
+  papanInfoFontSize: 22
+  propsTambahan: []
+  liveEditHalte: 1
+  panelSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
+  panelSpritePath: sprites/UI day 1/8.png
+  panelTint: {r: 1, g: 1, b: 1, a: 1}
+  portraitNarasi: {fileID: -7771728774132427043, guid: 6809b27ca40283248be0310e4d5f4ef1, type: 3}
+  portraitRara: {fileID: -307426207498796367, guid: b337f726c99b2184ba032db933c4af66, type: 3}
+  portraitPriaAsing: {fileID: 0}
+  boxPanelCenterX: 0.5
+  boxPanelCenterY: 0.16
+  boxPanelWidth: 0.972
+  boxPanelHeight: 0.291
+  boxPortraitCenterX: 0.14
+  boxPortraitCenterY: 0.584
+  boxPortraitW: 0.189
+  boxPortraitH: 0.56
+  boxPortraitPreserveAspect: 0
+  boxBannerAnchorMin: {x: 0.03, y: 0.1}
+  boxBannerAnchorMax: {x: 0.253, y: 0.333}
+  boxTextAnchorMin: {x: 0.31, y: 0.55}
+  boxTextAnchorMax: {x: 0.84, y: 0.76}
+  boxHintCenterX: 0.798
+  boxHintCenterY: 0.242
+  boxHintSizeW: 0.296
+  boxHintSizeH: 0.12
+  boxNamaColor: {r: 1, g: 0.85, b: 0.3, a: 1}
+  boxTextColor: {r: 1, g: 1, b: 1, a: 1}
+  boxHintColor: {r: 1, g: 1, b: 1, a: 0.55}
+  boxNamaFontSize: 26
+  boxTextFontSize: 26
+  boxHintFontSize: 16
+  boxNamaUppercase: 1
+  boxHintText: "\u25BC SPACE / Klik untuk lanjut"
+  kecepatanKetik: 0.025
+  delaySetelahKetik: 0.1
+  bolehSkipKetik: 1
+  warnaLatar: {r: 0.45, g: 0.62, b: 0.78, a: 1}
+  warnaAtap: {r: 0.3, g: 0.2, b: 0.12, a: 1}
+  warnaTiang: {r: 0.25, g: 0.18, b: 0.1, a: 1}
+  warnaPapanInfo: {r: 0.2, g: 0.5, b: 0.3, a: 1}
+  dialogIntro:
+  - teks: Akhirnya sampai halte. Tapi... belum ada angkot satu pun yang lewat.
+    latarSprite: {fileID: -9166084717782916886, guid: 031ec425ab0a66641b6bc3d8bd845a94, type: 3}
+  - teks: Rara duduk menunggu. Suasana sepi, hanya terdengar suara daun tertiup angin.
+    latarSprite: {fileID: -4485321536226006897, guid: 2231939df502380419d50999cfe6e7b8, type: 3}
+  - teks: Tak lama, ada motor berhenti di seberang. Seorang pria asing turun dan
+      menatap Rara dari kejauhan...
+    latarSprite: {fileID: 2839294785017435275, guid: d4bc66ef44bfa9347bcd870d7cb287a2, type: 3}
+  - teks: Pelan-pelan, pria itu berjalan mendekati halte.
+    latarSprite: {fileID: -4865884503035749218, guid: 702100b688d389f4c9074865c8e44ca0, type: 3}
+  dialogAwal:
+  - teks: Hai dek, kenalan dong! Om dari tadi lihat kamu sendirian di sini.
+    latarSprite: {fileID: 9220187793519253819, guid: a08a8d44cebc0cc44b9d1b0f248c652b, type: 3}
+  - teks: Mau berangkat sekolah ya? Om kebetulan searah lho. Bareng om aja, biar
+      lebih cepat sampai.
+    latarSprite: {fileID: 3421342021128756210, guid: c24fc0d0988a66641bf4c16d9a0c9f2a, type: 3}
+  - teks: Eh, nomor HP kamu berapa? Nanti om kabarin kalau om mau jemput pulang sekolah
+      ya.
+    latarSprite: {fileID: -7726510151329706208, guid: ecceb6ef2d61f094cb92cb6b8a235080, type: 3}
+  pilihanAman: Maaf, saya nggak kenal Om.
+  pilihanRagu: Hmm... saya mikir dulu...
+  pilihanBahaya: Boleh, ke mana Om?
+  reaksiAman:
+    teks: 'BAGUS, RA! Kamu menjauh & teriak minta tolong.
+
+      Ibu-ibu di seberang
+      langsung nyamperin. Pria itu kabur ke arah motornya.'
+    latarSprite: {fileID: 940904585648935168, guid: 23688e8a1f5938b41a4368bbb146f47c, type: 3}
+  reaksiRagu:
+    teks: "\u26A0 Pria itu makin ngotot & narik tanganmu.\nUntung angkot datang,
+      kamu cepat naik. Lain kali, langsung TEGAS tolak ya!"
+    latarSprite: {fileID: 7132907415357354675, guid: ad8ca633496923b47922620bb015e585, type: 3}
+  reaksiBahaya:
+    teks: "\u2716 GAWAT! Kamu hampir ikut pria itu.\nUntung Bu Ibu warung teriak
+      & menarikmu balik. Kamu kehilangan 1 nyawa.\nIngat: orang asing baik dengan
+      iming-iming = BAHAYA!"
+    latarSprite: {fileID: 637440988520020479, guid: ee647dd71faf2b84988d03a4c74b67d0, type: 3}
+  latarReaksiAman: {fileID: 940904585648935168, guid: 23688e8a1f5938b41a4368bbb146f47c, type: 3}
+  latarReaksiRagu: {fileID: 0}
+  latarReaksiBahaya: {fileID: 0}
+  berikanBonusLaporSaatAman: 1
+  kurangiNyawaSaatBahaya: 1
+  tombolLanjutTeks: "\u25B6  Naik angkot"
+  warnaAman: {r: 0.15, g: 0.68, b: 0.38, a: 1}
+  warnaRagu: {r: 0.95, g: 0.62, b: 0.07, a: 1}
+  warnaBahaya: {r: 0.91, g: 0.3, b: 0.24, a: 1}
+  warnaNetral: {r: 0.2, g: 0.62, b: 0.86, a: 1}
+  fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
+  sortingOrder: 920
 --- !u!1 &605391900
 GameObject:
   m_ObjectHideFlags: 0
@@ -2514,7 +2770,7 @@ Transform:
   m_GameObject: {fileID: 702844249}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 21.694088, y: -3.263476, z: 0}
+  m_LocalPosition: {x: 22.71, y: -3.6, z: 0}
   m_LocalScale: {x: 0.11349041, y: 0.11349041, z: 0.11349041}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -2773,6 +3029,95 @@ Transform:
   - {fileID: 881222454}
   m_Father: {fileID: 648612906}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &781320347
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 781320348}
+  - component: {fileID: 781320349}
+  m_Layer: 0
+  m_Name: AngkotSeatPicker
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &781320348
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 781320347}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -138.01224, y: 18.045948, z: -0.52695787}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1897304800}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &781320349
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 781320347}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10f061d9c1b43d74db969a066dee643a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  angkotInteriorSprite: {fileID: 0}
+  warnaLantai: {r: 0.1, g: 0.07, b: 0.05, a: 1}
+  warnaJendela: {r: 0.4, g: 0.55, b: 0.65, a: 0.8}
+  warnaBingkai: {r: 0.18, g: 0.12, b: 0.08, a: 1}
+  warnaSupir: {r: 0.55, g: 0.4, b: 0.3, a: 1}
+  judulTeks: 'Pilih tempat dudukmu di angkot:'
+  judulWarna: {r: 1, g: 0.85, b: 0.3, a: 1}
+  judulUkuran: 32
+  kursiList:
+  - label: Dekat Pintu (depan)
+    kategori: AMAN
+    deskripsi: Dekat supir, gampang turun cepat kalau ada apa-apa.
+    reaksi: "\u2713 Pintar! Kamu duduk dekat supir & pintu."
+    warna: {r: 0.18, g: 0.62, b: 0.32, a: 1}
+    posisi: {x: -500, y: -40}
+    ukuran: {x: 300, y: 220}
+    latarSaatDipilih: {fileID: 0}
+  - label: Tengah (di samping ibu-ibu)
+    kategori: RAGU
+    deskripsi: Ramai tapi terjepit di tengah, susah turun.
+    reaksi: "\u26A0 Lumayan aman, tapi posisi turun susah."
+    warna: {r: 0.95, g: 0.62, b: 0.07, a: 1}
+    posisi: {x: 0, y: -40}
+    ukuran: {x: 300, y: 220}
+    latarSaatDipilih: {fileID: 0}
+  - label: Pojok Belakang (sepi)
+    kategori: BAHAYA
+    deskripsi: Sepi & gelap, ada pria asing yang ngeliatin kamu.
+    reaksi: "\u2716 Bahaya! Pria asing langsung mendekat. Kamu kehilangan 1 nyawa."
+    warna: {r: 0.91, g: 0.3, b: 0.24, a: 1}
+    posisi: {x: 500, y: -40}
+    ukuran: {x: 300, y: 220}
+    latarSaatDipilih: {fileID: 0}
+  tampilkanCekPlat: 1
+  platLabel: "\U0001F4DD Catat plat nomor angkot (B 1234 XYZ)"
+  bonusPlat: 50
+  tombolLanjutTeks: "\u25B6  Lanjut Perjalanan"
+  warnaLanjut: {r: 0.2, g: 0.62, b: 0.86, a: 1}
+  bgFullscreenSprite: {fileID: 7615782642324610468, guid: df0f7a57c6e3e024eae5e422396f1ac1, type: 3}
+  bgFullscreenPreserveAspect: 0
+  bgReaksiAman: {fileID: 0}
+  bgReaksiRagu: {fileID: 0}
+  bgReaksiBahaya: {fileID: 0}
+  fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
+  sortingOrder: 920
 --- !u!1 &797026305
 GameObject:
   m_ObjectHideFlags: 0
@@ -3140,7 +3485,7 @@ MonoBehaviour:
       category: RAGU
     - label: Serahkan saja uang & HP biar selamat
       category: BAHAYA
-  panelColor: {r: 0, g: 0, b: 0, a: 0.82}
+  panelColor: {r: 0, g: 0, b: 0, a: 0.78}
   borderColor: {r: 1, g: 0.85, b: 0.3, a: 0}
   panelHeight: 220
   panelWidthRatio: 0.85
@@ -3149,12 +3494,12 @@ MonoBehaviour:
   profileSize: 160
   profileBgColor: {r: 1, g: 1, b: 1, a: 0.1}
   profileOnRight: 0
-  speakerColor: {r: 1, g: 0.85, b: 0.3, a: 0}
+  speakerColor: {r: 1, g: 0.85, b: 0.3, a: 1}
   textColor: {r: 1, g: 1, b: 1, a: 1}
-  speakerFontSize: 30
+  speakerFontSize: 26
   textFontSize: 26
-  typeSpeed: 0.025
-  continueHint: "\u25BC SPACE / KLIK UNTUK LANJUT"
+  typeSpeed: 0.0249
+  continueHint: "\u25BC SPACE / Klik untuk lanjut"
   hintColor: {r: 1, g: 1, b: 1, a: 0.55}
   hintFontSize: 16
   editHeadline: 
@@ -3162,20 +3507,26 @@ MonoBehaviour:
   editProfile: {fileID: 0}
   showBannerBg: 0
   fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
+  speakerFontAsset: {fileID: 0}
+  textFontAsset: {fileID: 0}
+  hintFontAsset: {fileID: 0}
   layout: {fileID: 0}
+  useLayoutAsset: 0
+  liveEditLayout: 1
+  previewPanelInPlay: 0
   dialogBoxSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
   nameBannerSprite: {fileID: 0}
   boxDialogSpritePath: sprites/UI day 1/8.png
   panelCenterX: 0.5
-  panelCenterY: 0.219
-  panelWidthFrac: 0.939
-  panelHeightFrac: 0.395
+  panelCenterY: 0.16
+  panelWidthFrac: 0.972
+  panelHeightFrac: 0.291
   portraitCenterX: 0.14
   portraitCenterY: 0.584
   portraitSizeW: 0.189
   portraitSizeH: 0.56
   portraitPreserveAspect: 0
-  bannerAnchorMin: {x: 0.1, y: 0.1}
+  bannerAnchorMin: {x: 0.03, y: 0.1}
   bannerAnchorMax: {x: 0.253, y: 0.333}
   textAnchorMin: {x: 0.31, y: 0.55}
   textAnchorMax: {x: 0.84, y: 0.76}
@@ -3366,8 +3717,10 @@ MonoBehaviour:
       Teriak KERAS = kamu lebih aman
       di jalan!'
     portrait: {fileID: 0}
-  layout: {fileID: 11400000, guid: fa6df614259f73c45b7d990cce56ec0b, type: 2}
-  overlayBgSprite: {fileID: 0}
+  layout: {fileID: 0}
+  useLayoutAsset: 0
+  liveEditLayout: 1
+  overlayBgSprite: {fileID: 3465286685962602723, guid: a143290067151e1428c2e4f650d21e19, type: 3}
   boxDialogSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
   overlayBgSpritePath: sprites/UI day 1/6.png
   boxDialogSpritePath: sprites/UI day 1/8.png
@@ -3375,15 +3728,15 @@ MonoBehaviour:
   portraitRara: {fileID: -307426207498796367, guid: b337f726c99b2184ba032db933c4af66, type: 3}
   portraitNarasi: {fileID: -7771728774132427043, guid: 6809b27ca40283248be0310e4d5f4ef1, type: 3}
   panelCenterX: 0.5
-  panelCenterY: 0.219
-  panelWidthFrac: 0.939
-  panelHeightFrac: 0.395
+  panelCenterY: 0.16
+  panelWidthFrac: 0.972
+  panelHeightFrac: 0.291
   portraitCenterX: 0.14
   portraitCenterY: 0.584
   portraitSizeW: 0.189
   portraitSizeH: 0.56
   portraitPreserveAspect: 0
-  bannerAnchorMin: {x: 0.1, y: 0.1}
+  bannerAnchorMin: {x: 0.11, y: 0.11}
   bannerAnchorMax: {x: 0.253, y: 0.333}
   textAnchorMin: {x: 0.31, y: 0.55}
   textAnchorMax: {x: 0.84, y: 0.76}
@@ -3455,7 +3808,13 @@ MonoBehaviour:
   editProfile: {fileID: 0}
   showBannerBg: 1
   fontAsset: {fileID: 0}
+  speakerFontAsset: {fileID: 0}
+  textFontAsset: {fileID: 0}
+  hintFontAsset: {fileID: 0}
   layout: {fileID: 0}
+  useLayoutAsset: 0
+  liveEditLayout: 1
+  previewPanelInPlay: 0
   dialogBoxSprite: {fileID: 0}
   nameBannerSprite: {fileID: 0}
   boxDialogSpritePath: sprites/UI day 1/8.png
@@ -3468,10 +3827,10 @@ MonoBehaviour:
   portraitSizeW: 0.2
   portraitSizeH: 0.84
   portraitPreserveAspect: 1
-  bannerAnchorMin: {x: 0.25, y: 0.58}
-  bannerAnchorMax: {x: 0.52, y: 0.82}
-  textAnchorMin: {x: 0.25, y: 0.1}
-  textAnchorMax: {x: 0.96, y: 0.57}
+  bannerAnchorMin: {x: 0.03, y: 0.1}
+  bannerAnchorMax: {x: 0.253, y: 0.333}
+  textAnchorMin: {x: 0.31, y: 0.55}
+  textAnchorMax: {x: 0.84, y: 0.76}
   hintCenterX: 0.78
   hintCenterY: 0.13
   hintSizeW: 0.36
@@ -3560,11 +3919,14 @@ MonoBehaviour:
   safeButtonScale: 1
   dangerButtonScale: 1
   panelScale: 1
+  scaleChildrenWithPanel: 1
   overrideButtonLayout: 0
   safeButtonAnchoredPos: {x: 0, y: 80}
   safeButtonSize: {x: 700, y: 120}
   dangerButtonAnchoredPos: {x: 0, y: -80}
   dangerButtonSize: {x: 700, y: 120}
+  matchButtonSizeToSprite: 0
+  buttonSpriteSizeMul: 1
   liveEdit: 1
   previewPanelInPlay: 0
   autoDisableLayoutGroup: 1
@@ -3573,6 +3935,10 @@ MonoBehaviour:
   minTouchTargetPx: 96
   maxPanelWidthScreenRatio: 0.92
   maxPanelHeightScreenRatio: 0.85
+  autoConfigCanvasScaler: 1
+  canvasScaleMode: 0
+  referenceResolution: {x: 1920, y: 1080}
+  scalerMatchWidthOrHeight: 0.5
   onSafeChosen:
     m_PersistentCalls:
       m_Calls:
@@ -3626,14 +3992,24 @@ MonoBehaviour:
   pathSafeMarker: {fileID: 0}
   pathDangerMarker: {fileID: 0}
   pathChoicePanel: {fileID: 0}
-  pathEnvironment: {fileID: 437241662}
+  pathEnvironment: {fileID: 0}
   encTutorial: 5
   encE1: 14
-  encPathChoice: 18
-  encE2: 26
-  encE3: 34
-  encEduCard: 42
-  encEnd: 52
+  encE2: 22
+  encPathChoice: 30
+  encE3: 9999
+  encEduCard: 40
+  encEnd: 50
+  zoneThresholds:
+  - 0
+  - 10
+  - 22
+  - 30
+  zoneNames:
+  - Depan Rumah
+  - Lorong Pemukiman
+  - Halte & Persimpangan
+  - Akses Sekolah
   eduCardPanel: {fileID: 0}
   eduCardContinueBtn: {fileID: 0}
   shoutButton: {fileID: 0}
@@ -3686,34 +4062,54 @@ MonoBehaviour:
       feedbackText: "\u274C BAHAYA! Rara kehilangan \u2764 karena ikut orang asing!\nJANGAN
         PERNAH ikut dengan orang yang tidak dikenal,\napapun yang ditawarkan!"
   encounter2:
-    encounterName: "Encounter 2 \u2014 Difoto Orang Asing"
+    encounterName: "Encounter 2 \u2014 Motor Nyasar Tanya Sekolah"
     dialogSebelumPilihan:
-    - speaker: Orang Asing
+    - speaker: Narasi
       portrait: {fileID: 0}
-      text: '"Eh kamu... sendirian nih? Boleh aku foto kamu?
+      text: 'Sebuah motor matic berhenti pelan di sebelah Rara.
 
-        Cantik sekali~"'
-    pertanyaanRara: Apa yang harus Rara lakukan?
+        Pengendaranya
+        laki-laki, helm setengah terbuka, tersenyum lebar.'
+    - speaker: Pengendara Motor
+      portrait: {fileID: 0}
+      text: "\"Eh dek, maaf nih\u2026\nKamu tau nggak SMP Harapan di mana?\nOm nyasar,
+        mau anter ponakan.\""
+    - speaker: Pengendara Motor
+      portrait: {fileID: 0}
+      text: '"Naik aja deh, kebetulan om searah.
+
+        Daripada kamu jalan kepanasan,
+        mending bareng om aja ya?"'
+    - speaker: Rara (dalam hati)
+      portrait: {fileID: 0}
+      text: "Hmm\u2026 dia bilang nyasar tapi langsung nawarin tumpangan?\nOrang
+        asing yang tiba-tiba ramah begini bisa jadi tanda bahaya."
+    pertanyaanRara: Bagaimana Rara harus merespons orang ini?
     portraitRara: {fileID: 0}
     pilihan:
-    - label: '"TIDAK BOLEH! TOLONG ADA ORANG ASING!" (Teriak minta tolong)'
+    - label: '"Maaf om, aku nggak boleh ikut orang asing!" (Mundur & lari ke tempat
+        ramai)'
       category: AMAN
       gunakanPoinKustom: 0
       poinKustom: 0
-      feedbackText: "\u2705 Benar! Privasi kamu adalah hakmu.\nJangan biarkan orang
-        asing memfoto kamu tanpa izin \u2014 itu pelanggaran!"
-    - label: '"S-sebentar aja ya..." (ragu dan bingung)'
+      feedbackText: "\u2705 Tepat sekali!\nORANG TIDAK DIKENAL = JANGAN PERNAH IKUT,
+        walau alasannya seramah apapun.\nKalau ditanya jalan, cukup tunjuk arah dari
+        jauh \u2014 jangan dekati & jangan naik."
+    - label: "\"SMP Harapan lurus aja om\u2026 maaf aku nggak bisa nganterin.\" (Jawab
+        dari jauh)"
       category: RAGU
       gunakanPoinKustom: 0
       poinKustom: 0
-      feedbackText: "\u26A0\uFE0F Kurang tepat. Kamu berhak menolak difoto oleh siapapun
-        yang tidak kamu kenal."
-    - label: '"Oke..." (diam saja membiarkan)'
+      feedbackText: "\u26A0\uFE0F Lumayan \u2014 Rara nggak naik motor, tapi terlalu
+        lama ngobrol.\nLebih baik langsung pergi ke tempat ramai. Jangan kasih info
+        detail ke orang asing."
+    - label: '"Boleh om, ayo!" (Naik motor)'
       category: BAHAYA
       gunakanPoinKustom: 0
       poinKustom: 0
-      feedbackText: "\u274C Berbahaya! Foto bisa disalahgunakan.\nSelalu tolak permintaan
-        foto dari orang yang tidak kamu kenal!"
+      feedbackText: "\u274C BAHAYA! Rara hampir naik motor orang asing!\nNAIK KENDARAAN
+        ORANG TAK DIKENAL = jalan menuju penculikan.\nKamu kehilangan \u2764. Ingat:
+        \"Searah\" cuma alasan grooming yang umum dipakai."
   encounter3:
     encounterName: "Encounter 3 \u2014 Pesan Mencurigakan di HP"
     dialogSebelumPilihan:
@@ -3753,6 +4149,7 @@ GameObject:
   m_Component:
   - component: {fileID: 982115343}
   - component: {fileID: 982115344}
+  - component: {fileID: 982115345}
   m_Layer: 0
   m_Name: BackgrondManager
   m_TagString: Untagged
@@ -3789,6 +4186,72 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mainCamera: {fileID: 519420031}
   layers: []
+--- !u!114 &982115345
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 982115341}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd4d927a601f6e64184638e2868570d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  heartImages: []
+  heartFull: {fileID: 0}
+  heartEmpty: {fileID: 0}
+  scoreText: {fileID: 0}
+  locationText: {fileID: 0}
+  dayText: {fileID: 0}
+  locationNames:
+  - Jalan Menuju Sekolah
+  - Angkot Jurusan Sekolah
+  - "Parkiran SMP \u2014 Musim Hujan"
+  buildHUDAtRuntime: 1
+  fontAsset: {fileID: 0}
+  heartFullSprite: {fileID: 0}
+  heartEmptySprite: {fileID: 0}
+  panelBgColor: {r: 0.18, g: 0.08, b: 0.04, a: 0.88}
+  panelBorderColor: {r: 0.95, g: 0.72, b: 0.18, a: 1}
+  dayActiveColor: {r: 1, g: 0.82, b: 0.18, a: 1}
+  dayInactiveColor: {r: 0.42, g: 0.27, b: 0.12, a: 1}
+  gaugeFillColor: {r: 0.96, g: 0.45, b: 0.1, a: 1}
+  gaugeEmptyColor: {r: 0.1, g: 0.05, b: 0.02, a: 1}
+  dayLabels:
+  - H1
+  - H2
+  - H3
+  dayNumFontSize: 22
+  dayLabelFontSize: 19
+  dayCircleSize: 50
+  dayCircleX1: 0.15
+  dayCircleX2: 0.5
+  dayCircleX3: 0.85
+  dayNumColorActive: {r: 0, g: 0, b: 0, a: 1}
+  dayNumColorInactive: {r: 0.62, g: 0.62, b: 0.65, a: 0.85}
+  dayLabelColorInactive: {r: 0.48, g: 0.48, b: 0.52, a: 0.85}
+  dayLineThickness: 12
+  liveEditNavbar: 1
+  introDuration: 2.8
+  introFadeDuration: 0.5
+  popupFontSize: 52
+  popupRisePixels: 120
+  popupDuration: 1.5
+  popupAnchorX: 0.07
+  popupAnchorY: 0.9
+  popupLifeLostOffsetY: -0.02
+  popupFormatAman: +{0} POIN
+  popupFormatRagu: +{0} poin
+  popupTeksBahaya: 0 POIN
+  popupTeksNyawa: "\u22121 \u2764"
+  popupWarnaAman: {r: 0.15, g: 0.9, b: 0.45, a: 1}
+  popupWarnaRagu: {r: 0.97, g: 0.7, b: 0.1, a: 1}
+  popupWarnaBahaya: {r: 0.95, g: 0.3, b: 0.25, a: 1}
+  popupWarnaNyawa: {r: 0.95, g: 0.18, b: 0.18, a: 1}
+  animasiTransisiHari: 1
+  durasiHighlightHari: 0.6
+  skalaPuncakHighlight: 1.35
 --- !u!1 &1021030178
 GameObject:
   m_ObjectHideFlags: 0
@@ -3805,7 +4268,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1021030179
 Transform:
   m_ObjectHideFlags: 0
@@ -3868,7 +4331,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -8557459669342532540, guid: ca00d788a340a7242a4ddaa0334f94e6, type: 3}
+  m_Sprite: {fileID: -4563938929188277239, guid: 6dda8424f728be74baed7edae41615b7, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -4190,6 +4653,308 @@ Transform:
   - {fileID: 2028605104}
   m_Father: {fileID: 1021030179}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1195359061
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1195359062}
+  - component: {fileID: 1195359063}
+  m_Layer: 0
+  m_Name: quiz
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1195359062
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1195359061}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -69.95572, y: 6.6542416, z: 0.18600991}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1897304800}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1195359063
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1195359061}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8f4be36843210b341bd13d67fe037019, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  judulTeks: "\U0001F6E1  Quiz: Mana yang BOLEH, mana yang TIDAK BOLEH?"
+  judulWarna: {r: 1, g: 0.85, b: 0.3, a: 1}
+  judulUkuran: 30
+  instruksiTeks: 'Tarik setiap chip ke ZONA AMAN atau ZONA BAHAYA.
+
+    Setiap jawaban
+    benar = poin. Waktu terbatas!'
+  instruksiWarna: {r: 1, g: 1, b: 0.92, a: 0.85}
+  instruksiUkuran: 18
+  waktuDetik: 15
+  warnaTimer: {r: 1, g: 0.85, b: 0.3, a: 1}
+  warnaTimerKritis: {r: 0.91, g: 0.3, b: 0.24, a: 1}
+  ukuranTimer: 28
+  chips:
+  - teks: Salam jabat tangan
+    jawabanBenar: AMAN
+  - teks: Peluk ortu/saudara
+    jawabanBenar: AMAN
+  - teks: Cek up dokter (didampingi)
+    jawabanBenar: AMAN
+  - teks: Disentuh paksa orang asing
+    jawabanBenar: BAHAYA
+  - teks: Diminta lepas baju oleh orang asing
+    jawabanBenar: BAHAYA
+  - teks: Disuruh simpan rahasia 'pertemuan kita'
+    jawabanBenar: BAHAYA
+  warnaZonaAman: {r: 0.1, g: 0.35, b: 0.22, a: 0.92}
+  warnaZonaBahaya: {r: 0.4, g: 0.12, b: 0.12, a: 0.92}
+  warnaBorderAman: {r: 0.45, g: 1, b: 0.65, a: 1}
+  warnaBorderBahaya: {r: 1, g: 0.45, b: 0.45, a: 1}
+  chipWarna: {r: 0.18, g: 0.2, b: 0.3, a: 0.95}
+  chipTeksWarna: {r: 1, g: 1, b: 0.92, a: 1}
+  chipBenarWarna: {r: 0.18, g: 0.62, b: 0.32, a: 0.95}
+  chipSalahWarna: {r: 0.78, g: 0.2, b: 0.2, a: 0.95}
+  chipUkuranTeks: 18
+  chipUkuran: {x: 280, y: 60}
+  namaAchievement: Penjaga Batas Tubuh
+  bonusAllBenar: 200
+  tombolLanjutTeks: "\u25B6  Lanjut"
+  warnaLanjut: {r: 0.18, g: 0.62, b: 0.32, a: 1}
+  bgFullscreenSprite: {fileID: 0}
+  bgFullscreenPreserveAspect: 0
+  narasiIntro:
+  - pembicara: Narasi
+    teks: Pintu angkot ditutup. Mesin menderu pelan, lalu mulai melaju membelah jalanan
+      pagi.
+  - pembicara: Narasi
+    teks: "Untuk mengisi waktu, Rara mengeluarkan buku catatan PR Kesehatan dari
+      tas. Bab terakhir: \u201CKenali Batas Tubuhmu\u201D."
+  narasiIntroAman:
+  - pembicara: Narasi
+    teks: "Pintu angkot ditutup. Rara duduk di kursi paling depan, tepat di samping
+      pak supir \u2014 posisi paling aman, mudah dilihat semua orang."
+  - pembicara: Rara
+    teks: "\"Alhamdulillah\u2026 \U0001F60C dari sini aku bisa lihat semua penumpang
+      yang naik. Pria asing tadi juga nggak ikut. Aku tenang sekarang.\""
+  - pembicara: Narasi
+    teks: "Karena perjalanan masih jauh, Rara mengeluarkan buku catatan PR Kesehatan.
+      Bab terakhir: \u201CKenali Batas Tubuhmu \u2014 Mana yang Boleh, Mana yang
+      Tidak\u201D."
+  - pembicara: Rara
+    teks: '"Besok ulangan bab ini. Mumpung tenang, mending latihan dulu sekarang."'
+  narasiIntroRagu:
+  - pembicara: Narasi
+    teks: Rara duduk di bangku tengah, terjepit di antara dua ibu-ibu yang sibuk
+      menjaga keranjang belanjaan. Sesekali siku mereka menyenggol tas Rara.
+  - pembicara: Rara
+    teks: "\"Hmm\u2026 \U0001F610 posisi ini agak susah kalau aku mau turun cepat.
+      Tapi setidaknya banyak orang dewasa di sekitarku \u2014 nggak akan ada yang
+      berani macam-macam.\""
+  - pembicara: Narasi
+    teks: "Untuk mengisi waktu sambil duduk diam, Rara mengeluarkan buku catatan
+      PR Kesehatan dari tas. Bab terakhir: \u201CKenali Batas Tubuhmu\u201D."
+  - pembicara: Rara
+    teks: "\"Besok ulangan bab ini. Mending dipelajari sekarang \u2014 biar nggak
+      gugup besok.\""
+  narasiIntroBahaya:
+  - pembicara: Narasi
+    teks: "Rara duduk di pojok belakang. Lampu di area ini redup. Seorang pria asing
+      duduk hanya sebangku darinya \u2014 dan terus melirik ke arahnya tanpa bicara."
+  - pembicara: Rara
+    teks: "\"(Ya Allah\u2026 \U0001F628 kenapa aku pilih di sini. Jantungku dag-dig-dug.
+      Aku nggak berani noleh ke samping.)\""
+  - pembicara: Narasi
+    teks: Untuk mengalihkan rasa takutnya, Rara cepat-cepat mengeluarkan buku catatan
+      PR Kesehatan dari tas.
+  - pembicara: Rara
+    teks: "\"Bab \u2018Kenali Batas Tubuhmu\u2019\u2026 mungkin ini saatnya aku benar-benar
+      paham \u2014 siapa yang BOLEH dan TIDAK BOLEH menyentuhku.\""
+  narasiOutro:
+  - pembicara: Narasi
+    teks: "Angkot berhenti tepat di depan gerbang sekolah. Rara turun, mengangguk
+      sopan ke sopir, lalu berjalan cepat menuju kelas. \u2014 Akhirnya sampai dengan
+      selamat."
+  - pembicara: Rara
+    teks: "\"Fyuh\u2026 \U0001F60C selamat. Pelajaran pertama hampir mulai \u2014
+      mending fokus dulu, mikir pria tadi nanti aja.\""
+  - pembicara: Narasi
+    teks: "Beberapa jam berlalu. Bel istirahat berbunyi. Rara duduk di kantin dengan
+      sekotak susu \u2014 lalu HP di sakunya bergetar pelan: \U0001F4F2 \u2026 \u2026"
+  - pembicara: Rara
+    teks: "\"Hah? Pesan WhatsApp\u2026 dari nomor yang nggak aku simpan. \U0001F62C\nFoto
+      profilnya kosong. Kok\u2026 dia bisa tau nomorku?\""
+  - pembicara: Narasi
+    teks: "Dengan tangan sedikit gemetar, Rara membuka pesan itu\u2026"
+  kecepatanKetikNarasi: 0.025
+  delaySetelahKetikNarasi: 0.12
+  bolehSkipKetikNarasi: 1
+  narasiBoxDialogSprite: {fileID: 0}
+  narasiBoxDialogSpritePath: sprites/UI day 1/8.png
+  narasiNameBannerSprite: {fileID: 0}
+  narasiPortraitRara: {fileID: 0}
+  narasiPortraitNarasi: {fileID: 0}
+  narasiBgFullscreenSprite: {fileID: 0}
+  narasiPanelWarna: {r: 0, g: 0, b: 0, a: 0}
+  narasiBorderWarna: {r: 1, g: 0.85, b: 0.3, a: 1}
+  narasiBannerWarna: {r: 0.14, g: 0.09, b: 0.01, a: 0}
+  narasiNamaWarna: {r: 1, g: 0.85, b: 0.3, a: 1}
+  narasiTeksWarna: {r: 1, g: 0.96, b: 0.88, a: 1}
+  narasiHintWarna: {r: 1, g: 1, b: 1, a: 0.55}
+  narasiPortraitFallbackWarna: {r: 0.85, g: 0.55, b: 0.75, a: 1}
+  narasiUkuranNama: 30
+  narasiUkuranTeks: 30
+  narasiUkuranHint: 18
+  narasiTeksHint: "\u25BC SPACE / Klik untuk lanjut"
+  narasiPanelCenterX: 0.5
+  narasiPanelCenterY: 0.16
+  narasiPanelWidthFrac: 0.972
+  narasiPanelHeightFrac: 0.291
+  narasiPortraitCenterX: 0.14
+  narasiPortraitCenterY: 0.584
+  narasiPortraitSizeW: 0.189
+  narasiPortraitSizeH: 0.56
+  narasiPortraitPreserveAspect: 0
+  narasiBannerAnchorMin: {x: 0.11, y: 0.11}
+  narasiBannerAnchorMax: {x: 0.253, y: 0.333}
+  narasiTextAnchorMin: {x: 0.31, y: 0.55}
+  narasiTextAnchorMax: {x: 0.84, y: 0.76}
+  narasiHintCenterX: 0.798
+  narasiHintCenterY: 0.242
+  narasiHintSizeW: 0.296
+  narasiHintSizeH: 0.12
+  tampilkanTutorial: 1
+  tutorialJudul: "\U0001F9E9 QUIZ: KENALI BATAS TUBUH!"
+  tutorialBody: "Geser / drag nama bagian tubuh ke zona yang sesuai!\n\n\u2705 ZONA
+    AMAN = boleh disentuh teman & keluarga\n\u274C ZONA BAHAYA = area privat, NGGAK
+    BOLEH!\n\n\u23F0 Waktu: 15 detik \u2014 cepat!"
+  tutorialTombol: "\u25B6  SIAP, MULAI!"
+  tutorialPanelWarna: {r: 0.07, g: 0.13, b: 0.27, a: 0.97}
+  tutorialBorderWarna: {r: 0.33, g: 0.67, b: 1, a: 0.9}
+  tutorialJudulWarna: {r: 1, g: 0.84, b: 0, a: 1}
+  tutorialBodyWarna: {r: 0.8, g: 0.87, b: 1, a: 1}
+  tutorialTombolBg: {r: 0, g: 0.4, b: 0.2, a: 0.9}
+  tutorialTombolBorder: {r: 0.27, g: 1, b: 0.53, a: 0.7}
+  tutorialTombolTeks: {r: 0.27, g: 1, b: 0.53, a: 1}
+  tutorialUkuranJudul: 30
+  tutorialUkuranBody: 22
+  tutorialUkuranTombol: 22
+  fontAsset: {fileID: 0}
+  sortingOrder: 930
+--- !u!1 &1200034882
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1200034883}
+  - component: {fileID: 1200034884}
+  m_Layer: 0
+  m_Name: hud manajer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1200034883
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1200034882}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -138.01224, y: 18.045948, z: -0.52695787}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1413649927}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1200034884
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1200034882}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd4d927a601f6e64184638e2868570d1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  heartImages: []
+  heartFull: {fileID: 0}
+  heartEmpty: {fileID: 0}
+  scoreText: {fileID: 0}
+  locationText: {fileID: 0}
+  dayText: {fileID: 0}
+  locationNames:
+  - Jalan Menuju Sekolah
+  - Angkot Jurusan Sekolah
+  - "Parkiran SMP \u2014 Musim Hujan"
+  buildHUDAtRuntime: 1
+  fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
+  heartFullSprite: {fileID: 0}
+  heartEmptySprite: {fileID: 0}
+  panelBgColor: {r: 0.18, g: 0.08, b: 0.04, a: 0.88}
+  panelBorderColor: {r: 0.95, g: 0.72, b: 0.18, a: 1}
+  dayActiveColor: {r: 1, g: 0.82, b: 0.18, a: 1}
+  dayInactiveColor: {r: 0.42, g: 0.27, b: 0.12, a: 1}
+  gaugeFillColor: {r: 0.96, g: 0.45, b: 0.1, a: 1}
+  gaugeEmptyColor: {r: 0.1, g: 0.05, b: 0.02, a: 1}
+  dayLabels:
+  - H1
+  - H2
+  - H3
+  dayNumFontSize: 22
+  dayLabelFontSize: 19
+  dayCircleSize: 50
+  dayCircleX1: 0.15
+  dayCircleX2: 0.5
+  dayCircleX3: 0.85
+  dayNumColorActive: {r: 0, g: 0, b: 0, a: 1}
+  dayNumColorInactive: {r: 0.62, g: 0.62, b: 0.65, a: 0.85}
+  dayLabelColorInactive: {r: 0.48, g: 0.48, b: 0.52, a: 0.85}
+  dayLineThickness: 12
+  liveEditNavbar: 1
+  introDuration: 2.8
+  introFadeDuration: 0.5
+  popupFontSize: 52
+  popupRisePixels: 120
+  popupDuration: 1.5
+  popupAnchorX: 0.07
+  popupAnchorY: 0.9
+  popupLifeLostOffsetY: -0.02
+  popupFormatAman: +{0} POIN
+  popupFormatRagu: +{0} poin
+  popupTeksBahaya: 0 POIN
+  popupTeksNyawa: "\u22121 \u2764"
+  popupWarnaAman: {r: 0.15, g: 0.9, b: 0.45, a: 1}
+  popupWarnaRagu: {r: 0.97, g: 0.7, b: 0.1, a: 1}
+  popupWarnaBahaya: {r: 0.95, g: 0.3, b: 0.25, a: 1}
+  popupWarnaNyawa: {r: 0.95, g: 0.18, b: 0.18, a: 1}
+  animasiTransisiHari: 1
+  durasiHighlightHari: 0.6
+  skalaPuncakHighlight: 1.35
 --- !u!1 &1256300574
 GameObject:
   m_ObjectHideFlags: 0
@@ -4250,7 +5015,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: -8345082595938364304, guid: 3327862c3052aba4fb28d23c1d450ffe, type: 3}
+  m_Sprite: {fileID: 2260308578971087706, guid: 7245e3a1a05521348afeedbc73776638, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -4595,6 +5360,8 @@ Transform:
   - {fileID: 132046234}
   - {fileID: 861733423}
   - {fileID: 1801980165}
+  - {fileID: 374072422}
+  - {fileID: 1200034883}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1452768348
@@ -4627,7 +5394,7 @@ Transform:
   m_GameObject: {fileID: 1452768348}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 19.631, y: -2.3, z: -0.0441}
+  m_LocalPosition: {x: 20.17, y: -2.5, z: -0.0441}
   m_LocalScale: {x: 0.1429045, y: 0.1429045, z: 0.1429045}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -4878,20 +5645,26 @@ MonoBehaviour:
   editProfile: {fileID: 0}
   showBannerBg: 0
   fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
-  layout: {fileID: 11400000, guid: fa6df614259f73c45b7d990cce56ec0b, type: 2}
+  speakerFontAsset: {fileID: 0}
+  textFontAsset: {fileID: 0}
+  hintFontAsset: {fileID: 0}
+  layout: {fileID: 0}
+  useLayoutAsset: 0
+  liveEditLayout: 0
+  previewPanelInPlay: 0
   dialogBoxSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
   nameBannerSprite: {fileID: 0}
   boxDialogSpritePath: sprites/UI day 1/8.png
   panelCenterX: 0.5
-  panelCenterY: 0.219
-  panelWidthFrac: 0.939
-  panelHeightFrac: 0.395
+  panelCenterY: 0.16
+  panelWidthFrac: 0.972
+  panelHeightFrac: 0.291
   portraitCenterX: 0.14
   portraitCenterY: 0.584
   portraitSizeW: 0.189
   portraitSizeH: 0.56
   portraitPreserveAspect: 0
-  bannerAnchorMin: {x: 0.1, y: 0.1}
+  bannerAnchorMin: {x: 0.11, y: 0.11}
   bannerAnchorMax: {x: 0.253, y: 0.333}
   textAnchorMin: {x: 0.31, y: 0.55}
   textAnchorMax: {x: 0.84, y: 0.76}
@@ -5334,18 +6107,21 @@ MonoBehaviour:
   spriteImageType: 0
   tintSpriteWithColor: 0
   overrideSpriteSize: 1
-  panelSize: {x: 717.3, y: 773.8}
+  panelSize: {x: 717.3, y: 515.5}
   panelAnchoredPos: {x: 0.72, y: 0.44}
   overlaySize: {x: 2349, y: 1243}
   overlayStretchFullscreen: 1
   safeButtonScale: 0.27
   dangerButtonScale: 0.35
   panelScale: 1.26
+  scaleChildrenWithPanel: 1
   overrideButtonLayout: 1
-  safeButtonAnchoredPos: {x: 0, y: -146.2}
-  safeButtonSize: {x: 2854, y: 190.1}
-  dangerButtonAnchoredPos: {x: 2.4, y: -204.8}
-  dangerButtonSize: {x: 2172, y: 135.7}
+  safeButtonAnchoredPos: {x: 0, y: -116.2}
+  safeButtonSize: {x: 1245, y: 105.1}
+  dangerButtonAnchoredPos: {x: 2.4, y: -162.9}
+  dangerButtonSize: {x: 913, y: 81}
+  matchButtonSizeToSprite: 0
+  buttonSpriteSizeMul: 1
   liveEdit: 1
   previewPanelInPlay: 0
   autoDisableLayoutGroup: 1
@@ -5354,6 +6130,10 @@ MonoBehaviour:
   minTouchTargetPx: 96
   maxPanelWidthScreenRatio: 0.92
   maxPanelHeightScreenRatio: 0.85
+  autoConfigCanvasScaler: 1
+  canvasScaleMode: 0
+  referenceResolution: {x: 1920, y: 1080}
+  scalerMatchWidthOrHeight: 0.5
   onSafeChosen:
     m_PersistentCalls:
       m_Calls: []
@@ -5606,7 +6386,7 @@ Transform:
   m_GameObject: {fileID: 1800478712}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -12.16152, y: -3.9725559, z: 0}
+  m_LocalPosition: {x: -12.44, y: -4.54, z: 0}
   m_LocalScale: {x: 0.1039383, y: 0.1039383, z: 0.1039383}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5834,14 +6614,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slides:
   - backgroundColor: {r: 0.69411767, g: 0.69411767, b: 0.69411767, a: 0}
-    backgroundSprite: {fileID: -5752232747442402917, guid: 5a917b1b9e4700a49bb29e74c7a0433d, type: 3}
+    backgroundSprite: {fileID: 4531911217713922426, guid: d1704ca67c0f7404883afd10bff6c314, type: 3}
     illustration: {fileID: 0}
     title: 'Hari 1: Jalan Kaki ke Sekolah'
     text: Pagi hari di sebuah jalan menuju sekolah. Rara, gadis 13 tahun berbaju
       ungu, bersiap berangkat ke SMP Harapan. "Hati-hati di jalan, Rara!" kata Ibu.
     dialogSprite: {fileID: 0}
   - backgroundColor: {r: 0.36, g: 0.63, b: 0.78, a: 0}
-    backgroundSprite: {fileID: 69702660939866224, guid: 1363f894d863d34418c43cbea500a8c7, type: 3}
+    backgroundSprite: {fileID: 2637961653979121079, guid: 0b448fd6f28bbfb48a2498ceb040c12a, type: 3}
     illustration: {fileID: 0}
     title: Kenali Batas
     text: Di luar rumah, banyak orang lalu-lalang. Nggak semua orang asing bisa dipercaya!
@@ -5849,7 +6629,7 @@ MonoBehaviour:
       nyaman.
     dialogSprite: {fileID: 0}
   - backgroundColor: {r: 1, g: 1, b: 1, a: 0}
-    backgroundSprite: {fileID: 9111107016330272935, guid: 7a01195e707408546a9539375711ef29, type: 3}
+    backgroundSprite: {fileID: 4171274831981721143, guid: 20ade8e839844d64eb1d9a74d69b4a26, type: 3}
     illustration: {fileID: 0}
     title: Panduan Bermain
     text: "\u2190 \u2192 : Gerakkan Rara ke kiri / kanan, Shift + \u2190 \u2192 :
@@ -6106,7 +6886,7 @@ Transform:
   m_GameObject: {fileID: 1884718686}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.06, y: -4.38, z: 0}
+  m_LocalPosition: {x: 0.27, y: -4.95, z: 0}
   m_LocalScale: {x: 2.3748665, y: 0.109787345, z: 1.5077463}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6246,6 +7026,9 @@ Transform:
   - {fileID: 1667166004}
   - {fileID: 1464734294}
   - {fileID: 166136179}
+  - {fileID: 542756718}
+  - {fileID: 781320348}
+  - {fileID: 1195359062}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1897304801
@@ -6291,7 +7074,7 @@ Transform:
   m_GameObject: {fileID: 1911016859}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -10.06, y: -3.2, z: 0}
+  m_LocalPosition: {x: -9.95, y: -3.59, z: 0}
   m_LocalScale: {x: 0.115398206, y: 0.115398206, z: 0.115398206}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6592,7 +7375,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slides:
   - backgroundColor: {r: 0.91, g: 0.72, b: 0.43, a: 0}
-    backgroundSprite: {fileID: -5752232747442402917, guid: 8a22061066cf4b84a8037dc79faf15cb, type: 3}
+    backgroundSprite: {fileID: -6423173607572281017, guid: 924b469313a626e45ac6488049074597, type: 3}
     illustration: {fileID: 0}
     title: 'Hari 2: Naik Angkot ke Sekolah'
     text: 'Siang hari. Rara menunggu di halte angkot. Ia akan naik angkot menuju
@@ -6613,8 +7396,8 @@ MonoBehaviour:
     illustration: {fileID: 0}
     title: Yang Perlu Rara Tahu
     text: "\u25CF Tubuhmu = milikmu! Nggak ada yang boleh sembarangan.\n\u25CF Area
-      privat NGGAK BOLEH disentuh orang lain.\n\u25CF Ada pesan mencurigakan di HP?\n   
-      Jangan balas \u2014 langsung lapor ke orang tua!"
+      privat NGGAK BOLEH disentuh orang lain.\n\u25CF Ada pesan mencurigakan di HP?
+      Jangan balas "
     dialogSprite: {fileID: 0}
   globalDialogSprite: {fileID: 4113829005332862926, guid: 64f200f9fa47f254c8ef4d8a33f19e53, type: 3}
   defaultDialogSpritePath: sprites/UI day 1/9.png
@@ -6820,7 +7603,7 @@ Transform:
   m_GameObject: {fileID: 2020145637}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -18.819668, y: -3.1432922, z: 0}
+  m_LocalPosition: {x: -18.72, y: -3.59, z: 0}
   m_LocalScale: {x: 0.10603928, y: 0.10833833, z: 0.113253534}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -6907,7 +7690,7 @@ Transform:
   m_GameObject: {fileID: 2028605103}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 20.480234, y: -4.236959, z: 0}
+  m_LocalPosition: {x: 21.6, y: -4.56, z: 0}
   m_LocalScale: {x: 0.090834245, y: 0.090834245, z: 0.090834245}
   m_ConstrainProportionsScale: 0
   m_Children:

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 8a22061066cf4b84a8037dc79faf15cb
+guid: ecceb6ef2d61f094cb92cb6b8a235080
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -5752232747442402917
-    second: prolog day 1_0
+      213: -7726510151329706208
+    second: 1.7_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,7 +100,7 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: prolog day 1_0
+      name: 1.7_0
       rect:
         serializedVersion: 2
         x: 0
@@ -114,8 +114,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b998357fac6fb20b0800000000000000
-      internalID: -5752232747442402917
+      spriteID: 02f0b8444fbe5c490800000000000000
+      internalID: -7726510151329706208
       vertices: []
       indices: 
       edges: []

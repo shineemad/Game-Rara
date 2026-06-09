@@ -1,0 +1,11 @@
+public void Mulai(Action onSelesai)
+    {
+        _onSelesai = onSelesai;
+        BuildScene();
+        StartCoroutine(TimerCoroutine());
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    void BuildScene()
+    {
+        _canvasGO = new GameObject("Zon

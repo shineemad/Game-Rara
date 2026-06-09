@@ -95,9 +95,6 @@ public class BackgroundLayerSetup : MonoBehaviour
     [Tooltip("Prefix nama GameObject yang dibuat untuk setiap layer")]
     public string goPrefix = "BG_";
 
-    // ── Internal ──────────────────────────────────────────────────────────
-    private bool initialized = false;
-
     // ══════════════════════════════════════════════════════════════════════
     void Start()
     {

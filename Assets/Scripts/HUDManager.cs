@@ -292,6 +292,14 @@ public class HUDManager : MonoBehaviour
         locationText.text = locationNames[idx];
     }
 
+    /// Override lokasi dengan teks bebas (untuk zona segmen di dalam satu hari,
+    /// misal "Depan Rumah", "Lorong Pemukiman", "Halte", "Akses Sekolah").
+    public void UpdateLocationCustom(string customLabel)
+    {
+        if (locationText == null || string.IsNullOrEmpty(customLabel)) return;
+        locationText.text = customLabel;
+    }
+
     public void UpdateDay(int day)
     {
         if (dayText != null) dayText.text = $"Hari {day}";
@@ -722,7 +730,7 @@ public class HUDManager : MonoBehaviour
         tmp.fontStyle          = FontStyles.Bold;
         tmp.color              = warna;
         tmp.alignment          = TextAlignmentOptions.Center;
-        tmp.enableWordWrapping = false;
+        tmp.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
 
         // Outline tipis agar terbaca di atas background apapun
         tmp.outlineWidth = 0.25f;
@@ -998,7 +1006,7 @@ public class HUDManager : MonoBehaviour
                                              new Color(0.96f, 0.80f, 0.12f, 1f));
         _introTitle.alignment          = TextAlignmentOptions.Center;
         _introTitle.fontStyle          = FontStyles.Bold;
-        _introTitle.enableWordWrapping = true;
+        _introTitle.textWrappingMode = TMPro.TextWrappingModes.Normal;
         var tRT = _introTitle.rectTransform;
         tRT.anchorMin = new Vector2(0.05f, 0.44f);
         tRT.anchorMax = new Vector2(0.95f, 0.68f);
@@ -1008,7 +1016,7 @@ public class HUDManager : MonoBehaviour
         _introSub                    = Tmp(introGO, "IntroSub",
                                            "📍  Jalan Menuju Sekolah", 34, Color.white);
         _introSub.alignment          = TextAlignmentOptions.Center;
-        _introSub.enableWordWrapping = true;
+        _introSub.textWrappingMode = TMPro.TextWrappingModes.Normal;
         var sRT = _introSub.rectTransform;
         sRT.anchorMin = new Vector2(0.10f, 0.31f);
         sRT.anchorMax = new Vector2(0.90f, 0.44f);
@@ -1118,7 +1126,7 @@ public class HUDManager : MonoBehaviour
         tmp.text               = text;
         tmp.fontSize           = size;
         tmp.color              = color;
-        tmp.enableWordWrapping = false;
+        tmp.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
         tmp.overflowMode       = TextOverflowModes.Overflow;
         return tmp;
     }

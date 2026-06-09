@@ -194,6 +194,12 @@ public class PathChoiceUI : MonoBehaviour
     [Tooltip("Skala uniform tambahan untuk sprite panel (1 = ukuran asli).")]
     [Range(0.1f, 5f)] public float panelScale        = 1f;
 
+    [Tooltip("Jika ON: skala tombol, posisi tombol, ukuran tombol, dan ukuran font\n" +
+             "otomatis IKUT 'panelScale'. Cocok kalau kamu cuma mau atur 1 slider (panelScale)\n" +
+             "untuk membesarkan SELURUH panel + isinya secara proporsional.\n" +
+             "OFF = tiap field berdiri sendiri (mode lama).")]
+    public bool scaleChildrenWithPanel = true;
+
     // ══════════════════════════════════════════════════════════════════════
     // INSPECTOR — POSISI & UKURAN TOMBOL (override layout)
     // Centang `overrideButtonLayout` untuk memakai nilai di bawah ini.
@@ -213,6 +219,15 @@ public class PathChoiceUI : MonoBehaviour
     public Vector2 dangerButtonAnchoredPos = new Vector2(0f, -80f);
     [Tooltip("Ukuran tombol Gang Sepi (lebar × tinggi, px)")]
     public Vector2 dangerButtonSize        = new Vector2(700f, 120f);
+
+    [Tooltip("ON: ukuran RectTransform tombol otomatis = ukuran asli SPRITE\n" +
+             "(sprite.rect / pixelsPerUnit). Cocok kalau sprite tombolmu sudah\n" +
+             "punya bentuk/border, supaya kotak klik PAS dengan visual.\n" +
+             "Nilai 'safeButtonSize' & 'dangerButtonSize' di atas akan DIABAIKAN saat ON.\n" +
+             "OFF = pakai ukuran manual di atas.")]
+    public bool matchButtonSizeToSprite = false;
+    [Tooltip("Pengali tambahan saat matchButtonSizeToSprite ON (1 = ukuran sprite asli, 1.5 = 150%).")]
+    [Range(0.1f, 5f)] public float buttonSpriteSizeMul = 1f;
 
     [Header("── LIVE EDIT (saat Play) ──")]
     [Tooltip("Jika true: setiap perubahan Inspector (teks, sprite, ukuran, posisi, style) langsung diterapkan saat Play.")]
@@ -235,6 +250,33 @@ public class PathChoiceUI : MonoBehaviour
     [Tooltip("Auto-batasi panel agar tidak melebihi layar. 1.0 = boleh sebesar layar penuh.")]
     [Range(0.5f, 1f)] public float maxPanelWidthScreenRatio  = 1f;
     [Range(0.5f, 1f)] public float maxPanelHeightScreenRatio = 1f;
+
+    [Header("── KONSISTENSI UKURAN (Cross-Device) ──")]
+    [Tooltip("WAJIB ON agar tampilan panel/tombol KONSISTEN di semua ukuran device.\n" +
+             "Otomatis set CanvasScaler mengikuti 'canvasScaleMode' di bawah.")]
+    public bool autoConfigCanvasScaler = true;
+
+    public enum CanvasScaleMode
+    {
+        Proportional,       // Scale With Screen Size — panel/sprite skala mengikuti layar
+        ConstantPixelSize,  // Sprite UI selalu ukuran piksel SAMA di semua device
+        ConstantPhysicalSize // Selalu ukuran fisik sama (cm/inch) di semua device
+    }
+
+    [Tooltip("MODE skala canvas:\n" +
+             " • Proportional (default) — panel & sprite SKALA ikut ukuran layar. Cocok kalau mau panel\n" +
+             "   selalu ~47% lebar layar di HP kecil, tablet, & 4K.\n" +
+             " • ConstantPixelSize — sprite/UI selalu UKURAN PIKSEL SAMA di semua device.\n" +
+             "   Sprite tidak ikut membesar/mengecil saat ganti device. Pilih ini kalau mau\n" +
+             "   asset pixel-art tampil tajam tanpa upscale/downscale.\n" +
+             " • ConstantPhysicalSize — selalu ukuran fisik sama (mm/inch) berdasar DPI device.")]
+    public CanvasScaleMode canvasScaleMode = CanvasScaleMode.Proportional;
+
+    [Tooltip("Hanya untuk mode Proportional. Resolusi referensi CanvasScaler.\n" +
+             "Default 1920x1080 = jika panelSize=900x500, panel akan ~47% lebar layar di SEMUA device.")]
+    public Vector2 referenceResolution   = new Vector2(1920f, 1080f);
+    [Tooltip("Hanya untuk mode Proportional. 0 = scale berdasarkan lebar, 1 = berdasarkan tinggi, 0.5 = seimbang.")]
+    [Range(0f, 1f)] public float scalerMatchWidthOrHeight = 0.5f;
 
     [Header("── EVENTS — sambungkan ke Day1Controller ──")]
     [Tooltip("Dipanggil saat pemain memilih Jalan Ramai")]
@@ -392,6 +434,7 @@ public class PathChoiceUI : MonoBehaviour
             // Live edit — terapkan perubahan Inspector tiap frame.
             if (liveEdit)
             {
+                WarnIfLiveEditMisconfigured();
                 ReapplyAllCustomization();
             }
         }
@@ -406,6 +449,40 @@ public class PathChoiceUI : MonoBehaviour
             triggered = true;
             ShowPanel();
         }
+    }
+
+    // Cetak peringatan SEKALI saja kalau user nyalakan liveEdit tapi lupa
+    // centang override toggle — sehingga edit Inspector seperti panelSize/buttonSize/fontSize
+    // tidak akan terlihat efeknya.
+    bool _warnedMisconfig = false;
+    void WarnIfLiveEditMisconfigured()
+    {
+        if (_warnedMisconfig) return;
+        if (overrideSpriteSize && overrideButtonLayout && overrideTextStyle) return;
+
+        _warnedMisconfig = true;
+        var missing = new System.Text.StringBuilder();
+        if (!overrideSpriteSize)   missing.Append("\n  • overrideSpriteSize  → panelSize/panelScale/overlaySize/buttonScale");
+        if (!overrideButtonLayout) missing.Append("\n  • overrideButtonLayout → safeButtonSize/dangerButtonSize/posisi/matchButtonSizeToSprite");
+        if (!overrideTextStyle)    missing.Append("\n  • overrideTextStyle    → titleFontSize/bodyFontSize/buttonFontSize/style/alignment");
+
+        Debug.LogWarning(
+            "[PathChoiceUI] liveEdit AKTIF tapi beberapa toggle override BELUM dicentang. " +
+            "Field-field di bawah TIDAK akan berubah saat Inspector diedit:" + missing +
+            "\n\n→ Klik kanan pada komponen PathChoiceUI → '▶ Aktifkan Semua Override' untuk fix cepat.",
+            this);
+    }
+
+    [ContextMenu("▶ Aktifkan Semua Override (Live Edit)")]
+    public void EnableAllOverrides()
+    {
+        overrideSpriteSize   = true;
+        overrideButtonLayout = true;
+        overrideTextStyle    = true;
+        liveEdit             = true;
+        _warnedMisconfig     = false; // reset — supaya warning bisa muncul lagi kalau user matikan
+        if (Application.isPlaying) ReapplyAllCustomization();
+        Debug.Log("[PathChoiceUI] Semua override toggle di-AKTIFKAN. Sekarang setiap perubahan Inspector saat Play akan langsung terlihat.");
     }
 
     // Aktifkan panel untuk preview tanpa harus kena trigger Rara.
@@ -1061,11 +1138,15 @@ public class PathChoiceUI : MonoBehaviour
         }
 
         // — SKALA TOMBOL —
+        // Kalau scaleChildrenWithPanel ON, kalikan skala tombol dengan panelScale
+        // supaya tombol membesar/mengecil mengikuti panel.
+        float childMul = scaleChildrenWithPanel ? panelScale : 1f;
+
         RectTransform safeRT   = FindRT(btnSafeRef   != null ? btnSafeRef.transform   : null, "BtnSafe");
-        if (safeRT != null) safeRT.localScale = Vector3.one * safeButtonScale;
+        if (safeRT != null) safeRT.localScale = Vector3.one * (safeButtonScale * childMul);
 
         RectTransform dangerRT = FindRT(btnDangerRef != null ? btnDangerRef.transform : null, "BtnDanger");
-        if (dangerRT != null) dangerRT.localScale = Vector3.one * dangerButtonScale;
+        if (dangerRT != null) dangerRT.localScale = Vector3.one * (dangerButtonScale * childMul);
     }
 
     // Cari Image dengan luas TERBESAR di hierarki Canvas terdekat — anggap sebagai panel.
@@ -1110,18 +1191,26 @@ public class PathChoiceUI : MonoBehaviour
     {
         if (!overrideButtonLayout) return;
 
+        // Kalau scaleChildrenWithPanel ON, posisi & size tombol ikut panelScale
+        // sehingga jarak/ukuran tetap proporsional saat panel diperbesar.
+        float k = scaleChildrenWithPanel ? panelScale : 1f;
+
         RectTransform rtSafe   = FindRT(btnSafeRef   != null ? btnSafeRef.transform   : null, "BtnSafe");
         RectTransform rtDanger = FindRT(btnDangerRef != null ? btnDangerRef.transform : null, "BtnDanger");
+
+        // Sumber ukuran tombol: dari sprite (kalau ON) atau dari Inspector.
+        Vector2 safeBase   = GetButtonBaseSize(rtSafe,   safeButtonSprite,   safeButtonSize);
+        Vector2 dangerBase = GetButtonBaseSize(rtDanger, dangerButtonSprite, dangerButtonSize);
 
         if (rtSafe != null)
         {
             DisableLayoutOnParent(rtSafe);
             DisableLayoutElement(rtSafe);
             Vector2 sz = new Vector2(
-                Mathf.Max(safeButtonSize.x, minTouchTargetPx),
-                Mathf.Max(safeButtonSize.y, minTouchTargetPx));
-            ApplyRect(rtSafe, safeButtonAnchoredPos, sz);
-            if (debugLog) Debug.Log($"[PathChoiceUI] Safe rect → pos={safeButtonAnchoredPos} size={sz}");
+                Mathf.Max(safeBase.x * k, minTouchTargetPx),
+                Mathf.Max(safeBase.y * k, minTouchTargetPx));
+            ApplyRect(rtSafe, safeButtonAnchoredPos * k, sz);
+            if (debugLog) Debug.Log($"[PathChoiceUI] Safe rect → pos={safeButtonAnchoredPos * k} size={sz} (base={safeBase}, k={k})");
         }
         else if (debugLog) Debug.LogWarning("[PathChoiceUI] rtSafe TIDAK ditemukan — drag Btn Safe Ref di Inspector atau pastikan nama child 'BtnSafe' di bawah Panel.");
 
@@ -1130,12 +1219,33 @@ public class PathChoiceUI : MonoBehaviour
             DisableLayoutOnParent(rtDanger);
             DisableLayoutElement(rtDanger);
             Vector2 szD = new Vector2(
-                Mathf.Max(dangerButtonSize.x, minTouchTargetPx),
-                Mathf.Max(dangerButtonSize.y, minTouchTargetPx));
-            ApplyRect(rtDanger, dangerButtonAnchoredPos, szD);
-            if (debugLog) Debug.Log($"[PathChoiceUI] Danger rect → pos={dangerButtonAnchoredPos} size={szD}");
+                Mathf.Max(dangerBase.x * k, minTouchTargetPx),
+                Mathf.Max(dangerBase.y * k, minTouchTargetPx));
+            ApplyRect(rtDanger, dangerButtonAnchoredPos * k, szD);
+            if (debugLog) Debug.Log($"[PathChoiceUI] Danger rect → pos={dangerButtonAnchoredPos * k} size={szD} (base={dangerBase}, k={k})");
         }
         else if (debugLog) Debug.LogWarning("[PathChoiceUI] rtDanger TIDAK ditemukan — drag Btn Danger Ref di Inspector atau pastikan nama child 'BtnDanger' di bawah Panel.");
+    }
+
+    // Tentukan ukuran dasar tombol: ikut sprite (kalau ON) atau pakai nilai manual.
+    Vector2 GetButtonBaseSize(RectTransform rt, Sprite explicitSprite, Vector2 manualSize)
+    {
+        if (!matchButtonSizeToSprite) return manualSize;
+
+        // Cari sprite aktif: prioritas field Inspector → Image pada button.
+        Sprite sp = explicitSprite;
+        if (sp == null && rt != null)
+        {
+            var img = rt.GetComponent<Image>();
+            if (img != null) sp = img.sprite;
+        }
+        if (sp == null) return manualSize; // fallback
+
+        // Ukuran natural sprite dalam piksel UI = (rect.size) / pixelsPerUnit.
+        // (untuk UI, sprite biasanya pixelsPerUnit=100; tapi pakai sprite.pixelsPerUnit langsung agar akurat)
+        float ppu = sp.pixelsPerUnit > 0f ? sp.pixelsPerUnit : 100f;
+        Vector2 natural = new Vector2(sp.rect.width, sp.rect.height) * (100f / ppu);
+        return natural * buttonSpriteSizeMul;
     }
 
     // Helper: cari RectTransform dari ref langsung, atau fallback cari child by name
@@ -1223,6 +1333,9 @@ public class PathChoiceUI : MonoBehaviour
     // Terapkan font & style ke seluruh teks (judul, body, label tombol).
     void ApplyTextStyleAll()
     {
+        // Kalau scaleChildrenWithPanel ON, font ikut panelScale.
+        float fk = scaleChildrenWithPanel ? panelScale : 1f;
+
         // —— JUDUL ——
         TextMeshProUGUI title = titleTMPRef;
         if (title == null && panelRoot != null)
@@ -1237,7 +1350,7 @@ public class PathChoiceUI : MonoBehaviour
             title.color = titleColor;
             if (overrideTextStyle)
             {
-                title.fontSize          = titleFontSize;
+                title.fontSize          = titleFontSize * fk;
                 title.fontStyle         = titleFontStyle;
                 title.alignment         = titleAlignment;
                 title.characterSpacing  = titleCharacterSpacing;
@@ -1260,7 +1373,7 @@ public class PathChoiceUI : MonoBehaviour
             body.color = bodyColor;
             if (overrideTextStyle)
             {
-                body.fontSize          = bodyFontSize;
+                body.fontSize          = bodyFontSize * fk;
                 body.fontStyle         = bodyFontStyle;
                 body.alignment         = bodyAlignment;
                 body.characterSpacing  = bodyCharacterSpacing;
@@ -1270,11 +1383,11 @@ public class PathChoiceUI : MonoBehaviour
         }
 
         // —— LABEL TOMBOL ——
-        ApplyButtonLabelStyle(btnSafeLabelRef,   "BtnSafe");
-        ApplyButtonLabelStyle(btnDangerLabelRef, "BtnDanger");
+        ApplyButtonLabelStyle(btnSafeLabelRef,   "BtnSafe",   fk);
+        ApplyButtonLabelStyle(btnDangerLabelRef, "BtnDanger", fk);
     }
 
-    void ApplyButtonLabelStyle(TextMeshProUGUI lblRef, string parentName)
+    void ApplyButtonLabelStyle(TextMeshProUGUI lblRef, string parentName, float fontMul)
     {
         TextMeshProUGUI lbl = lblRef;
         if (lbl == null && panelRoot != null)
@@ -1293,7 +1406,7 @@ public class PathChoiceUI : MonoBehaviour
         lbl.color = btnTextColor;
         if (overrideTextStyle)
         {
-            lbl.fontSize  = buttonFontSize;
+            lbl.fontSize  = buttonFontSize * fontMul;
             lbl.fontStyle = buttonFontStyle;
             lbl.alignment = buttonAlignment;
             ApplyOutline(lbl, buttonUseOutline, buttonOutlineColor, buttonOutlineWidth);
@@ -1342,6 +1455,66 @@ public class PathChoiceUI : MonoBehaviour
         ApplyCustomSprites();   // sprite + ApplySpriteSizes()
         ApplyCustomLayout();    // posisi & ukuran tombol
         ApplyTextStyleAll();    // font, size, style, alignment, outline
+        EnsureCanvasScalerConfigured(); // konsistensi ukuran di semua device
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // CROSS-DEVICE — auto-config CanvasScaler agar nilai px konsisten
+    // di semua ukuran layar (HP, tablet, PC, 4K).
+    // ══════════════════════════════════════════════════════════════════════
+    Canvas _cachedCanvas;
+    void EnsureCanvasScalerConfigured()
+    {
+        if (!autoConfigCanvasScaler) return;
+
+        // Cari Canvas pemilik PathChoice UI — pakai uiRootRef/panelRootRef dulu.
+        Canvas cv = _cachedCanvas;
+        if (cv == null)
+        {
+            if (uiRootRef != null)        cv = uiRootRef.GetComponentInParent<Canvas>();
+            if (cv == null && panelRootRef != null) cv = panelRootRef.GetComponentInParent<Canvas>();
+            if (cv == null && uiRoot != null)       cv = uiRoot.GetComponentInParent<Canvas>();
+            if (cv == null && panelRoot != null)    cv = panelRoot.GetComponentInParent<Canvas>();
+            if (cv == null) cv = GetComponentInParent<Canvas>();
+            if (cv != null) _cachedCanvas = cv;
+        }
+        if (cv == null) return;
+
+        var scaler = cv.GetComponent<CanvasScaler>();
+        if (scaler == null) scaler = cv.gameObject.AddComponent<CanvasScaler>();
+
+        switch (canvasScaleMode)
+        {
+            case CanvasScaleMode.ConstantPixelSize:
+                if (scaler.uiScaleMode == CanvasScaler.ScaleMode.ConstantPixelSize
+                    && Mathf.Approximately(scaler.scaleFactor, 1f)) return;
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPixelSize;
+                scaler.scaleFactor = 1f;
+                if (debugLog) Debug.Log($"[PathChoiceUI] CanvasScaler '{cv.name}' → ConstantPixelSize (sprite size FIXED).");
+                break;
+
+            case CanvasScaleMode.ConstantPhysicalSize:
+                if (scaler.uiScaleMode == CanvasScaler.ScaleMode.ConstantPhysicalSize) return;
+                scaler.uiScaleMode = CanvasScaler.ScaleMode.ConstantPhysicalSize;
+                if (debugLog) Debug.Log($"[PathChoiceUI] CanvasScaler '{cv.name}' → ConstantPhysicalSize.");
+                break;
+
+            default: // Proportional
+                if (scaler.uiScaleMode == CanvasScaler.ScaleMode.ScaleWithScreenSize
+                    && scaler.referenceResolution == referenceResolution
+                    && Mathf.Approximately(scaler.matchWidthOrHeight, scalerMatchWidthOrHeight)
+                    && scaler.screenMatchMode == CanvasScaler.ScreenMatchMode.MatchWidthOrHeight)
+                {
+                    return;
+                }
+                scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+                scaler.referenceResolution = referenceResolution;
+                scaler.screenMatchMode     = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
+                scaler.matchWidthOrHeight  = scalerMatchWidthOrHeight;
+                if (debugLog)
+                    Debug.Log($"[PathChoiceUI] CanvasScaler '{cv.name}' → Proportional, ref={referenceResolution}, match={scalerMatchWidthOrHeight}");
+                break;
+        }
     }
 
 #if UNITY_EDITOR
@@ -1431,7 +1604,7 @@ public class PathChoiceUI : MonoBehaviour
             new Vector2(20f, -200f), new Vector2(-20f, -98f),
             34, bodyColor, TextAlignmentOptions.Center);
         bodyGO.text = bodyText;
-        bodyGO.enableWordWrapping = true;
+        bodyGO.textWrappingMode = TMPro.TextWrappingModes.Normal;
 
         // ── Tombol JALAN RAMAI (hijau) ────────────────────────────────────
         MakeChoiceButton(panelRoot, "BtnSafe", safeLabel,
@@ -1491,7 +1664,7 @@ public class PathChoiceUI : MonoBehaviour
             42, btnTextColor, TextAlignmentOptions.Center);
         lbl.text      = label;
         lbl.fontStyle = FontStyles.Bold;
-        lbl.enableWordWrapping = true;
+        lbl.textWrappingMode = TMPro.TextWrappingModes.Normal;
     }
 
     TextMeshProUGUI MakeText(GameObject parent, string name,

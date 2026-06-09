@@ -101,13 +101,38 @@ public class NpcDialog : MonoBehaviour
     public bool   showBannerBg = true;
 
     [Header("Font (opsional)")]
-    [Tooltip("Drag TMP Font Asset di sini. Kosongkan = pakai font default TMP otomatis.")]
+    [Tooltip("Drag TMP Font Asset di sini. Kosongkan = pakai font default TMP otomatis.\n" +
+             "Font ini dipakai untuk SEMUA teks (speaker name + body + hint) kecuali di-override di bawah.")]
     public TMP_FontAsset fontAsset;
 
+    [Tooltip("Font KHUSUS untuk nama pembicara (banner 'Pemotor', 'Paman', dll).\n" +
+             "Kosongkan = pakai fontAsset di atas. Berguna kalau ingin nama pakai font dekoratif berbeda.")]
+    public TMP_FontAsset speakerFontAsset;
+
+    [Tooltip("Font KHUSUS untuk isi dialog. Kosongkan = pakai fontAsset di atas.")]
+    public TMP_FontAsset textFontAsset;
+
+    [Tooltip("Font KHUSUS untuk teks 'lanjut' di bawah. Kosongkan = pakai fontAsset di atas.")]
+    public TMP_FontAsset hintFontAsset;
+
     [Header("Sprite Box Dialog")]
-    [Tooltip("Aset DialogBoxLayout bersama. Jika di-assign, nilainya akan menimpa\n" +
-             "semua field tata letak + sprite di komponen ini.")]
+    [Tooltip("Aset DialogBoxLayout bersama. Jika di-assign DAN useLayoutAsset di-centang,\n" +
+             "nilainya akan menimpa semua field tata letak + sprite di komponen ini.")]
     public DialogBoxLayout layout;
+
+    [Tooltip("PENTING: Jika centang DAN field 'layout' di atas diisi, nilai Inspector\n" +
+             "banner/text anchor, panel, portrait, hint AKAN DITIMPA dari aset DialogBoxLayout\n" +
+             "setiap kali Play() dipanggil. UNCHECK kalau ingin mengedit nilai Inspector langsung.")]
+    public bool useLayoutAsset = false;
+
+    [Tooltip("Centang: perubahan field tata letak di Inspector saat Play LANGSUNG terlihat di\n" +
+             "Game view (tanpa stop & play ulang). Hanya aktif setelah Play() dipanggil.")]
+    public bool liveEditLayout = true;
+
+    [Tooltip("PLAY-EDIT MODE: Centang agar panel dialog DIPAKSA terlihat saat Play —\n" +
+             "tanpa perlu trigger NPC. Berguna untuk preview & edit tata letak/teks/sprite\n" +
+             "secara live. Matikan saat selesai supaya dialog kembali normal.")]
+    public bool previewPanelInPlay = false;
     [Tooltip("Drag sprite kotak dialog kayu ke sini. Layout portrait+banner otomatis menyesuaikan.\n" +
              "Saat Play di Editor, auto-load dari boxDialogSpritePath jika field ini kosong.")]
     public Sprite dialogBoxSprite;
@@ -138,13 +163,13 @@ public class NpcDialog : MonoBehaviour
     [Tooltip("Pertahankan rasio aspek foto (centang = foto tidak stretch, dikelilingi ruang kosong)")]
     public bool portraitPreserveAspect = true;
     [Tooltip("Posisi banner nama (kiri, bawah)")]
-    public Vector2 bannerAnchorMin   = new Vector2(0.25f, 0.58f);
+    public Vector2 bannerAnchorMin   = new Vector2(0.03f, 0.10f);
     [Tooltip("Posisi banner nama (kanan, atas)")]
-    public Vector2 bannerAnchorMax   = new Vector2(0.52f, 0.82f);
+    public Vector2 bannerAnchorMax   = new Vector2(0.253f, 0.333f);
     [Tooltip("Posisi area teks (kiri, bawah)")]
-    public Vector2 textAnchorMin     = new Vector2(0.25f, 0.10f);
+    public Vector2 textAnchorMin     = new Vector2(0.31f, 0.55f);
     [Tooltip("Posisi area teks (kanan, atas)")]
-    public Vector2 textAnchorMax     = new Vector2(0.96f, 0.57f);
+    public Vector2 textAnchorMax     = new Vector2(0.84f, 0.76f);
 
     [Header("Posisi Petunjuk Lanjut (geser di sini)")]
     [Tooltip("Posisi tengah horizontal petunjuk dalam panel (0=kiri, 1=kanan)")]
@@ -309,6 +334,17 @@ public class NpcDialog : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
     void Update()
     {
+        // PLAY-EDIT MODE: paksa panel terlihat walau belum di-Play() lewat trigger NPC.
+        if (previewPanelInPlay && Application.isPlaying)
+        {
+            ForceShowPanelForPreview();
+        }
+
+        // Live edit: tiap perubahan field tata letak di Inspector saat Play
+        // → langsung diterapkan ke RectTransform.
+        if (liveEditLayout && panelRoot != null)
+            ApplyLayout();
+
         if (!isPlaying) return;
 
         if (Input.GetKeyDown(KeyCode.Space) ||
@@ -318,6 +354,41 @@ public class NpcDialog : MonoBehaviour
         {
             Advance();
         }
+    }
+
+    // Aktifkan panel utk preview tanpa harus kena trigger NPC.
+    // Build UI kalau belum ada, lalu set panelRoot active.
+    void ForceShowPanelForPreview()
+    {
+        BuildUIIfNeeded();
+        if (panelRoot != null && !panelRoot.activeSelf) panelRoot.SetActive(true);
+
+        // Tampilkan baris pertama kalau belum ada teks (biar bisa kelihatan layout-nya).
+        if (!isPlaying && lines != null && lines.Length > 0)
+        {
+            currentIndex = 0;
+            ShowLine(0);
+        }
+    }
+
+    [ContextMenu("▶ Preview Panel Sekarang (Play Mode)")]
+    public void PreviewPanelInPlayMenu()
+    {
+        if (!Application.isPlaying)
+        {
+            Debug.LogWarning("[NpcDialog] Tekan Play dulu baru pakai preview ini.");
+            return;
+        }
+        previewPanelInPlay = true;
+        ForceShowPanelForPreview();
+        Debug.Log("[NpcDialog] Preview panel aktif. Edit Inspector → live update. Uncheck 'previewPanelInPlay' untuk sembunyikan.");
+    }
+
+    [ContextMenu("▶ Sembunyikan Preview Panel")]
+    public void HidePreviewPanelMenu()
+    {
+        previewPanelInPlay = false;
+        if (!isPlaying && panelRoot != null) panelRoot.SetActive(false);
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -333,12 +404,32 @@ public class NpcDialog : MonoBehaviour
             return;
         }
 
+        // Guard: pastikan GameObject host AKTIF sebelum StartCoroutine dipanggil.
+        // Skenario: NpcDialog menempel di NPC (mis. 'pemotor', 'paman') yang awalnya
+        // SetActive(false). Kalau Day1Controller / script lain memanggil Play() lewat
+        // referensi, coroutine TypeText akan gagal dengan error
+        // \"Coroutine couldn't be started because the the game object '...' is inactive!\"
+        if (!gameObject.activeInHierarchy)
+        {
+            Debug.LogWarning($"[NpcDialog] GameObject '{name}' inactive saat Play() dipanggil. " +
+                             "Auto-mengaktifkan supaya coroutine bisa berjalan.");
+            gameObject.SetActive(true);
+        }
+
 #if UNITY_EDITOR
         // Hanya load sprite kalau field kosong — JANGAN overwrite tweak Inspector.
         TryLoadBoxSprite(overwrite: false);
 #endif
-        // Jika DialogBoxLayout di-assign, salin nilainya ke field lokal.
-        ApplyLayoutAsset();
+        // Jika DialogBoxLayout di-assign DAN user mau pakai — terapkan nilainya.
+        // Kalau useLayoutAsset = false, nilai Inspector (yang user edit manual) DIPERTAHANKAN.
+        if (useLayoutAsset)
+        {
+            ApplyLayoutAsset();
+        }
+        else if (layout != null)
+        {
+            Debug.Log($"[NpcDialog] useLayoutAsset = false — nilai dari aset '{layout.name}' DIABAIKAN. Pakai nilai Inspector.");
+        }
 
         Debug.Log("[NpcDialog] Play() dipanggil — " + lines.Length + " baris dialog.");
         BuildUIIfNeeded();
@@ -414,6 +505,21 @@ public class NpcDialog : MonoBehaviour
     void ShowLine(int idx)
     {
         var line = lines[idx];
+
+        // Guard: skip baris yang TIDAK PUNYA pilihan DAN text-nya kosong.
+        // Tanpa guard ini, dialog box akan menggantung dengan body kosong
+        // (typewriter selesai 0 iterasi, hint muncul, user harus klik untuk lanjut).
+        bool noText    = string.IsNullOrWhiteSpace(line.text);
+        bool noChoices = line.choices == null || line.choices.Length == 0;
+        if (noText && noChoices)
+        {
+            Debug.LogWarning($"[NpcDialog] Baris kosong dilewati (idx={idx}, speaker=\"{line.speakerName}\"). " +
+                             "Cek isi DialogEntry.text di Inspector / kode pemanggil.");
+            currentIndex++;
+            if (currentIndex >= lines.Length) { EndDialog(); return; }
+            ShowLine(currentIndex);
+            return;
+        }
 
         speakerTMP.text = line.speakerName;
         editHeadline    = line.speakerName;
@@ -542,7 +648,7 @@ public class NpcDialog : MonoBehaviour
             tmp.color              = Color.white;
             tmp.fontStyle          = FontStyles.Bold;
             tmp.alignment          = TextAlignmentOptions.MidlineLeft;
-            tmp.enableWordWrapping = true;
+            tmp.textWrappingMode = TMPro.TextWrappingModes.Normal;
             tmp.raycastTarget      = false;
 
             var localC = c;
@@ -655,16 +761,19 @@ public class NpcDialog : MonoBehaviour
         // Warna & ukuran font
         if (speakerTMP != null)
         {
+            ApplyFontFor(speakerTMP, speakerFontAsset);
             speakerTMP.color    = speakerColor;
             speakerTMP.fontSize = speakerFontSize;
         }
         if (textTMP != null)
         {
+            ApplyFontFor(textTMP, textFontAsset);
             textTMP.color    = textColor;
             textTMP.fontSize = textFontSize;
         }
         if (hintTMP != null)
         {
+            ApplyFontFor(hintTMP, hintFontAsset);
             hintTMP.color    = hintColor;
             hintTMP.fontSize = hintFontSize;
             hintTMP.text     = continueHint;
@@ -1046,7 +1155,7 @@ public class NpcDialog : MonoBehaviour
         textTMP.fontSize           = textFontSize;
         textTMP.color              = textColor;
         textTMP.alignment          = TextAlignmentOptions.TopLeft;
-        textTMP.enableWordWrapping = true;
+        textTMP.textWrappingMode = TMPro.TextWrappingModes.Normal;
 
         if (hasBox)
         {
@@ -1108,5 +1217,17 @@ public class NpcDialog : MonoBehaviour
             tmp.font = f;
         else
             Debug.LogWarning("[NpcDialog] Font tidak ditemukan! Drag font ke field 'Font Asset' di komponen NpcDialog.");
+    }
+
+    // Apply font dengan prioritas: per-element override → fontAsset global → default TMP.
+    // Dipanggil tiap frame dari ApplyLayout supaya live-edit fontAsset / speakerFontAsset bekerja.
+    void ApplyFontFor(TextMeshProUGUI tmp, TMP_FontAsset perElementOverride)
+    {
+        if (tmp == null) return;
+        TMP_FontAsset f = perElementOverride;
+        if (f == null) f = fontAsset;
+        if (f == null) f = TMP_Settings.defaultFontAsset;
+        if (f == null) f = Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
+        if (f != null && tmp.font != f) tmp.font = f;
     }
 }

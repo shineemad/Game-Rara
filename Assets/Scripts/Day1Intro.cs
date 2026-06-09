@@ -104,7 +104,7 @@ public class Day1Intro : MonoBehaviour
         new BarisNarasi
         {
             pembicara = "Narasi",
-            teks      = "Sebelum jalan, latih dulu suaramu! \uD83D\uDCE2\nTeriak KERAS = kamu lebih aman di jalan!"
+            teks      = "Tapi tunggu\u2026 jalanan ini nggak selalu aman.\nKalau ada orang asing mendekat, Rara harus tahu cara membela diri."
         }
     };
 
@@ -113,10 +113,19 @@ public class Day1Intro : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
 
     [Header("──────── SPRITE OVERLAY & DIALOG ────────")]
-    [Tooltip("Aset DialogBoxLayout bersama. Jika di-assign, NILAINYA akan menimpa\n" +
-             "boxDialogSprite + semua field tata letak panel/portrait/banner/teks/hint.\n" +
+    [Tooltip("Aset DialogBoxLayout bersama. Jika di-assign DAN useLayoutAsset di-centang,\n" +
+             "NILAINYA akan menimpa boxDialogSprite + semua field tata letak panel/portrait/banner/teks/hint.\n" +
              "Cukup edit aset → semua box dialog (Day1Intro, NpcDialog, DialogManager) ikut berubah.")]
     public DialogBoxLayout layout;
+
+    [Tooltip("PENTING: Jika centang DAN field 'layout' di atas diisi, nilai Inspector\n" +
+             "banner/text anchor, panel, portrait, hint AKAN DITIMPA dari aset DialogBoxLayout\n" +
+             "setiap kali Play. UNCHECK kalau ingin mengedit nilai Inspector langsung.")]
+    public bool useLayoutAsset = false;
+
+    [Tooltip("Centang: perubahan field tata letak (banner/text anchor, panel, portrait, hint)\n" +
+             "di Inspector LANGSUNG terlihat di Game view saat Play, tanpa perlu stop & play ulang.")]
+    public bool liveEditLayout = true;
     [Tooltip("Sprite background overlay judul HARI 1. Auto-load dari UI day 1/6.png.\n" +
              "Kosong = pakai warna solid warnaBackground.")]
     public Sprite overlayBgSprite;
@@ -162,13 +171,13 @@ public class Day1Intro : MonoBehaviour
     [Tooltip("Pertahankan rasio aspek portrait (centang = tidak stretch)")]
     public bool portraitPreserveAspect = true;
     [Tooltip("Banner nama: anchor kiri-bawah (X=kiri, Y=bawah)")]
-    public Vector2 bannerAnchorMin = new Vector2(0.057f, 0.196f);
+    public Vector2 bannerAnchorMin = new Vector2(0.11f, 0.11f);
     [Tooltip("Banner nama: anchor kanan-atas (X=kanan, Y=atas)")]
     public Vector2 bannerAnchorMax = new Vector2(0.253f, 0.333f);
     [Tooltip("Area teks: anchor kiri-bawah")]
-    public Vector2 textAnchorMin   = new Vector2(0.345f, 0.20f);
+    public Vector2 textAnchorMin   = new Vector2(0.31f, 0.55f);
     [Tooltip("Area teks: anchor kanan-atas")]
-    public Vector2 textAnchorMax   = new Vector2(0.955f, 0.78f);
+    public Vector2 textAnchorMax   = new Vector2(0.84f, 0.76f);
 
     [Header("Posisi Petunjuk Lanjut (geser di sini)")]
     [Tooltip("Posisi tengah horizontal petunjuk dalam panel (0=kiri, 1=kanan)")]
@@ -282,8 +291,10 @@ public class Day1Intro : MonoBehaviour
             if (sp != null)
             {
                 boxDialogSprite = sp;
-                // Auto-sesuaikan tata letak agar pas dengan sprite 8.png
-                ApplyLayoutPreset8();
+                // CATATAN: TIDAK auto-apply ApplyLayoutPreset8() di sini, karena
+                // itu akan menimpa nilai banner/text anchor yang sudah di-tweak
+                // user di Inspector. Untuk reset ke preset: klik kanan komponen
+                // → "▶ Terapkan Layout Box untuk 8.png".
                 dirty = true;
             }
             else Debug.LogWarning("[Day1Intro] Sprite tidak ditemukan: Assets/" + boxDialogSpritePath);
@@ -447,7 +458,7 @@ public class Day1Intro : MonoBehaviour
             new BarisNarasi
             {
                 pembicara = "Narasi",
-                teks = "Sebelum jalan, latih dulu suaramu!\nTeriak KERAS = kamu lebih aman di jalan!"
+                teks = "Tapi tunggu\u2026 jalanan ini nggak selalu aman.\nKalau ada orang asing mendekat, Rara harus tahu cara membela diri."
             }
         };
 
@@ -574,10 +585,25 @@ public class Day1Intro : MonoBehaviour
         // Kosongkan path di Inspector kalau ingin pakai sprite manual.
         TryLoadSprites(overwrite: true);
 #endif
-        // Jika aset DialogBoxLayout di-assign, terapkan nilai-nilainya
-        // SEBELUM coroutine intro berjalan agar UI terbentuk dari layout.
-        ApplyLayoutAsset();
+        // Jika aset DialogBoxLayout di-assign DAN user mau pakai — terapkan nilainya.
+        // Kalau useLayoutAsset = false, nilai Inspector (yang user edit manual) DIPERTAHANKAN.
+        if (useLayoutAsset)
+        {
+            ApplyLayoutAsset();
+        }
+        else if (layout != null)
+        {
+            Debug.Log($"[Day1Intro] useLayoutAsset = false — nilai dari aset '{layout.name}' DIABAIKAN. Pakai nilai Inspector.");
+        }
         StartCoroutine(JalankanIntro());
+    }
+
+    // ── Live edit: kalau user ubah field tata letak di Inspector saat Play,
+    // terapkan setiap frame ke RectTransform agar perubahan langsung kelihatan.
+    void Update()
+    {
+        if (liveEditLayout && _panelRT != null)
+            ApplyLayout();
     }
 
     /// <summary>
@@ -859,6 +885,16 @@ public class Day1Intro : MonoBehaviour
         // ── Tampilkan setiap baris ─────────────────────────────────────────
         foreach (var baris in narasiPembuka)
         {
+            // Guard: lewati baris yang teks-nya kosong/null (mencegah dialog
+            // menggantung di body kosong karena entri Inspector belum diisi).
+            if (baris == null || string.IsNullOrWhiteSpace(baris.teks))
+            {
+                Debug.LogWarning("[Day1Intro] Baris narasi kosong dilewati " +
+                    "(pembicara=\"" + (baris != null ? baris.pembicara : "<null>") + "\"). " +
+                    "Cek Inspector \u2192 Narasi Pembuka.");
+                continue;
+            }
+
             // Pilih portrait
             Sprite port = baris.portrait;
             if (port == null)

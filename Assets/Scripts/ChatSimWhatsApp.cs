@@ -107,6 +107,13 @@ public class ChatSimWhatsApp : MonoBehaviour
     public string tombolLanjutTeks = "\u25B6  Lanjut";
     public Color  warnaLanjut = new Color(0.20f, 0.62f, 0.86f, 1f);
 
+    [Header("BG Fullscreen Device (opsional)")]
+    [Tooltip("Sprite latar FULLSCREEN device (stretch ke seluruh layar). Tampil paling belakang, di belakang frame HP.\n" +
+             "Misal: foto kamar Rara dengan HP di tangan.")]
+    public Sprite bgFullscreenSprite;
+    [Tooltip("Jaga aspek rasio sprite saat di-stretch fullscreen (mencegah gepeng).")]
+    public bool   bgFullscreenPreserveAspect = false;
+
     [Header("Font")]
     public TMP_FontAsset fontAsset;
 
@@ -145,6 +152,20 @@ public class ChatSimWhatsApp : MonoBehaviour
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         scaler.referenceResolution = new Vector2(1920, 1080);
         _canvasGO.AddComponent<GraphicRaycaster>();
+
+        // BG Fullscreen device (opsional, paling belakang — di belakang frame HP).
+        if (bgFullscreenSprite != null)
+        {
+            var fs = new GameObject("BG_Fullscreen");
+            fs.transform.SetParent(_canvasGO.transform, false);
+            var fsImg = fs.AddComponent<Image>();
+            fsImg.sprite         = bgFullscreenSprite;
+            fsImg.preserveAspect = bgFullscreenPreserveAspect;
+            fsImg.raycastTarget  = false;
+            var fsRt = fs.GetComponent<RectTransform>();
+            fsRt.anchorMin = Vector2.zero; fsRt.anchorMax = Vector2.one;
+            fsRt.offsetMin = Vector2.zero; fsRt.offsetMax = Vector2.zero;
+        }
 
         // Frame HP (di tengah layar)
         _phoneFrame = new GameObject("PhoneFrame");

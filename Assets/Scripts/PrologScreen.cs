@@ -388,7 +388,7 @@ public class PrologScreen : MonoBehaviour
             new Vector2(0f, 0f), new Vector2(1f, 1f),
             new Vector2(pH, pV), new Vector2(-pH, -(pV * 2f + 36f + titleBodyGap)),
             textFontSize, textColor, TextAlignmentOptions.TopLeft);
-        bodyTMP.enableWordWrapping = true;
+        bodyTMP.textWrappingMode = TMPro.TextWrappingModes.Normal;
 
         // ── Tombol LANJUT (besar, mobile-friendly) ──────────────────────
         var btnGO = new GameObject("NextButton");
@@ -469,7 +469,7 @@ public class PrologScreen : MonoBehaviour
         tmp.fontSize  = fontSize;
         tmp.color     = color;
         tmp.alignment = align;
-        tmp.enableWordWrapping = true;
+        tmp.textWrappingMode = TMPro.TextWrappingModes.Normal;
         return tmp;
     }
 

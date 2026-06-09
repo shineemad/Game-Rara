@@ -33,16 +33,18 @@ public class AngkotSeatPicker : MonoBehaviour
         public Color warna     = new Color(0.18f, 0.62f, 0.32f, 1f);
         public Vector2 posisi  = new Vector2(-450f, -50f);
         public Vector2 ukuran  = new Vector2(280f, 200f);
+
+        [Tooltip("Sprite latar FULLSCREEN yang tampil saat kursi ini DIPILIH.\n" +
+                 "Kosongkan = pakai latar reaksi per-kategori, fallback ke bgFullscreenSprite default.")]
+        public Sprite latarSaatDipilih;
     }
 
-    [Header("Sprite (opsional)")]
-    public Sprite angkotInteriorSprite;
-
-    [Header("Background Interior")]
-    public Color warnaLantai     = new Color(0.10f, 0.07f, 0.05f, 1f);
-    public Color warnaJendela    = new Color(0.40f, 0.55f, 0.65f, 0.8f);
-    public Color warnaBingkai    = new Color(0.18f, 0.12f, 0.08f, 1f);
-    public Color warnaSupir      = new Color(0.55f, 0.40f, 0.30f, 1f);
+    // -- DEPRECATED -- field interior procedural di-hide karena BG sekarang dari sprite saja.
+    [HideInInspector] public Sprite angkotInteriorSprite;
+    [HideInInspector] public Color warnaLantai  = new Color(0.10f, 0.07f, 0.05f, 1f);
+    [HideInInspector] public Color warnaJendela = new Color(0.40f, 0.55f, 0.65f, 0.8f);
+    [HideInInspector] public Color warnaBingkai = new Color(0.18f, 0.12f, 0.08f, 1f);
+    [HideInInspector] public Color warnaSupir   = new Color(0.55f, 0.40f, 0.30f, 1f);
 
     [Header("Judul Layar")]
     public string judulTeks = "Pilih tempat dudukmu di angkot:";
@@ -88,6 +90,22 @@ public class AngkotSeatPicker : MonoBehaviour
     public string tombolLanjutTeks = "\u25B6  Lanjut Perjalanan";
     public Color  warnaLanjut      = new Color(0.20f, 0.62f, 0.86f, 1f);
 
+    [Header("BG Fullscreen Device (opsional)")]
+    [Tooltip("Sprite latar FULLSCREEN device (stretch ke seluruh layar). Tampil paling belakang.\n" +
+             "Kalau diisi → dipakai sebagai BG utama. Kalau kosong → fallback ke angkotInteriorSprite / procedural.")]
+    public Sprite bgFullscreenSprite;
+    [Tooltip("Jaga aspek rasio sprite saat di-stretch fullscreen (mencegah gepeng).")]
+    public bool   bgFullscreenPreserveAspect = false;
+
+    [Header("BG Reaksi per Kategori (opsional)")]
+    [Tooltip("BG fullscreen yang tampil setelah pemain memilih kursi AMAN.\n" +
+             "Kosongkan = tetap pakai bgFullscreenSprite default.")]
+    public Sprite bgReaksiAman;
+    [Tooltip("BG fullscreen yang tampil setelah pemain memilih kursi RAGU.")]
+    public Sprite bgReaksiRagu;
+    [Tooltip("BG fullscreen yang tampil setelah pemain memilih kursi BAHAYA (pria asing dekat).")]
+    public Sprite bgReaksiBahaya;
+
     [Header("Font")]
     public TMP_FontAsset fontAsset;
 
@@ -98,6 +116,7 @@ public class AngkotSeatPicker : MonoBehaviour
     private Action     _onSelesai;
     private GameObject _canvasGO;
     private TextMeshProUGUI _reaksiText;
+    private Image           _bgFullscreenImg;
     private GameObject _kursiPanel;
     private GameObject _platRow;
     private GameObject _lanjutBtn;
@@ -109,6 +128,18 @@ public class AngkotSeatPicker : MonoBehaviour
     {
         _onSelesai = onSelesai;
         BuildScene();
+    }
+
+    // Ambil sprite awal BG: bgFullscreenSprite > latarSaatDipilih kursi pertama > bgReaksiAman > bgReaksiRagu > bgReaksiBahaya.
+    Sprite AmbilSpriteAwal()
+    {
+        if (bgFullscreenSprite != null) return bgFullscreenSprite;
+        if (kursiList != null)
+            foreach (var k in kursiList) if (k != null && k.latarSaatDipilih != null) return k.latarSaatDipilih;
+        if (bgReaksiAman   != null) return bgReaksiAman;
+        if (bgReaksiRagu   != null) return bgReaksiRagu;
+        if (bgReaksiBahaya != null) return bgReaksiBahaya;
+        return null;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -123,22 +154,19 @@ public class AngkotSeatPicker : MonoBehaviour
         scaler.referenceResolution = new Vector2(1920, 1080);
         _canvasGO.AddComponent<GraphicRaycaster>();
 
-        // Interior procedural
-        if (angkotInteriorSprite != null)
+        // BG fullscreen SELALU dibuat (1 Image stretch fullscreen).
+        // Sprite awal: bgFullscreenSprite > Kursi.latarSaatDipilih[0] > bgReaksi*. Diganti runtime saat pemain memilih kursi.
         {
-            var bg = new GameObject("InteriorBG");
-            bg.transform.SetParent(_canvasGO.transform, false);
-            var img = bg.AddComponent<Image>();
-            img.sprite = angkotInteriorSprite;
-            img.preserveAspect = true;
-            img.raycastTarget = false;
-            var rt = bg.GetComponent<RectTransform>();
-            rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
-            rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
-        }
-        else
-        {
-            BuildInteriorProcedural();
+            var fs = new GameObject("BG_Fullscreen");
+            fs.transform.SetParent(_canvasGO.transform, false);
+            _bgFullscreenImg = fs.AddComponent<Image>();
+            _bgFullscreenImg.sprite         = AmbilSpriteAwal();
+            _bgFullscreenImg.color          = Color.white;
+            _bgFullscreenImg.preserveAspect = false;
+            _bgFullscreenImg.raycastTarget  = false;
+            var fsRt = fs.GetComponent<RectTransform>();
+            fsRt.anchorMin = Vector2.zero; fsRt.anchorMax = Vector2.one;
+            fsRt.offsetMin = Vector2.zero; fsRt.offsetMax = Vector2.zero;
         }
 
         // Judul
@@ -283,6 +311,9 @@ public class AngkotSeatPicker : MonoBehaviour
         if (gs != null)
         {
             gs.AddChoice(2, "Pilih kursi: " + k.label, k.kategori);
+            // Simpan kategori kursi supaya fase berikutnya (ZonaTubuhQuiz)
+            // bisa memilih varian narasi yang menyambung pilihan pemain.
+            gs.seatCategory = k.kategori;
             if (k.kategori == "BAHAYA")
             {
                 gs.lives = Mathf.Max(0, gs.lives - 1);
@@ -298,6 +329,35 @@ public class AngkotSeatPicker : MonoBehaviour
             _        => null
         };
         if (sfx != null) AudioManager.Instance.sfxSource.PlayOneShot(sfx);
+
+        // Ganti BG fullscreen sesuai prioritas: kursi.latarSaatDipilih → bgReaksi<Kategori> → tetap default.
+        if (_bgFullscreenImg != null)
+        {
+            Sprite spriteReaksi = k.latarSaatDipilih;
+            if (spriteReaksi == null)
+            {
+                spriteReaksi = k.kategori switch
+                {
+                    "AMAN"   => bgReaksiAman,
+                    "RAGU"   => bgReaksiRagu,
+                    "BAHAYA" => bgReaksiBahaya,
+                    _        => null
+                };
+            }
+            if (spriteReaksi != null)
+            {
+                _bgFullscreenImg.sprite         = spriteReaksi;
+                _bgFullscreenImg.color          = Color.white;
+                _bgFullscreenImg.preserveAspect = false;
+                // Pastikan tetap fullscreen stretch
+                var bgRt = _bgFullscreenImg.rectTransform;
+                bgRt.anchorMin = Vector2.zero;
+                bgRt.anchorMax = Vector2.one;
+                bgRt.offsetMin = Vector2.zero;
+                bgRt.offsetMax = Vector2.zero;
+                _bgFullscreenImg.transform.SetAsFirstSibling();
+            }
+        }
 
         _reaksiText.text = k.reaksi;
 

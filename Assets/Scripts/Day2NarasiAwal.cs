@@ -81,6 +81,11 @@ public class Day2NarasiAwal : MonoBehaviour
 
         [Tooltip("Sprite portrait/foto pembicara. Kosong = pakai portrait default.")]
         public Sprite portrait;
+
+        [Tooltip("Sprite latar FULLSCREEN device untuk baris ini (opsional).\n" +
+                 "Kalau diisi → background fullscreen langsung ganti ke sprite ini saat baris tampil.\n" +
+                 "Kalau kosong → tetap pakai sprite baris sebelumnya / default.")]
+        public Sprite latarFullscreen;
     }
 
     [Header("── NARASI ──")]
@@ -88,9 +93,9 @@ public class Day2NarasiAwal : MonoBehaviour
     public BarisNarasi[] narasi = new BarisNarasi[]
     {
         new BarisNarasi { pembicara = "Rara",
-            teks = "\"Bismillah, aku pasti bisa! 😤\nHaltenya ada di ujung jalan — ayo cepat sebelum angkotnya pergi!\"" },
+            teks = "\"Bismillah, aku pasti bisa!\nHaltenya udah dekat \u2014 ayo cepat!\"" },
         new BarisNarasi { pembicara = "Rara",
-            teks = "\"Tapi… kok jalan ini sepi banget ya?\nAku harus tetap waspada — siapa tahu ada yang aneh.\"" }
+            teks = "\"Tapi\u2026 kok jalan ini sepi banget ya?\nAku harus tetap waspada.\"" }
     };
 
     [Tooltip("DEPRECATED — dipakai sebagai fallback kalau 'narasi' kosong. " +
@@ -131,40 +136,40 @@ public class Day2NarasiAwal : MonoBehaviour
     [Range(0.02f, 0.5f)] public float panelHeightFrac = 0.395f;
 
     [Header("Portrait (anchor fraksi panel 0–1)")]
-    [Range(0f, 1f)]      public float portraitCenterX = 0.153f;
-    [Range(0f, 1f)]      public float portraitCenterY = 0.625f;
-    [Range(0.02f, 0.6f)] public float portraitSizeW   = 0.192f;
-    [Range(0.02f, 1f)]   public float portraitSizeH   = 0.494f;
-    public bool          portraitPreserveAspect       = true;
+    [Range(0f, 1f)]      public float portraitCenterX = 0.14f;
+    [Range(0f, 1f)]      public float portraitCenterY = 0.584f;
+    [Range(0.02f, 0.6f)] public float portraitSizeW   = 0.189f;
+    [Range(0.02f, 1f)]   public float portraitSizeH   = 0.56f;
+    public bool          portraitPreserveAspect       = false;
 
     [Header("Banner Nama (anchor 0–1)")]
-    public Vector2 bannerAnchorMin = new Vector2(0.057f, 0.196f);
+    public Vector2 bannerAnchorMin = new Vector2(0.11f, 0.11f);
     public Vector2 bannerAnchorMax = new Vector2(0.253f, 0.333f);
 
-    [Header("Area Teks (anchor 0–1)")]
-    public Vector2 textAnchorMin = new Vector2(0.345f, 0.20f);
-    public Vector2 textAnchorMax = new Vector2(0.955f, 0.78f);
+    [Header("Area Teks (anchor 0–1) - mirror Day1Intro")]
+    public Vector2 textAnchorMin = new Vector2(0.31f, 0.55f);
+    public Vector2 textAnchorMax = new Vector2(0.84f, 0.76f);
 
     [Header("Petunjuk Lanjut (anchor 0–1)")]
-    [Range(0f, 1f)]      public float hintCenterX = 0.82f;
-    [Range(0f, 1f)]      public float hintCenterY = 0.13f;
-    [Range(0.05f, 1f)]   public float hintSizeW   = 0.30f;
+    [Range(0f, 1f)]      public float hintCenterX = 0.798f;
+    [Range(0f, 1f)]      public float hintCenterY = 0.242f;
+    [Range(0.05f, 1f)]   public float hintSizeW   = 0.296f;
     [Range(0.02f, 0.5f)] public float hintSizeH   = 0.12f;
 
     [Header("Warna Box (kalau panelSprite kosong)")]
-    public Color warnaPanel       = new Color(0f, 0f, 0f, 0.82f);
+    public Color warnaPanel       = new Color(0f, 0f, 0f, 0f);
     public Color warnaOutline     = new Color(1f, 0.85f, 0.3f, 1f);
-    public Color warnaBanner      = new Color(0.14f, 0.09f, 0.01f, 0.92f);
+    public Color warnaBanner      = new Color(0.14f, 0.09f, 0.01f, 0f);
     public Color warnaNamaSpeaker = new Color(1f, 0.85f, 0.3f, 1f);
-    public Color warnaTeks        = Color.white;
+    public Color warnaTeks        = new Color(1f, 0.96f, 0.88f, 1f);
     public Color warnaHintLanjut  = new Color(1f, 1f, 1f, 0.55f);
     public Color portraitFallbackWarna = new Color(0.85f, 0.55f, 0.75f, 1f);
 
     [Header("Font & Ukuran")]
     public TMP_FontAsset fontAsset;
     public int ukuranNama = 30;
-    public int ukuranTeks = 26;
-    public int ukuranHint = 16;
+    public int ukuranTeks = 30;
+    public int ukuranHint = 18;
 
     [Header("── TYPEWRITER ──")]
     public float  kecepatanKetik    = 0.025f;
@@ -184,6 +189,7 @@ public class Day2NarasiAwal : MonoBehaviour
     private TextMeshProUGUI _teksHint;
     private TextMeshProUGUI _namaTMP;
     private Image           _portImg;
+    private Image           _bgFullscreenImg;
     private bool            _ketikSelesai;
     private bool            _skipKetik;
     private int             _idxLine;
@@ -478,6 +484,7 @@ public class Day2NarasiAwal : MonoBehaviour
             string pembicara;
             string teks;
             Sprite portrait;
+            Sprite latarFs = null;
 
             if (narasi != null && _idxLine < narasi.Length)
             {
@@ -485,6 +492,7 @@ public class Day2NarasiAwal : MonoBehaviour
                 pembicara = string.IsNullOrEmpty(b.pembicara) ? speakerName : b.pembicara;
                 teks      = b.teks ?? "";
                 portrait  = PilihPortrait(pembicara, b.portrait);
+                latarFs   = b.latarFullscreen;
             }
             else
             {
@@ -501,6 +509,14 @@ public class Day2NarasiAwal : MonoBehaviour
                 _portImg.enabled = (portrait != null);
                 if (portrait == null) _portImg.color = portraitFallbackWarna;
                 else                  _portImg.color = Color.white;
+            }
+
+            // Update BG fullscreen per baris (kalau di-assign)
+            if (_bgFullscreenImg != null && latarFs != null)
+            {
+                _bgFullscreenImg.sprite  = latarFs;
+                _bgFullscreenImg.color   = Color.white;
+                _bgFullscreenImg.enabled = true;
             }
 
             yield return KetikTeks(teks);
@@ -576,6 +592,18 @@ public class Day2NarasiAwal : MonoBehaviour
         sc.referenceResolution = new Vector2(1920f, 1080f);
         sc.matchWidthOrHeight  = 0.5f;
         _canvasGO.AddComponent<GraphicRaycaster>();
+
+        // ── BG Fullscreen (paling belakang, di-update per baris kalau di-assign) ──
+        var bgFsGO = new GameObject("BG_Fullscreen");
+        bgFsGO.transform.SetParent(_canvasGO.transform, false);
+        var bgFsRT = bgFsGO.AddComponent<RectTransform>();
+        bgFsRT.anchorMin = Vector2.zero;
+        bgFsRT.anchorMax = Vector2.one;
+        bgFsRT.offsetMin = bgFsRT.offsetMax = Vector2.zero;
+        _bgFullscreenImg = bgFsGO.AddComponent<Image>();
+        _bgFullscreenImg.preserveAspect = false;
+        _bgFullscreenImg.raycastTarget  = false;
+        _bgFullscreenImg.enabled        = false; // aktif hanya saat sprite di-set
 
         // ── Panel utama (anchor fraksi layar) ─────────────────────────────
         float pxMin = panelCenterX - panelWidthFrac  * 0.5f;

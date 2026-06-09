@@ -108,13 +108,34 @@ public class Day1Controller : MonoBehaviour
     public PathEnvironment pathEnvironment;    // lingkungan dua jalur
 
     [Header("Zona Encounter (X position di world)")]
-    public float encTutorial  = 5f;
-    public float encE1        = 14f;
-    public float encPathChoice = 18f;
-    public float encE2        = 26f;
-    public float encE3        = 34f;
-    public float encEduCard   = 42f;
-    public float encEnd       = 52f;
+    [Tooltip("Posisi X tutorial (latih teriak).")]
+    public float encTutorial   = 5f;
+    [Tooltip("\u2460 Tantangan #1 \u2014 Paman Penawar Permen.")]
+    public float encE1         = 14f;
+    [Tooltip("\u2461 Tantangan #2 \u2014 Motor Nyasar tanya alamat sekolah.")]
+    public float encE2         = 22f;
+    [Tooltip("\u2462 Tantangan #3 \u2014 Persimpangan: Jalan Ramai vs Gang Sepi.")]
+    public float encPathChoice = 30f;
+    [Tooltip("[DEPRECATED] Encounter 3 lama (Pesan HP) sudah dipindah ke Day 2 ChatSim WhatsApp.\n" +
+             "Set 9999 supaya tidak pernah ter-trigger. Field dipertahankan agar scene referensi lama tidak rusak.")]
+    public float encE3         = 9999f;
+    [Tooltip("Posisi X pemicu Edu Card penutup Hari 1.")]
+    public float encEduCard    = 40f;
+    [Tooltip("Posisi X akhir hari 1 (gerbang sekolah).")]
+    public float encEnd        = 50f;
+
+    [Header("Zona Segmen (label lokasi dinamis Hari 1)")]
+    [Tooltip("Threshold X kapan label lokasi berubah. Harus disusun menaik (ascending).")]
+    public float[] zoneThresholds = new float[] { 0f, 10f, 22f, 30f };
+    [Tooltip("Nama zona untuk setiap threshold di atas (urutan harus sama).\n" +
+             "Default: Depan Rumah \u2192 Lorong Pemukiman \u2192 Halte & Persimpangan \u2192 Akses Sekolah.")]
+    public string[] zoneNames = new string[]
+    {
+        "Depan Rumah",
+        "Lorong Pemukiman",
+        "Halte & Persimpangan",
+        "Akses Sekolah"
+    };
 
     [Header("Panel Edu Card & Game Over")]
     public GameObject eduCardPanel;
@@ -140,11 +161,13 @@ public class Day1Controller : MonoBehaviour
         dialogSebelumPilihan = new DialogLine[]
         {
             new DialogLine { speaker = "Narasi",
-                text = "Tiba-tiba seorang pria asing menghentikan langkah Rara..." },
+                text = "Langkah Rara terhenti. Seorang pria asing berdiri di tengah trotoar,\ntersenyum sambil menggenggam sebungkus permen warna-warni." },
             new DialogLine { speaker = "Orang Asing",
-                text = "\"Hei dek, bentar ya~!\nMau permen nggak? Enak banget!\nOm punya banyak di warung, ikut bentar aja ya, deket kok!\"" },
+                text = "\"Hei dek, bentar ya~!\nMau permen nggak? Enak banget loh!\"" },
+            new DialogLine { speaker = "Orang Asing",
+                text = "\"Om punya banyak di warung deket sini.\nIkut bentar aja ya, deket kok!\"" },
             new DialogLine { speaker = "Rara (dalam hati)",
-                text = "Rara nggak kenal orang ini sama sekali!\nDia nawarin permen DAN mau ngajak pergi... ini nggak bener!" },
+                text = "Aku nggak kenal orang ini sama sekali...\nDia nawarin permen DAN ngajak pergi \u2014 ini tanda bahaya!" },
         },
         pilihan = new ChoiceConfig[]
         {
@@ -175,35 +198,38 @@ public class Day1Controller : MonoBehaviour
     [Tooltip("Isi semua dialog & pilihan Encounter 2 dari sini.")]
     public EncounterConfig encounter2 = new EncounterConfig
     {
-        encounterName        = "Encounter 2 — Difoto Orang Asing",
-        pertanyaanRara       = "Apa yang harus Rara lakukan?",
+        encounterName        = "Encounter 2 — Motor Nyasar Tanya Sekolah",
+        pertanyaanRara       = "Bagaimana Rara harus merespons orang ini?",
         dialogSebelumPilihan = new DialogLine[]
         {
-            new DialogLine { speaker = "Orang Asing",
-                text = "\"Eh kamu... sendirian nih? Boleh aku foto kamu?\nCantik sekali~\"" },
+            new DialogLine { speaker = "Narasi",
+                text = "Sebuah motor matic berhenti pelan di sebelah Rara.\nPengendaranya laki-laki, helm setengah terbuka, tersenyum lebar." },
+            new DialogLine { speaker = "Pengendara Motor",
+                text = "\"Eh dek, maaf nih\u2026\nKamu tau nggak SMP Harapan di mana?\nOm nyasar, mau anter ponakan.\"" },
+            new DialogLine { speaker = "Pengendara Motor",
+                text = "\"Naik aja deh, kebetulan om searah.\nDaripada kamu jalan kepanasan, mending bareng om aja ya?\"" },
+            new DialogLine { speaker = "Rara (dalam hati)",
+                text = "Hmm\u2026 dia bilang nyasar tapi langsung nawarin tumpangan?\nOrang asing yang tiba-tiba ramah begini bisa jadi tanda bahaya." },
         },
         pilihan = new ChoiceConfig[]
         {
             new ChoiceConfig
             {
-                label         = "\"TIDAK BOLEH! TOLONG ADA ORANG ASING!\" (Teriak minta tolong)",
+                label         = "\"Maaf om, aku nggak boleh ikut orang asing!\" (Mundur & lari ke tempat ramai)",
                 category      = "AMAN",
-                
-                feedbackText  = "✅ Benar! Privasi kamu adalah hakmu.\nJangan biarkan orang asing memfoto kamu tanpa izin — itu pelanggaran!"
+                feedbackText  = "✅ Tepat sekali!\nORANG TIDAK DIKENAL = JANGAN PERNAH IKUT, walau alasannya seramah apapun.\nKalau ditanya jalan, cukup tunjuk arah dari jauh — jangan dekati & jangan naik."
             },
             new ChoiceConfig
             {
-                label         = "\"S-sebentar aja ya...\" (ragu dan bingung)",
+                label         = "\"SMP Harapan lurus aja om\u2026 maaf aku nggak bisa nganterin.\" (Jawab dari jauh)",
                 category      = "RAGU",
-                
-                feedbackText  = "⚠️ Kurang tepat. Kamu berhak menolak difoto oleh siapapun yang tidak kamu kenal."
+                feedbackText  = "⚠️ Lumayan — Rara nggak naik motor, tapi terlalu lama ngobrol.\nLebih baik langsung pergi ke tempat ramai. Jangan kasih info detail ke orang asing."
             },
             new ChoiceConfig
             {
-                label         = "\"Oke...\" (diam saja membiarkan)",
+                label         = "\"Boleh om, ayo!\" (Naik motor)",
                 category      = "BAHAYA",
-                
-                feedbackText  = "❌ Berbahaya! Foto bisa disalahgunakan.\nSelalu tolak permintaan foto dari orang yang tidak kamu kenal!"
+                feedbackText  = "❌ BAHAYA! Rara hampir naik motor orang asing!\nNAIK KENDARAAN ORANG TAK DIKENAL = jalan menuju penculikan.\nKamu kehilangan ❤. Ingat: \"Searah\" cuma alasan grooming yang umum dipakai."
             }
         }
     };
@@ -216,7 +242,11 @@ public class Day1Controller : MonoBehaviour
         dialogSebelumPilihan = new DialogLine[]
         {
             new DialogLine { speaker = "Narasi",
-                text = "📱 HP Rara berbunyi! Ada pesan dari nomor tidak dikenal:\n\"Hei Rara, aku tau kamu lagi di jalan. Mau aku jemput?\"" },
+                text = "Gerbang SMP Harapan sudah terlihat dari kejauhan.\nTiba-tiba HP Rara bergetar di saku." },
+            new DialogLine { speaker = "Narasi",
+                text = "📱 Pesan dari nomor tidak dikenal:\n\"Hei Rara, aku tau kamu lagi di jalan. Mau aku jemput?\"" },
+            new DialogLine { speaker = "Rara (dalam hati)",
+                text = "Hah?! Kok dia tau namaku?\nDan dia tau aku lagi di jalan... ini menakutkan." },
         },
         pilihan = new ChoiceConfig[]
         {
@@ -280,6 +310,10 @@ public class Day1Controller : MonoBehaviour
     bool    enc2Done     = false;
     bool    enc3Done     = false;
     bool    tutorialStarted = false;   // guard: ShowTutorial hanya dipanggil sekali
+    string  lastZoneLabel   = null;     // label zona segmen aktif (null = belum di-set)
+
+    // Referensi yang di-cache di Start(), dipakai di OnDestroy untuk lepas listener.
+    Day1Intro _introRef;
 
     [Header("Intro & Start")]
     [Tooltip("Centang jika ingin langsung mulai tanpa Day1Intro (untuk testing).")]
@@ -297,10 +331,17 @@ public class Day1Controller : MonoBehaviour
         if (dialogManager == null) dialogManager = FindFirstObjectByType<DialogManager>();
         if (hudManager    == null) hudManager    = HUDManager.Instance;
 
-        // Pasang event tombol teriak — juga sambungkan ke VoiceMeter fallback
+        // Pasang event tombol teriak — juga sambungkan ke VoiceMeter fallback.
+        // Pakai EventTrigger yang sudah ada bila tersedia supaya tidak menambah duplikat
+        // component (dapat terjadi saat scene di-reload tanpa menghancurkan tombol).
         if (shoutButton != null)
         {
-            var trigger = shoutButton.gameObject.AddComponent<UnityEngine.EventSystems.EventTrigger>();
+            var trigger = shoutButton.GetComponent<UnityEngine.EventSystems.EventTrigger>();
+            if (trigger == null)
+                trigger = shoutButton.gameObject.AddComponent<UnityEngine.EventSystems.EventTrigger>();
+            else if (trigger.triggers != null)
+                trigger.triggers.Clear(); // hapus listener lama agar tidak dobel
+
             AddTrigger(trigger, UnityEngine.EventSystems.EventTriggerType.PointerDown, _ =>
             {
                 shoutHeld = true;
@@ -317,8 +358,8 @@ public class Day1Controller : MonoBehaviour
         dialogActive = true;
 
         // Jika tidak ada Day1Intro di scene atau autoMulai → langsung unfreeze
-        var intro = FindFirstObjectByType<Day1Intro>();
-        if (autoMulaiTanpaIntro || intro == null)
+        _introRef = FindFirstObjectByType<Day1Intro>();
+        if (autoMulaiTanpaIntro || _introRef == null)
         {
             MulaiGame();
         }
@@ -326,8 +367,21 @@ public class Day1Controller : MonoBehaviour
         {
             // Auto-subscribe ke event agar MulaiGame() pasti dipanggil saat intro selesai,
             // tidak bergantung pada wiring Inspector (mencegah player stuck frozen selamanya).
-            intro.onIntroSelesai.AddListener(MulaiGame);
+            // RemoveListener dulu (no-op kalau belum terpasang) untuk cegah double-subscribe.
+            _introRef.onIntroSelesai.RemoveListener(MulaiGame);
+            _introRef.onIntroSelesai.AddListener(MulaiGame);
         }
+    }
+
+    /// <summary>
+    /// Lepas listener supaya tidak menumpuk saat scene di-reload / domain reload.
+    /// </summary>
+    void OnDestroy()
+    {
+        if (_introRef != null && _introRef.onIntroSelesai != null)
+            _introRef.onIntroSelesai.RemoveListener(MulaiGame);
+        if (eduCardContinueBtn != null)
+            eduCardContinueBtn.onClick.RemoveListener(GoToResult);
     }
 
     /// Dipanggil saat Day1Intro selesai (otomatis via AddListener di Start, atau dari Inspector).
@@ -393,12 +447,35 @@ public class Day1Controller : MonoBehaviour
 
         HandleShout();
         CheckEncounterTriggers();
+        UpdateZoneSegment();
 
         if (currentPhase == Phase.Encounter1 && npcActive) HandleNPCApproach();
         if (currentPhase == Phase.Encounter2 && npcActive) HandleNPCApproach();
         if (currentPhase == Phase.Encounter3 && npcActive) HandleNPCApproach();
 
         hudManager?.UpdateScore(GameState.Instance?.score ?? 0);
+    }
+
+    // Perbarui label lokasi HUD sesuai posisi X player (zona segmen Hari 1).
+    void UpdateZoneSegment()
+    {
+        if (player == null || hudManager == null) return;
+        if (zoneThresholds == null || zoneNames == null) return;
+        int n = Mathf.Min(zoneThresholds.Length, zoneNames.Length);
+        if (n == 0) return;
+
+        float px = player.transform.position.x;
+        int idx = 0;
+        for (int i = 0; i < n; i++)
+        {
+            if (px >= zoneThresholds[i]) idx = i;
+            else break;
+        }
+        if (idx < 0) return;
+        string zone = zoneNames[idx];
+        if (zone == lastZoneLabel) return;
+        lastZoneLabel = zone;
+        hudManager.UpdateLocationCustom(zone);
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -415,7 +492,7 @@ public class Day1Controller : MonoBehaviour
             new NpcDialog.DialogEntry
             {
                 speakerName = "Narasi",
-                text        = "Sebelum jalan, latih dulu suaramu!\n📢 Tekan & tahan tombol TERIAK untuk membuka jalan!"
+                text        = "📢 Tekan & TAHAN tombol TERIAK untuk berlatih.\nTeriak sampai meter PENUH — rintangan di depan akan terdorong!"
             }
         }, () => dialogDone = true);
         // Safety timeout 60 detik — cegah WaitUntil hang jika callback tidak pernah terpanggil
@@ -488,21 +565,25 @@ public class Day1Controller : MonoBehaviour
                 break;
 
             case Phase.Walking:
+                // Urutan 3-tantangan konsep: Paman → Motor → PathChoice (gang gelap).
                 if (px >= encE1 && !enc1Done)
                     StartEncounter1();
-                else if (px >= encPathChoice && enc1Done)
+                else if (px >= encE2 && enc1Done && !enc2Done)
+                    StartEncounter2();
+                else if (px >= encPathChoice && enc2Done && !pathChosen)
                     ShowPathChoice();
                 break;
 
             case Phase.Walking2:
-                if (px >= encE2 && !enc2Done)
-                    StartEncounter2();
+                // Setelah PathChoice — lanjut sampai Edu Card.
+                if (px >= encEduCard && pathChosen)
+                    StartCoroutine(ShowEduCard());
                 break;
 
             case Phase.Walking3:
-                if (px >= encE3 && !enc3Done)
-                    StartEncounter3();
-                else if (px >= encEduCard && enc3Done)
+                // [DEPRECATED] State lama saat Encounter 3 masih ada. Tetap routing ke EduCard
+                // untuk backward-compat kalau ada referensi lain yang men-set state ini.
+                if (px >= encEduCard)
                     StartCoroutine(ShowEduCard());
                 break;
         }
@@ -552,6 +633,30 @@ public class Day1Controller : MonoBehaviour
         dialogActive = true;
         currentPhase = Phase.PathChoice;
 
+        // Narasi setup dulu, baru tampilkan panel pilihan jalan.
+        StartCoroutine(ShowPathChoiceWithNarasi());
+    }
+
+    IEnumerator ShowPathChoiceWithNarasi()
+    {
+        bool done = false;
+        GetSharedDialog()?.PlayLines(new NpcDialog.DialogEntry[]
+        {
+            new NpcDialog.DialogEntry
+            {
+                speakerName = "Narasi",
+                text        = "Di depan ada percabangan jalan.\nKiri: jalan utama yang ramai, ada warung dan tukang ojek.\nKanan: gang pintas yang sepi, lebih cepat tapi lengang."
+            },
+            new NpcDialog.DialogEntry
+            {
+                speakerName = "Rara (dalam hati)",
+                text        = "Mana yang sebaiknya aku pilih?"
+            }
+        }, () => done = true);
+
+        float deadline = Time.time + 60f;
+        yield return new WaitUntil(() => done || Time.time > deadline);
+
         if (pathChoicePanel != null) pathChoicePanel.SetActive(true);
     }
 
@@ -565,9 +670,26 @@ public class Day1Controller : MonoBehaviour
         // Aktifkan tampilan Jalan Ramai
         pathEnvironment?.AktifkanJalanRamai();
 
-        dialogActive     = false;
-        currentPhase     = Phase.Walking2;
         AudioManager.Instance?.Correct();
+        StartCoroutine(ShowSafePathNarasi());
+    }
+
+    IEnumerator ShowSafePathNarasi()
+    {
+        dialogActive = true;
+        bool done = false;
+        GetSharedDialog()?.PlayLines(new NpcDialog.DialogEntry[]
+        {
+            new NpcDialog.DialogEntry
+            {
+                speakerName = "Narasi",
+                text        = "Rara memilih jalan utama. Suara klakson, tawa anak warung,\ndan langkah orang lalu-lalang membuat hatinya lebih tenang."
+            }
+        }, () => done = true);
+        float deadline = Time.time + 30f;
+        yield return new WaitUntil(() => done || Time.time > deadline);
+        dialogActive = false;
+        currentPhase = Phase.Walking2;
     }
 
     public void ChooseDangerPath()
@@ -582,8 +704,6 @@ public class Day1Controller : MonoBehaviour
         // Aktifkan tampilan Gang Sepi (gelap)
         pathEnvironment?.AktifkanGangSepi();
 
-        dialogActive = false;
-
         if (!alive)
         {
             SceneLoader.Instance?.LoadScene("GameOver");
@@ -591,25 +711,38 @@ public class Day1Controller : MonoBehaviour
         }
 
         // Tetap lanjut tapi dengan konsekuensi
-        currentPhase = Phase.Walking2;
         StartCoroutine(ShowDangerPathWarning());
     }
 
     IEnumerator ShowDangerPathWarning()
     {
         dialogActive = true;
+        bool done = false;
         GetSharedDialog()?.PlayLines(new NpcDialog.DialogEntry[]
         {
             new NpcDialog.DialogEntry
             {
                 speakerName = "Narasi",
-                text        = "⚠ Gang ini sangat sepi dan gelap!\nRara kehilangan 1 ❤ karena pilihan berbahaya ini.\nJalan yang ramai jauh lebih aman!"
+                text        = "Rara melangkah masuk ke gang. Lampu jalan padam,\ndinding-dinding tinggi menelan suara apa pun."
+            },
+            new NpcDialog.DialogEntry
+            {
+                speakerName = "Narasi",
+                text        = "Hanya ada suara langkah Rara\u2026 dan langkah lain dari belakang.\nJantungnya berdegup kencang. ❤ −1"
+            },
+            new NpcDialog.DialogEntry
+            {
+                speakerName = "Rara (dalam hati)",
+                text        = "Harusnya aku ambil jalan ramai tadi\u2026"
             }
-        }, () => dialogActive = false);
-        yield return null;
+        }, () => done = true);
+        float deadline = Time.time + 45f;
+        yield return new WaitUntil(() => done || Time.time > deadline);
+        dialogActive = false;
+        currentPhase = Phase.Walking2;
     }
 
-    // ── Encounter 2: Orang Asing di Gang ──────────────────────────────────
+    // ── Encounter 2: Motor Nyasar Tanya Sekolah ───────────────────────────
     void StartEncounter2()
     {
         if (enc2Done) return;
@@ -621,7 +754,7 @@ public class Day1Controller : MonoBehaviour
 
         var npcDialog = GetSharedDialog();
         npcDialog.lines = BangunEncounterLines(encounter2, 1,
-            onAman:   () => { GameState.Instance?.EarnAchievement("Tolak Difoto Asing"); DismissNPC(); },
+            onAman:   () => { GameState.Instance?.EarnAchievement("Tolak Tumpangan Asing"); DismissNPC(); },
             onRagu:   () => { DismissNPC(); },
             onBahaya: () => { DismissNPC(); },
             afterFeedback: null);
@@ -629,7 +762,8 @@ public class Day1Controller : MonoBehaviour
         npcDialog.PlayLines(npcDialog.lines, () =>
         {
             dialogActive = false;
-            currentPhase = Phase.Walking3;
+            // Kembali ke Walking — pemain lanjut sampai mencapai trigger PathChoice (#3).
+            currentPhase = Phase.Walking;
         });
     }
 
@@ -825,11 +959,33 @@ public class Day1Controller : MonoBehaviour
         currentPhase = Phase.EduCard;
         dialogActive = true;
 
+        // Narasi penutup Hari 1 sebelum kartu edukasi muncul.
+        bool outroDone = false;
+        GetSharedDialog()?.PlayLines(new NpcDialog.DialogEntry[]
+        {
+            new NpcDialog.DialogEntry
+            {
+                speakerName = "Narasi",
+                text        = "Akhirnya gerbang SMP Harapan terlihat jelas.\nRara menarik napas lega — perjalanan pertamanya sendirian selesai."
+            },
+            new NpcDialog.DialogEntry
+            {
+                speakerName = "Rara",
+                text        = "\"Fyuh\u2026 ternyata di luar sana banyak hal yang harus aku waspadai.\nTapi aku berhasil sampai sini!\""
+            }
+        }, () => outroDone = true);
+        float outroDeadline = Time.time + 45f;
+        yield return new WaitUntil(() => outroDone || Time.time > outroDeadline);
+
         yield return new WaitForSeconds(0.5f);
 
         if (eduCardPanel != null) eduCardPanel.SetActive(true);
         if (eduCardContinueBtn != null)
+        {
+            // RemoveListener dulu agar bisa di-call ulang tanpa menumpuk subscriber.
+            eduCardContinueBtn.onClick.RemoveListener(GoToResult);
             eduCardContinueBtn.onClick.AddListener(GoToResult);
+        }
 
         GameState.Instance.checkpointD1 = true;
     }
@@ -969,16 +1125,27 @@ public class Day1Controller : MonoBehaviour
     /// Tidak pernah mengembalikan null — buat GO baru jika tidak ada di scene.
     NpcDialog GetSharedDialog()
     {
+        // Pakai referensi Inspector kalau ada (tapi pastikan masih valid & aktif-mampu)
         if (sharedNpcDialog != null) return sharedNpcDialog;
 
-        // Cari di semua GO (termasuk nonaktif) agar tidak melewatkan NPC yang belum diaktifkan
-        sharedNpcDialog = FindFirstObjectByType<NpcDialog>(FindObjectsInactive.Include);
-        if (sharedNpcDialog != null) return sharedNpcDialog;
+        // PRIORITAS 1: cari NpcDialog di GO yang AKTIF di hierarchy.
+        // Hindari NpcDialog yang menempel di NPC inactive (mis. 'pemotor', 'paman')
+        // karena StartCoroutine akan gagal di GO inactive.
+        var semua = FindObjectsByType<NpcDialog>(
+            FindObjectsInactive.Include, FindObjectsSortMode.None);
+        for (int i = 0; i < semua.Length; i++)
+        {
+            if (semua[i] != null && semua[i].gameObject.activeInHierarchy)
+            {
+                sharedNpcDialog = semua[i];
+                return sharedNpcDialog;
+            }
+        }
 
-        // Masih null → buat GO baru dengan komponen NpcDialog minimal
+        // PRIORITAS 2: tidak ada yang aktif \u2014 buat GO baru khusus (selalu aktif).
         var go = new GameObject("[SharedNpcDialog]");
         sharedNpcDialog = go.AddComponent<NpcDialog>();
-        Debug.Log("[Day1Controller] SharedNpcDialog tidak ditemukan — dibuat otomatis.");
+        Debug.Log("[Day1Controller] SharedNpcDialog tidak ditemukan di GO aktif \u2014 dibuat otomatis.");
         return sharedNpcDialog;
     }
 

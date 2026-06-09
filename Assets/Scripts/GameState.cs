@@ -22,6 +22,10 @@ public class GameState : MonoBehaviour
     public string pathChoice       = "safe";   // "safe" | "dangerous"
     public bool   screenshotTaken  = false;
     public bool   platChecked      = false;
+    [Tooltip("Kategori kursi yang dipilih di Angkot (Day 2): 'AMAN' | 'RAGU' | 'BAHAYA'. " +
+             "Dipakai ZonaTubuhQuiz untuk memilih varian narasi intro yang menyambung " +
+             "keputusan pemain di AngkotSeatPicker.")]
+    public string seatCategory     = "";       // "" | "AMAN" | "RAGU" | "BAHAYA"
 
     // ── Rekam Pilihan & Pencapaian ─────────────────────────────────────────
     public List<ChoiceRecord> choices      = new List<ChoiceRecord>();
@@ -130,6 +134,7 @@ public class GameState : MonoBehaviour
         pathChoice   = "safe";
         screenshotTaken = false;
         platChecked  = false;
+        seatCategory = "";
         checkpointD1 = false;
         checkpointD2 = false;
         checkpointD3 = false;
