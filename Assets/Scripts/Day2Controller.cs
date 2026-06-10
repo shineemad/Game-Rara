@@ -7,9 +7,30 @@ using TMPro;
 /// <summary>
 /// Day2Controller — Orkestrator alur Hari 2: angkot jurusan sekolah.
 ///
-/// State machine 6 fase:
-///   Intro \u2192 Halte \u2192 Angkot (pilih kursi) \u2192 Quiz Zona Tubuh
-///   \u2192 ChatSim WhatsApp \u2192 Lapor \u2192 EduCard \u2192 Summary
+/// FOKUS: Hari 2 = visual novel naratif TAPI tetap mempertahankan bagian
+/// interaktif/arcade yang seru. Default-nya mekanik interaktif AKTIF:
+///   \u2022 AngkotSentuhScene.aktifkanVoiceMeter = true  (Voice Meter teriak;
+///       set gunakanMikrofon=true untuk Voice-Driven via mic asli)
+///   \u2022 ZonaTubuhQuiz.modeVisualNovel       = false (drag-drop ber-timer)
+///   \u2022 LaporTeriakButton.modeVisualNovel   = false (tahan tombol + bisa
+///       Voice-Driven via mic: set gunakanMikrofon=true \u2192 teriak ke mic)
+/// Tiap komponen tetap punya mode "Visual Novel pilihan" sebagai opsi toggle.
+///
+/// Alur Hari 2:
+///   Intro \u2192 Narasi \u2192 Halte (PRIA HALTE minta nomor) \u2192 Angkot (pilih kursi)
+///   \u2192 Sentuh (PRIA ANGKOT \u2014 yang duduk di belakang \u2014 pindah & sentuh bahu)
+///   \u2192 Quiz (zona tubuh) \u2192 ChatSim (HP bergetar: PRIA HALTE meng-WA Rara,
+///   dapat nomor dari teman Rara) \u2192 Lapor (PRIA ANGKOT makin merapat \u2192 panggil
+///   Pak Supir, tiba di sekolah) \u2192 EduCard \u2192 Summary
+///
+/// Catatan: ADA DUA PELAKU BERBEDA di Hari 2 \u2014 ini disengaja secara edukatif:
+///   * PRIA HALTE  : bahaya yang datang lewat DATA/DARING. Minta nomor di halte
+///                   (Rara menolak), tapi tetap bisa meng-WA karena nomornya bocor
+///                   lewat teman \u2192 pelajaran: data pribadi bisa menyebar.
+///   * PRIA ANGKOT : bahaya FISIK langsung. Diam-diam duduk di belakang, lalu
+///                   pindah merapat & menyentuh (Sentuh), dan mendekat lagi (Lapor)
+///                   \u2192 pelajaran: TIDAK \u2192 PERGI \u2192 CERITA (panggil Pak Supir).
+/// Urutan sengaja menempatkan insiden "sentuh bahu" SEBELUM Quiz zona tubuh.
 ///
 /// Background dibangun procedural (gradient + bentuk sederhana) per fase.
 /// Tiap fase punya komponen sendiri (HalteDialog, AngkotSeatPicker, dll)
@@ -32,6 +53,7 @@ public class Day2Controller : MonoBehaviour
         Narasi,
         Halte,
         Angkot,
+        Sentuh,
         Quiz,
         ChatSim,
         Lapor,
@@ -54,11 +76,27 @@ public class Day2Controller : MonoBehaviour
     public Day2NarasiAwal     narasiAwal;
     public HalteDialog        haltDialog;
     public AngkotSeatPicker   angkotSeatPicker;
+    public AngkotSentuhScene  angkotSentuh;
     public ZonaTubuhQuiz      zonaTubuhQuiz;
-    public ChatSimWhatsApp    chatSim;
     public LaporTeriakButton  laporButton;
+    public ChatSimWhatsApp    chatSim;
     public EduCardDay2        eduCard;
     public Day2SummaryScreen  summaryScreen;
+
+    // ═════════════════════════════════════════════════════════════════════
+    // JEMBATAN VN: ChatSim → Lapor  (pria angkot geser mendekat ke Rara)
+    // Setelah simulasi chat, sebelum fase Lapor: pria yang tadi menyentuh bahu
+    // (PRIA ANGKOT, bukan pria halte) memakai alasan "bangku sebelah kosong"
+    // untuk pindah merapat. Ini TANDA BAHAYA → Rara percaya insting → CERITA.
+    // ═════════════════════════════════════════════════════════════════════
+    [Header("Jembatan VN: ChatSim → Lapor (pria geser mendekat)")]
+    [Tooltip("DEPRECATED: narasi pembuka VN kini ditangani LaporTeriakButton (tampilkanNarasiPembuka).\n" +
+             "Biarkan OFF supaya tidak tampil dua kali.")]
+    public bool aktifkanJembatanLapor = false;
+    [Tooltip("Portrait Rara untuk box dialog jembatan (opsional, upload nanti).")]
+    public Sprite jembatanPortraitRara;
+    [Tooltip("Portrait Pria Asing untuk box dialog jembatan (opsional, upload nanti).")]
+    public Sprite jembatanPortraitPria;
 
     [Header("Backdrop Procedural")]
     [Tooltip("Background utama dibuat dari script ini (gradient warna per fase).")]
@@ -71,8 +109,8 @@ public class Day2Controller : MonoBehaviour
     public Color warnaHalte    = new Color(0.45f, 0.62f, 0.78f, 1f);   // sedikit lebih gelap
     public Color warnaAngkot   = new Color(0.18f, 0.14f, 0.10f, 1f);   // interior coklat
     public Color warnaQuiz     = new Color(0.10f, 0.16f, 0.30f, 1f);   // ungu gelap
-    public Color warnaChatSim  = new Color(0.05f, 0.18f, 0.22f, 1f);   // WhatsApp dark
     public Color warnaLapor    = new Color(0.20f, 0.05f, 0.05f, 1f);   // merah gelap urgensi
+    public Color warnaChatSim  = new Color(0.10f, 0.12f, 0.14f, 1f);   // di angkot \u2014 layar HP (abu gelap)
     public Color warnaEduCard  = new Color(0.05f, 0.10f, 0.08f, 1f);   // hijau gelap
 
     // ═════════════════════════════════════════════════════════════════════
@@ -86,8 +124,8 @@ public class Day2Controller : MonoBehaviour
     public Sprite bgHalteSprite;
     public Sprite bgAngkotSprite;
     public Sprite bgQuizSprite;
-    public Sprite bgChatSimSprite;
     public Sprite bgLaporSprite;
+    public Sprite bgChatSimSprite;
     public Sprite bgEduCardSprite;
 
     [Header("Background Sprite — Pengaturan")]
@@ -215,6 +253,7 @@ public class Day2Controller : MonoBehaviour
     private Phase      _fase = Phase.None;
     private GameObject _backdropGO;
     private Image      _backdropImg;
+    private bool       _jembatanLaporTampil; // cegah jembatan VN tampil dua kali
     private Image      _bgSpriteImg;   // layer sprite latar di atas warna solid
     private Image      _floorImg;      // strip lantai gelap (bisa disembunyikan saat ada sprite)
     private TextMeshProUGUI _labelFase;
@@ -366,8 +405,15 @@ public class Day2Controller : MonoBehaviour
                 break;
 
             case Phase.Angkot:
-                if (angkotSeatPicker == null) { Debug.LogWarning("[Day2] AngkotSeatPicker tidak ada \u2014 skip ke Quiz."); GotoFase(Phase.Quiz); break; }
-                angkotSeatPicker.Mulai(() => GotoFase(Phase.Quiz));
+                if (angkotSeatPicker == null) { Debug.LogWarning("[Day2] AngkotSeatPicker tidak ada — skip ke Sentuh."); GotoFase(Phase.Sentuh); break; }
+                angkotSeatPicker.Mulai(() => GotoFase(Phase.Sentuh));
+                break;
+
+            case Phase.Sentuh:
+                if (angkotSentuh == null) { Debug.LogWarning("[Day2] AngkotSentuhScene tidak ada — skip ke Quiz."); GotoFase(Phase.Quiz); break; }
+                // Insiden disentuh di angkot \u2192 lanjut ke Quiz Zona Tubuh
+                // (urutan sengaja: Sentuh SEBELUM Quiz).
+                angkotSentuh.Mulai(() => GotoFase(Phase.Quiz));
                 break;
 
             case Phase.Quiz:
@@ -376,12 +422,16 @@ public class Day2Controller : MonoBehaviour
                 break;
 
             case Phase.ChatSim:
-                if (chatSim == null) { Debug.LogWarning("[Day2] ChatSimWhatsApp tidak ada \u2014 skip ke Lapor."); GotoFase(Phase.Lapor); break; }
-                chatSim.Mulai(() => GotoFase(Phase.Lapor));
+                if (chatSim == null) { Debug.LogWarning("[Day2] ChatSimWhatsApp tidak ada \u2014 skip ke Lapor."); KeLapor(); break; }
+                // Masih di angkot: HP Rara bergetar, pria yang sama meng-WA Rara.
+                // Tampilkan narasi jembatan dulu, baru buka simulasi chat \u2192 lanjut Lapor.
+                StartCoroutine(JalankanChatSim());
                 break;
 
             case Phase.Lapor:
                 if (laporButton == null) { Debug.LogWarning("[Day2] LaporTeriakButton tidak ada \u2014 skip ke EduCard."); GotoFase(Phase.EduCard); break; }
+                // Narasi pembuka VN "pria geser mendekat" kini ditangani DI DALAM
+                // LaporTeriakButton.Mulai() supaya pasti tampil dari jalur mana pun.
                 laporButton.Mulai(() => GotoFase(Phase.EduCard));
                 break;
 
@@ -401,6 +451,240 @@ public class Day2Controller : MonoBehaviour
     }
 
     // ══════════════════════════════════════════════════════════════════════
+    // FASE CHATSIM \u2014 jembatan naratif "HP bergetar" + simulasi WhatsApp
+    // Pelaku di sini adalah PRIA HALTE (yang minta nomor pagi tadi), BUKAN pria
+    // yang duduk di angkot. Nomor Rara bocor lewat temannya, jadi pria halte bisa
+    // meng-WA walau Rara sudah menolak di halte. Setelah chat \u2192 lanjut ke Lapor.
+    // ══════════════════════════════════════════════════════════════════════
+    IEnumerator JalankanChatSim()
+    {
+        // Narasi jembatan: HP Rara tiba-tiba bergetar, pesan dari nomor tak dikenal.
+        string[] narasi =
+        {
+            "Belum lama Rara menyimpan bukunya, HP di sakunya tiba-tiba bergetar.",
+            "Ada pesan WhatsApp dari nomor tak dikenal \u2014 padahal Rara merasa tidak pernah memberi nomornya ke orang asing.",
+            "Dengan jantung berdebar, Rara membuka pesannya."
+        };
+        yield return NarasiJembatan(narasi);
+
+        // Buka simulasi chat. Selesai \u2192 jembatan VN "pria geser mendekat" \u2192 Lapor.
+        chatSim.Mulai(KeLapor);
+    }
+
+    // Lanjut ke fase Lapor. Jembatan VN kini dimainkan DI DALAM fase Lapor
+    // (lihat JalankanLaporDenganJembatan) supaya tampil dari jalur mana pun.
+    void KeLapor()
+    {
+        GotoFase(Phase.Lapor);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // FASE LAPOR: mainkan jembatan VN dulu (pria geser mendekat) baru tombol teriak
+    // ══════════════════════════════════════════════════════════════════════
+    IEnumerator JalankanLaporDenganJembatan()
+    {
+        if (aktifkanJembatanLapor && !_jembatanLaporTampil)
+        {
+            _jembatanLaporTampil = true;
+            yield return JalankanJembatanLapor();
+        }
+        laporButton.Mulai(() => GotoFase(Phase.EduCard));
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // JEMBATAN VN: pria angkot geser mendekat sebelum fase Lapor
+    // Pelaku = PRIA ANGKOT (yang menyentuh bahu Rara di fase Sentuh), BUKAN
+    // pria halte. Memakai alasan "bangku kosong" sbg modus -> red flag -> CERITA.
+    // ══════════════════════════════════════════════════════════════════════
+    IEnumerator JalankanJembatanLapor()
+    {
+        Debug.Log("[Day2] JembatanLapor (VN pria geser mendekat) MULAI tampil.");
+        var baris = new (string speaker, string teks)[]
+        {
+            ("Narasi",     "Rara memasukkan kembali HP-nya ke saku. Tapi suasana di dalam angkot terasa berubah."),
+            ("Narasi",     "Beberapa penumpang turun di perempatan. Kini bangku tepat di sebelah Rara kosong."),
+            ("Pria Asing", "Wah, kosong nih. Om pindah ke sini aja ya, biar lebih enak ngobrolnya."),
+            ("Narasi",     "Pria yang tadi menyentuh bahunya itu menggeser duduknya \u2014 makin merapat ke arah Rara."),
+            ("Rara",       "Kenapa dia harus pindah ke sebelahku? Padahal masih banyak bangku lain yang kosong..."),
+            ("Narasi",     "Hati kecil Rara berkata ada yang tidak beres. Inilah saatnya kata sakti ketiga: CERITA \u2014 minta tolong Pak Supir!")
+        };
+        yield return NarasiVN(baris);
+        // Tidak GotoFase di sini — pemanggil (JalankanLaporDenganJembatan)
+        // langsung lanjut ke laporButton.Mulai setelah VN selesai.
+    }
+
+    // Narasi gaya Visual Novel: panel kayu + bingkai portrait (IDENTIK HalteDialog).
+    // Sprite panel & portrait diambil dari komponen haltDialog supaya tampilannya
+    // sama persis dengan fase Halte (tidak perlu assign ulang sprite).
+    IEnumerator NarasiVN((string speaker, string teks)[] baris)
+    {
+        var cGO = new GameObject("Day2_JembatanLaporVN");
+        var cv  = cGO.AddComponent<Canvas>();
+        cv.renderMode   = RenderMode.ScreenSpaceOverlay;
+        cv.sortingOrder = 972;
+        var sc = cGO.AddComponent<CanvasScaler>();
+        sc.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        sc.referenceResolution = new Vector2(1920f, 1080f);
+        sc.matchWidthOrHeight  = 0.5f;
+        cGO.AddComponent<GraphicRaycaster>();
+
+        // ── Latar: pakai sprite angkot kalau ada, kalau tidak warna interior. ──
+        var bgImg = OvBuatImage(cGO.transform, "BG", Vector2.zero, Vector2.one, warnaAngkot);
+        if (bgAngkotSprite != null)
+        {
+            bgImg.sprite        = bgAngkotSprite;
+            bgImg.type          = Image.Type.Simple;
+            bgImg.preserveAspect = false;
+            bgImg.color         = Color.white;
+        }
+
+        // ── Ambil aset/look dari HalteDialog (fallback ke nilai default kalau null). ──
+        Sprite panelSp = haltDialog != null ? haltDialog.panelSprite : null;
+        float pCX = haltDialog != null ? haltDialog.boxPanelCenterX : 0.50f;
+        float pCY = haltDialog != null ? haltDialog.boxPanelCenterY : 0.215f;
+        float pW  = haltDialog != null ? haltDialog.boxPanelWidth   : 0.96f;
+        float pH  = haltDialog != null ? haltDialog.boxPanelHeight  : 0.395f;
+        float qCX = haltDialog != null ? haltDialog.boxPortraitCenterX : 0.153f;
+        float qCY = haltDialog != null ? haltDialog.boxPortraitCenterY : 0.625f;
+        float qW  = haltDialog != null ? haltDialog.boxPortraitW : 0.192f;
+        float qH  = haltDialog != null ? haltDialog.boxPortraitH : 0.494f;
+        Vector2 bMin = haltDialog != null ? haltDialog.boxBannerAnchorMin : new Vector2(0.11f, 0.11f);
+        Vector2 bMax = haltDialog != null ? haltDialog.boxBannerAnchorMax : new Vector2(0.253f, 0.333f);
+        Vector2 tMin = haltDialog != null ? haltDialog.boxTextAnchorMin   : new Vector2(0.31f, 0.55f);
+        Vector2 tMax = haltDialog != null ? haltDialog.boxTextAnchorMax   : new Vector2(0.84f, 0.76f);
+        Color namaCol = haltDialog != null ? haltDialog.boxNamaColor : new Color(1f, 0.85f, 0.30f, 1f);
+        Color teksCol = haltDialog != null ? haltDialog.boxTextColor : Color.white;
+        int   namaFs  = haltDialog != null ? haltDialog.boxNamaFontSize : 30;
+        int   teksFs  = haltDialog != null ? haltDialog.boxTextFontSize : 26;
+
+        // ── Panel kotak dialog (panel kayu sliced, sama Halte) ──
+        var boxGO = new GameObject("DialogBox");
+        boxGO.transform.SetParent(cGO.transform, false);
+        var boxImg = boxGO.AddComponent<Image>();
+        boxImg.raycastTarget = true;
+        if (panelSp != null)
+        {
+            boxImg.sprite = panelSp;
+            boxImg.type   = Image.Type.Sliced;
+            boxImg.color  = Color.white;
+        }
+        else
+        {
+            boxImg.color = new Color(0.05f, 0.08f, 0.12f, 0.94f);
+            var outl = boxGO.AddComponent<Outline>();
+            outl.effectColor    = new Color(1f, 0.85f, 0.25f, 1f);
+            outl.effectDistance = new Vector2(2f, -2f);
+        }
+        var brt = boxGO.GetComponent<RectTransform>();
+        brt.anchorMin = new Vector2(pCX - pW * 0.5f, pCY - pH * 0.5f);
+        brt.anchorMax = new Vector2(pCX + pW * 0.5f, pCY + pH * 0.5f);
+        brt.offsetMin = Vector2.zero; brt.offsetMax = Vector2.zero;
+
+        // ── Portrait (kiri, di area bingkai panel) ──
+        var portraitGO = new GameObject("Portrait");
+        portraitGO.transform.SetParent(boxGO.transform, false);
+        var prt2 = portraitGO.AddComponent<RectTransform>();
+        prt2.anchorMin = new Vector2(qCX - qW * 0.5f, qCY - qH * 0.5f);
+        prt2.anchorMax = new Vector2(qCX + qW * 0.5f, qCY + qH * 0.5f);
+        prt2.offsetMin = prt2.offsetMax = Vector2.zero;
+        var portraitImg = portraitGO.AddComponent<Image>();
+        portraitImg.preserveAspect = true;
+        portraitImg.color          = Color.white;
+        portraitImg.raycastTarget  = false;
+        portraitImg.enabled        = false;
+
+        // ── Banner nama pembicara ──
+        var namaTmp = OvBuatTMP(boxGO.transform, "Nama", bMin, bMax, "", namaFs, namaCol, true);
+        namaTmp.alignment = TextAlignmentOptions.Center;
+
+        // ── Teks isi dialog ──
+        var teksTmp = OvBuatTMP(boxGO.transform, "Teks", tMin, tMax, "", teksFs, teksCol, false);
+        teksTmp.alignment = TextAlignmentOptions.TopLeft;
+
+        // ── Hint pojok kanan-bawah panel ──
+        OvBuatTMP(boxGO.transform, "Hint",
+            new Vector2(0.67f, 0.07f), new Vector2(0.97f, 0.19f),
+            "\u25BC  Ketuk lanjut", 16, new Color(1f, 1f, 1f, 0.55f), false)
+            .alignment = TextAlignmentOptions.MidlineRight;
+
+        foreach (var b in baris)
+        {
+            namaTmp.text  = string.IsNullOrEmpty(b.speaker) ? "" : b.speaker.ToUpper();
+            namaTmp.color = b.speaker == "Pria Asing" ? new Color(0.95f, 0.45f, 0.40f, 1f)
+                          : b.speaker == "Rara"       ? new Color(0.45f, 0.78f, 1.00f, 1f)
+                          :                             namaCol;
+
+            // Portrait: override jembatan -> portrait HalteDialog -> sembunyikan.
+            Sprite ps =
+                b.speaker == "Rara"       ? (jembatanPortraitRara != null ? jembatanPortraitRara : (haltDialog != null ? haltDialog.portraitRara : null))
+              : b.speaker == "Pria Asing" ? (jembatanPortraitPria != null ? jembatanPortraitPria : (haltDialog != null ? haltDialog.portraitPriaAsing : null))
+              :                             (haltDialog != null ? haltDialog.portraitNarasi : null);
+            if (ps != null) { portraitImg.sprite = ps; portraitImg.enabled = true; }
+            else            { portraitImg.enabled = false; }
+
+            teksTmp.text = b.teks;
+
+            bool lanjut = false; float timer = 0f;
+            while (!lanjut)
+            {
+                timer += Time.deltaTime;
+                if (timer >= 0.25f &&
+                    (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
+                    lanjut = true;
+                yield return null;
+            }
+        }
+        Destroy(cGO);
+    }
+
+    // Narasi sederhana antar-fase: klik/tap/SPACE untuk maju per baris.
+    IEnumerator NarasiJembatan(string[] baris)
+    {
+        var cGO = new GameObject("Day2_NarasiJembatan");
+        var cv  = cGO.AddComponent<Canvas>();
+        cv.renderMode   = RenderMode.ScreenSpaceOverlay;
+        cv.sortingOrder = 970;
+        var sc = cGO.AddComponent<CanvasScaler>();
+        sc.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        sc.referenceResolution = new Vector2(1920f, 1080f);
+        sc.matchWidthOrHeight  = 0.5f;
+        cGO.AddComponent<GraphicRaycaster>();
+
+        // Latar malam (pakai warna fase ChatSim biar nyambung)
+        OvBuatImage(cGO.transform, "BG", Vector2.zero, Vector2.one, warnaChatSim);
+
+        // Kotak narasi semi-transparan
+        var box = OvBuatImage(cGO.transform, "Box",
+            new Vector2(0.1f, 0.36f), new Vector2(0.9f, 0.64f),
+            new Color(0f, 0f, 0f, 0.55f));
+        box.raycastTarget = true;
+
+        var tmp = OvBuatTMP(cGO.transform, "Teks",
+            new Vector2(0.14f, 0.38f), new Vector2(0.86f, 0.62f),
+            "", 34, Color.white, false);
+
+        OvBuatTMP(cGO.transform, "Hint",
+            new Vector2(0.2f, 0.27f), new Vector2(0.8f, 0.34f),
+            "\u25B6  Klik / tap untuk lanjut", 22, new Color(1f, 1f, 1f, 0.5f), false);
+
+        foreach (var t in baris)
+        {
+            tmp.text = t;
+            bool lanjut = false;
+            float timer = 0f;
+            while (!lanjut)
+            {
+                timer += Time.deltaTime;
+                if (timer >= 0.25f &&
+                    (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
+                    lanjut = true;
+                yield return null;
+            }
+        }
+        Destroy(cGO);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
     // AUTO-FIND
     // ══════════════════════════════════════════════════════════════════════
     void AutoFindRefs()
@@ -408,9 +692,10 @@ public class Day2Controller : MonoBehaviour
         if (narasiAwal       == null) narasiAwal       = FindFirstObjectByType<Day2NarasiAwal>(FindObjectsInactive.Include);
         if (haltDialog       == null) haltDialog       = FindFirstObjectByType<HalteDialog>(FindObjectsInactive.Include);
         if (angkotSeatPicker == null) angkotSeatPicker = FindFirstObjectByType<AngkotSeatPicker>(FindObjectsInactive.Include);
+        if (angkotSentuh     == null) angkotSentuh     = FindFirstObjectByType<AngkotSentuhScene>(FindObjectsInactive.Include);
         if (zonaTubuhQuiz    == null) zonaTubuhQuiz    = FindFirstObjectByType<ZonaTubuhQuiz>(FindObjectsInactive.Include);
-        if (chatSim          == null) chatSim          = FindFirstObjectByType<ChatSimWhatsApp>(FindObjectsInactive.Include);
         if (laporButton      == null) laporButton      = FindFirstObjectByType<LaporTeriakButton>(FindObjectsInactive.Include);
+        if (chatSim          == null) chatSim          = FindFirstObjectByType<ChatSimWhatsApp>(FindObjectsInactive.Include);
         if (eduCard          == null) eduCard          = FindFirstObjectByType<EduCardDay2>(FindObjectsInactive.Include);
         if (summaryScreen    == null) summaryScreen    = FindFirstObjectByType<Day2SummaryScreen>(FindObjectsInactive.Include);
     }
@@ -472,9 +757,10 @@ public class Day2Controller : MonoBehaviour
         Phase.Intro   => bgIntroSprite,
         Phase.Halte   => bgHalteSprite,
         Phase.Angkot  => bgAngkotSprite,
+        Phase.Sentuh  => bgAngkotSprite,
         Phase.Quiz    => bgQuizSprite,
-        Phase.ChatSim => bgChatSimSprite,
         Phase.Lapor   => bgLaporSprite,
+        Phase.ChatSim => bgChatSimSprite,
         Phase.EduCard => bgEduCardSprite,
         _             => null
     };
@@ -560,9 +846,10 @@ public class Day2Controller : MonoBehaviour
             Phase.Intro   => warnaIntro,
             Phase.Halte   => warnaHalte,
             Phase.Angkot  => warnaAngkot,
+            Phase.Sentuh  => warnaAngkot,
             Phase.Quiz    => warnaQuiz,
-            Phase.ChatSim => warnaChatSim,
             Phase.Lapor   => warnaLapor,
+            Phase.ChatSim => warnaChatSim,
             Phase.EduCard => warnaEduCard,
             _             => _backdropImg.color
         };
@@ -594,9 +881,10 @@ public class Day2Controller : MonoBehaviour
             Phase.Intro   => "Hari 2 \u00B7 Persiapan",
             Phase.Halte   => "Hari 2 \u00B7 Halte Angkot",
             Phase.Angkot  => "Hari 2 \u00B7 Di Dalam Angkot",
+            Phase.Sentuh  => "Hari 2 \u00B7 Di Dalam Angkot",
             Phase.Quiz    => "Hari 2 \u00B7 Quiz Zona Tubuh",
-            Phase.ChatSim => "Hari 2 \u00B7 Chat WhatsApp",
             Phase.Lapor   => "Hari 2 \u00B7 Lapor",
+            Phase.ChatSim => "Hari 2 \u00B7 Di Dalam Angkot",
             Phase.EduCard => "Hari 2 \u00B7 Kartu Edukasi",
             _             => ""
         };

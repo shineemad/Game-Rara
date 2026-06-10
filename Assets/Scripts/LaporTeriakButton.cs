@@ -6,13 +6,17 @@ using UnityEngine.EventSystems;
 using TMPro;
 
 /// <summary>
-/// LaporTeriakButton — Tantangan "Berani Lapor" Day 2.
+/// LaporTeriakButton — Tantangan "Berani Lapor" Day 2 (KLIMAKS: kata sakti CERITA).
+///
+/// Konteks alur: MASIH di dalam angkot. Pria asing yang sama (dari halte, yang
+/// tadi menyentuh bahu Rara) kembali merapat dan makin nekat. Rara harus berani
+/// TERIAK memanggil Pak Supir — inilah penutup rangkaian TIDAK → PERGI → CERITA.
 ///
 /// Pemain harus TAHAN tombol "TERIAK!" selama N detik berturut-turut
 /// dalam window waktu terbatas. Kalau berhasil:
 ///   - Bonus poin LAPOR
 ///   - Achievement "Berani Lapor"
-///   - Reaksi sukses: polisi datang
+///   - Reaksi sukses: Pak Supir & penumpang menolong, angkot tiba di sekolah.
 ///
 /// Tap-only mode \u2014 tidak butuh mikrofon. Cocok untuk semua platform.
 /// Semua label/durasi/warna bisa di-custom lewat Inspector.
@@ -20,14 +24,35 @@ using TMPro;
 public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     [Header("Narasi Awal")]
-    public string judulTeks = "\uD83D\uDEA8 SAATNYA LAPOR!";
+    public string judulTeks = "\uD83D\uDCE2 SAATNYA LAPOR!";
     public Color  judulWarna = new Color(1f, 0.45f, 0.45f, 1f);
     public int    judulUkuran = 38;
     [TextArea(2, 5)]
     public string deskripsiTeks =
-        "Kamu sudah turun dari angkot.\nDi depan pos polisi: TAHAN tombol TERIAK untuk minta tolong!\n\nTahan selama {DURASI} detik sebelum waktu habis.";
+        "Pria itu makin merapat di dalam angkot!\nTAHAN tombol TERIAK (atau tahan SPACE) untuk memanggil Pak Supir.\n\nTahan selama {DURASI} detik sebelum waktu habis.";
     public Color  deskripsiWarna = new Color(1f, 1f, 0.92f, 0.95f);
     public int    deskripsiUkuran = 22;
+
+    // ═════════════════════════════════════════════════════════════════════
+    // NARASI PEMBUKA VISUAL NOVEL (sebelum tombol teriak / layar LAPOR)
+    // Adegan jembatan: pria asing di angkot geser mendekat karena bangku di
+    // sebelah Rara kosong -> red flag -> Rara percaya insting -> saatnya CERITA.
+    // Ditaruh DI SINI (bukan Day2Controller) supaya PASTI tampil setiap kali
+    // layar LAPOR dibuka, dari jalur mana pun fase ini dipanggil.
+    // ═════════════════════════════════════════════════════════════════════
+    [Header("Narasi Pembuka VN (sebelum tombol teriak)")]
+    [Tooltip("ON = mainkan dialog box VN 'pria geser mendekat' dulu sebelum layar teriak.")]
+    public bool tampilkanNarasiPembuka = true;
+    [Tooltip("Sprite panel kayu untuk box dialog VN (sliced). Kosong = panel gelap + border emas.")]
+    public Sprite vnPanelSprite;
+    [Tooltip("Portrait pembicara 'Narasi' (mis. gulungan kertas). Opsional.")]
+    public Sprite vnPortraitNarasi;
+    [Tooltip("Portrait wajah Rara. Opsional.")]
+    public Sprite vnPortraitRara;
+    [Tooltip("Portrait Pria Asing. Opsional.")]
+    public Sprite vnPortraitPria;
+    [Tooltip("Sprite latar belakang (mis. interior angkot). Opsional.")]
+    public Sprite vnLatarSprite;
 
     [Header("Timer")]
     [Tooltip("Window total waktu (detik) untuk menyelesaikan tantangan.")]
@@ -49,37 +74,39 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
     public string achievementName = "Berani Lapor";
     public int    bonusBerhasil   = 500;
     [TextArea(2, 4)]
-    public string reaksiBerhasil  = "\u2713 Polisi langsung datang! Bagus, kamu sudah belajar berani lapor.";
+    public string reaksiBerhasil  = "\u2713 Pak Supir mendengar dan langsung menepi! Penumpang lain ikut menoleh — pria itu salah tingkah lalu turun. Angkot kembali melaju dan Rara tiba di sekolah dengan SELAMAT.";
     [TextArea(2, 4)]
-    public string reaksiGagal     = "\u2716 Kamu nggak berani teriak. Lain kali, beranikan diri ya!";
+    public string reaksiGagal     = "\u2716 Rara terlalu takut untuk bersuara. Untung angkot keburu sampai di sekolah dan Rara cepat turun — tapi lain kali, beranikan diri TERIAK minta tolong, ya!";
 
     // ═════════════════════════════════════════════════════════════════════
-    // ADEGAN PENGEJARAN MOTOR (Day 2 — setelah pesan ChatSim)
-    // Pria asing dari halte mengikuti Rara naik motor sampai depan sekolah.
-    // BERANI teriak → polisi patroli pagi datang (AMAN).
+    // ADEGAN ESKALASI DI ANGKOT (Day 2 — penutup rangkaian sentuh bahu)
+    // Pria asing yang sama (dari halte, yang tadi menyentuh bahu) kembali
+    // merapat di dalam angkot. BERANI teriak panggil Pak Supir (CERITA) →
+    // supir menolong, pria turun, angkot tiba di sekolah (AMAN).
     // TIDAK teriak (tombol Diam / waktu habis) → alur berbeda (BAHAYA, -1 nyawa).
     // ═════════════════════════════════════════════════════════════════════
-    [Header("Adegan Pengejaran Motor (Day 2)")]
-    [Tooltip("Aktifkan supaya fase ini memakai narasi 'pria asing mengejar pakai motor' + alur bercabang.")]
-    public bool tampilkanNarasiPengejaran = true;
-    [Tooltip("Judul kartu saat adegan pengejaran motor.")]
-    public string pengejaranJudul = "\uD83C\uDFCD\uFE0F DIA MENGIKUTIMU!";
+    [Header("Adegan Eskalasi di Angkot (Day 2)")]
+    [Tooltip("Aktifkan supaya fase ini memakai narasi 'pria yang sama merapat lagi di angkot' + alur bercabang.\n" +
+             "NONAKTIFKAN (false) untuk memakai teks 'Narasi Awal' & 'Hasil' standar di atas (mode in-angkot yang sudah diselaraskan).")]
+    public bool tampilkanNarasiPengejaran = false;
+    [Tooltip("Judul kartu saat adegan eskalasi di angkot.")]
+    public string pengejaranJudul = "\uD83D\uDCE2 MINTA TOLONG SEKARANG!";
     [TextArea(3, 6)]
     [Tooltip("Deskripsi adegan. {DURASI} diganti durasi tahan tombol teriak.")]
     public string pengejaranDeskripsi =
-        "Begitu turun dari angkot, HP Rara bergetar — pesan dari pria asing di halte tadi!\n" +
-        "Tak lama, motornya berhenti tepat di depan Rara. Dia benar-benar mengikutimu!\n\n" +
-        "TAHAN tombol TERIAK \"TOLONG!\" sebelum waktu habis ({DURASI} dtk).";
+        "Pria asing yang sama menggeser duduknya lagi — makin merapat ke arah Rara!\n" +
+        "Pak Supir ada di depan. Inilah saatnya CERITA: minta tolong orang dewasa.\n\n" +
+        "TAHAN tombol TERIAK \"PAK, TOLONG!\" (atau tahan SPACE) sebelum waktu habis ({DURASI} dtk).";
     [TextArea(2, 5)]
-    [Tooltip("Reaksi saat BERHASIL teriak (polisi patroli datang).")]
+    [Tooltip("Reaksi saat BERHASIL teriak (Pak Supir menolong, tiba di sekolah).")]
     public string pengejaranReaksiBerhasil =
-        "\u2713 Rara berteriak \"TOLONG!\" sekencang-kencangnya! Ternyata ada PAK POLISI yang " +
-        "sedang patroli pagi di depan sekolah. Beliau langsung menghampiri — pria asing itu kabur ketakutan!";
+        "\u2713 Rara berteriak \"PAK, TOLONG!\" sekencang-kencangnya! Pak Supir langsung menepi dan menegur pria itu. " +
+        "Penumpang lain ikut menoleh — pria itu salah tingkah lalu turun. Angkot melaju lagi dan Rara tiba di sekolah dengan SELAMAT.";
     [TextArea(2, 5)]
     [Tooltip("Reaksi saat TIDAK teriak / waktu habis (alur berbeda).")]
     public string pengejaranReaksiGagal =
-        "\u2716 Rara terlalu takut untuk teriak. Pria asing makin mendekat dan mencoba menarik tangannya. " +
-        "Untung seorang guru piket lewat dan pria itu pergi — tapi Rara sudah sangat ketakutan. Lain kali, berani TERIAK ya!";
+        "\u2716 Rara terlalu takut untuk bersuara. Pria itu makin berani — untung angkot keburu sampai di sekolah dan Rara cepat turun. " +
+        "Rara selamat, tapi sangat ketakutan. Lain kali, berani TERIAK minta tolong Pak Supir, ya!";
     [Tooltip("Kategori pilihan saat gagal/tidak teriak.")]
     public string kategoriGagal = "BAHAYA";
     [Tooltip("Kurangi 1 nyawa saat gagal/tidak teriak.")]
@@ -101,6 +128,26 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
     [Header("Sorting")]
     public int sortingOrder = 940;
 
+    [Header("Mode Visual Novel")]
+    [Tooltip("Saat ON, klimaks LAPOR disajikan sebagai PILIHAN dialog (bukan mini-game\n" +
+             "tahan-tombol): pemain memilih TERIAK panggil Pak Supir (AMAN) atau Diam (BAHAYA).\n\n" +
+             "DEFAULT OFF: mekanik TAHAN tombol + Voice-Driven (mic) yang interaktif sengaja\n" +
+             "dipertahankan. Set true hanya kalau ingin versi pilihan murni.")]
+    public bool modeVisualNovel = false;
+    [Tooltip("Label tombol pilihan TERIAK saat mode Visual Novel aktif.")]
+    public string vnTeriakLabel = "\uD83D\uDCE2  TERIAK panggil Pak Supir!";
+
+    [Header("Voice-Driven Action (Mikrofon)")]
+    [Tooltip("Aktifkan supaya tombol TERIAK bisa diisi dengan BERTERIAK ke mikrofon asli.\n" +
+             "Kalau mic tidak tersedia / izin ditolak \u2192 otomatis fallback ke TAHAN tombol.")]
+    public bool gunakanMikrofon = false;
+    [Tooltip("Sensitivitas mikrofon (kalikan loudness mentah). Naikkan kalau suara terlalu pelan.")]
+    [Range(1f, 40f)] public float sensitivitasMic = 12f;
+    [Tooltip("Ambang loudness (0\u20131) yang dianggap 'berteriak'. Di atas ini, progress terisi.")]
+    [Range(0.2f, 0.95f)] public float ambangTeriak = 0.6f;
+    [Tooltip("Label tombol saat mode mikrofon aktif (petunjuk berteriak).")]
+    public string teriakLabelMic = "\uD83C\uDF99  TERIAK ke mic!";
+
     // ── runtime ───────────────────────────────────────────────────────────
     private Action     _onSelesai;
     private GameObject _canvasGO;
@@ -115,12 +162,225 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
     private bool       _berhasil;
     private Sprite     _roundedSprite;
 
+    // Voice-Driven (mikrofon)
+    private bool       _micAktif;
+    private AudioClip  _micClip;
+    private string     _micDevice;
+    private float      _micLevel;
+
     // ══════════════════════════════════════════════════════════════════════
     public void Mulai(Action onSelesai)
     {
         _onSelesai = onSelesai;
+        // Mainkan narasi pembuka VN dulu (pria geser mendekat) baru layar teriak.
+        if (tampilkanNarasiPembuka) StartCoroutine(JalankanNarasiLaluScene());
+        else MulaiScene();
+    }
+
+    // Jalankan narasi VN pembuka, lalu lanjut ke layar tombol teriak.
+    IEnumerator JalankanNarasiLaluScene()
+    {
+        yield return NarasiPembukaVN();
+        MulaiScene();
+    }
+
+    // Bangun layar tombol teriak (mini-game) + mic + timer.
+    void MulaiScene()
+    {
         BuildScene();
-        StartCoroutine(TimerCoroutine());
+        // Mode VN = pilihan murni, tanpa tekanan waktu. Timer hanya untuk mekanik tahan tombol.
+        if (!modeVisualNovel)
+        {
+            MulaiMikrofon();
+            StartCoroutine(TimerCoroutine());
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // NARASI PEMBUKA VN — box dialog (portrait + nama + teks) tema visual novel.
+    // 6 baris: bangku kosong -> pria pindah mendekat (modus) -> Rara curiga
+    // (red flag, percaya insting) -> saatnya CERITA (minta tolong Pak Supir).
+    // ══════════════════════════════════════════════════════════════════════
+    IEnumerator NarasiPembukaVN()
+    {
+        var baris = new (string speaker, string teks)[]
+        {
+            ("Narasi",     "Rara memasukkan kembali HP-nya ke saku. Tapi suasana di dalam angkot terasa berubah."),
+            ("Narasi",     "Beberapa penumpang turun di perempatan. Kini bangku tepat di sebelah Rara kosong."),
+            ("Pria Asing", "Wah, kosong nih. Om pindah ke sini aja ya, biar lebih enak ngobrolnya."),
+            ("Narasi",     "Pria yang tadi menyentuh bahunya itu menggeser duduknya \u2014 makin merapat ke arah Rara."),
+            ("Rara",       "Kenapa dia harus pindah ke sebelahku? Padahal masih banyak bangku lain yang kosong..."),
+            ("Narasi",     "Hati kecil Rara berkata ada yang tidak beres. Inilah saatnya kata sakti ketiga: CERITA \u2014 minta tolong Pak Supir!")
+        };
+
+        // ── Canvas overlay ──
+        var cGO = new GameObject("LaporNarasiPembuka_Canvas");
+        var canvas = cGO.AddComponent<Canvas>();
+        canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = sortingOrder + 5;
+        var scaler = cGO.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.matchWidthOrHeight  = 0.5f;
+        cGO.AddComponent<GraphicRaycaster>();
+        if (FindFirstObjectByType<EventSystem>() == null)
+        {
+            var es = new GameObject("EventSystem");
+            es.AddComponent<EventSystem>();
+            es.AddComponent<StandaloneInputModule>();
+        }
+
+        // ── Latar ──
+        var bgGO = new GameObject("BG");
+        bgGO.transform.SetParent(cGO.transform, false);
+        var bgImg = bgGO.AddComponent<Image>();
+        if (vnLatarSprite != null) { bgImg.sprite = vnLatarSprite; bgImg.color = Color.white; }
+        else                       bgImg.color = new Color(0.16f, 0.12f, 0.09f, 1f);
+        var bgRT = bgGO.GetComponent<RectTransform>();
+        bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;
+        bgRT.offsetMin = Vector2.zero; bgRT.offsetMax = Vector2.zero;
+
+        // ── Box dialog (panel kayu / fallback gelap + border emas) ──
+        var box = new GameObject("DialogBox");
+        box.transform.SetParent(cGO.transform, false);
+        var boxImg = box.AddComponent<Image>();
+        boxImg.raycastTarget = true;
+        if (vnPanelSprite != null)
+        {
+            boxImg.sprite = vnPanelSprite;
+            boxImg.type   = Image.Type.Sliced;
+            boxImg.color  = Color.white;
+        }
+        else
+        {
+            boxImg.sprite = GetRoundedSprite();
+            boxImg.type   = Image.Type.Sliced;
+            boxImg.color  = new Color(0.05f, 0.08f, 0.12f, 0.95f);
+            var outl = box.AddComponent<Outline>();
+            outl.effectColor    = new Color(1f, 0.85f, 0.25f, 1f);
+            outl.effectDistance = new Vector2(2f, -2f);
+        }
+        var bxRT = box.GetComponent<RectTransform>();
+        bxRT.anchorMin = new Vector2(0.04f, 0.04f);
+        bxRT.anchorMax = new Vector2(0.96f, 0.40f);
+        bxRT.offsetMin = Vector2.zero; bxRT.offsetMax = Vector2.zero;
+
+        // ── Portrait (kiri) ──
+        var pGO = new GameObject("Portrait");
+        pGO.transform.SetParent(box.transform, false);
+        var pRT = pGO.AddComponent<RectTransform>();
+        pRT.anchorMin = new Vector2(0.025f, 0.14f);
+        pRT.anchorMax = new Vector2(0.20f, 0.96f);
+        pRT.offsetMin = pRT.offsetMax = Vector2.zero;
+        var portraitImg = pGO.AddComponent<Image>();
+        portraitImg.preserveAspect = true;
+        portraitImg.raycastTarget  = false;
+        portraitImg.enabled        = false;
+
+        // ── Banner nama ──
+        var namaTmp = BuatTeks(box.transform, "Nama", "", 30, new Color(1f, 0.85f, 0.30f, 1f), FontStyles.Bold);
+        namaTmp.alignment = TextAlignmentOptions.Left;
+        var nRT = namaTmp.rectTransform;
+        nRT.anchorMin = new Vector2(0.225f, 0.74f);
+        nRT.anchorMax = new Vector2(0.95f, 0.96f);
+        nRT.offsetMin = nRT.offsetMax = Vector2.zero;
+
+        // ── Teks isi ──
+        var teksTmp = BuatTeks(box.transform, "Teks", "", 28, Color.white, FontStyles.Normal);
+        teksTmp.alignment = TextAlignmentOptions.TopLeft;
+        var tRT = teksTmp.rectTransform;
+        tRT.anchorMin = new Vector2(0.225f, 0.16f);
+        tRT.anchorMax = new Vector2(0.96f, 0.74f);
+        tRT.offsetMin = new Vector2(4f, 4f); tRT.offsetMax = new Vector2(-8f, -4f);
+
+        // ── Hint ──
+        var hintTmp = BuatTeks(box.transform, "Hint", "\u25BC  Ketuk / SPACE untuk lanjut", 16, new Color(1f,1f,1f,0.55f), FontStyles.Italic);
+        hintTmp.alignment = TextAlignmentOptions.MidlineRight;
+        var hRT = hintTmp.rectTransform;
+        hRT.anchorMin = new Vector2(0.60f, 0.04f);
+        hRT.anchorMax = new Vector2(0.965f, 0.15f);
+        hRT.offsetMin = hRT.offsetMax = Vector2.zero;
+
+        // ── Klik area penuh untuk maju ──
+        var clickGO = new GameObject("ClickArea");
+        clickGO.transform.SetParent(cGO.transform, false);
+        var clickImg = clickGO.AddComponent<Image>();
+        clickImg.color = new Color(0,0,0,0);
+        var clickRT = clickGO.GetComponent<RectTransform>();
+        clickRT.anchorMin = Vector2.zero; clickRT.anchorMax = Vector2.one;
+        clickRT.offsetMin = Vector2.zero; clickRT.offsetMax = Vector2.zero;
+        bool diklik = false;
+        var clickBtn = clickGO.AddComponent<Button>();
+        clickBtn.transition = Selectable.Transition.None;
+        clickBtn.onClick.AddListener(() => diklik = true);
+
+        foreach (var b in baris)
+        {
+            namaTmp.text  = b.speaker.ToUpper();
+            namaTmp.color = b.speaker == "Pria Asing" ? new Color(0.95f, 0.45f, 0.40f, 1f)
+                          : b.speaker == "Rara"       ? new Color(0.45f, 0.78f, 1.00f, 1f)
+                          :                             new Color(1f, 0.85f, 0.30f, 1f);
+
+            Sprite ps = b.speaker == "Rara"       ? vnPortraitRara
+                      : b.speaker == "Pria Asing" ? vnPortraitPria
+                      :                             vnPortraitNarasi;
+            if (ps != null) { portraitImg.sprite = ps; portraitImg.enabled = true; }
+            else            { portraitImg.enabled = false; }
+
+            teksTmp.text = b.teks;
+
+            diklik = false;
+            float timer = 0f;
+            while (!diklik)
+            {
+                timer += Time.deltaTime;
+                if (timer >= 0.2f &&
+                    (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
+                    diklik = true;
+                yield return null;
+            }
+        }
+        Destroy(cGO);
+    }
+
+    // Coba nyalakan mikrofon. Kalau gagal/izin ditolak → fallback tahan tombol.
+    void MulaiMikrofon()
+    {
+        if (!gunakanMikrofon) return;
+        if (Microphone.devices == null || Microphone.devices.Length == 0) return;
+        try
+        {
+            _micDevice = Microphone.devices[0];
+            _micClip   = Microphone.Start(_micDevice, true, 1, 44100);
+            _micAktif  = true;
+            // Ubah label tombol jadi petunjuk berteriak ke mic.
+            if (_tombolLabel != null) _tombolLabel.text = teriakLabelMic;
+        }
+        catch { _micAktif = false; _micClip = null; }
+    }
+
+    void OnDestroy()
+    {
+        if (_micClip != null)
+        {
+            try { if (!string.IsNullOrEmpty(_micDevice)) Microphone.End(_micDevice); } catch { }
+            _micClip = null;
+        }
+    }
+
+    // Baca loudness RMS mic terkini (0–1, sudah dikali sensitivitas).
+    float BacaLoudnessMic()
+    {
+        if (_micClip == null) return 0f;
+        int pos = Microphone.GetPosition(_micDevice);
+        const int window = 256;
+        if (pos < window) return 0f;
+        var samples = new float[window];
+        _micClip.GetData(samples, pos - window);
+        float sum = 0f;
+        for (int i = 0; i < window; i++) sum += samples[i] * samples[i];
+        float rms = Mathf.Sqrt(sum / window);
+        return Mathf.Clamp01(rms * sensitivitasMic);
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -171,6 +431,13 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         // Deskripsi
         string descSumber = tampilkanNarasiPengejaran ? pengejaranDeskripsi : deskripsiTeks;
         string desc = descSumber.Replace("{DURASI}", durasiTahan.ToString("0.0"));
+        if (modeVisualNovel)
+        {
+            // Mode VN: hilangkan instruksi "tahan tombol/timer", ganti jadi ajakan memilih.
+            desc = "Pria asing yang sama kembali merapat di dalam angkot.\n" +
+                   "Pak Supir ada di depan. Inilah saatnya CERITA \u2014 minta tolong orang dewasa.\n\n" +
+                   "Apa yang Rara lakukan?";
+        }
         var d = BuatTeks(card.transform, "Desc", desc, deskripsiUkuran, deskripsiWarna, FontStyles.Normal);
         d.alignment = TextAlignmentOptions.Center;
         var drt = d.rectTransform;
@@ -188,6 +455,51 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         trt.sizeDelta = new Vector2(360f, 50f);
         trt.anchoredPosition = new Vector2(0f, -290f);
 
+        // ──────────────────────────────────────────────────────────────────
+        // MODE VISUAL NOVEL: sajikan klimaks sebagai PILIHAN dialog, bukan
+        // mini-game tahan tombol. Tombol "TERIAK" = AMAN (Selesaikan true),
+        // tombol "Diam saja" (dibangun di bawah) = BAHAYA.
+        // ──────────────────────────────────────────────────────────────────
+        if (modeVisualNovel)
+        {
+            if (_timerText != null) _timerText.gameObject.SetActive(false);
+
+            var vnGO = new GameObject("TombolTeriakVN");
+            vnGO.transform.SetParent(card.transform, false);
+            var vnImg = vnGO.AddComponent<Image>();
+            vnImg.sprite = GetRoundedSprite();
+            vnImg.color  = teriakWarna;
+            vnImg.type   = Image.Type.Sliced;
+            var vnOutl = vnGO.AddComponent<Outline>();
+            vnOutl.effectColor    = Color.white;
+            vnOutl.effectDistance = new Vector2(3f, -3f);
+            var vnRT = vnGO.GetComponent<RectTransform>();
+            vnRT.anchorMin = new Vector2(0.5f, 0f); vnRT.anchorMax = new Vector2(0.5f, 0f);
+            vnRT.pivot = new Vector2(0.5f, 0f);
+            vnRT.sizeDelta = new Vector2(560f, 110f);
+            vnRT.anchoredPosition = new Vector2(0f, 120f);
+
+            var vnBtn = vnGO.AddComponent<Button>();
+            vnBtn.targetGraphic = vnImg;
+            var vnCb = vnBtn.colors;
+            vnCb.highlightedColor = new Color(teriakWarna.r * 1.15f, teriakWarna.g * 1.15f, teriakWarna.b * 1.15f, teriakWarna.a);
+            vnCb.pressedColor     = new Color(teriakWarna.r * 0.8f, teriakWarna.g * 0.8f, teriakWarna.b * 0.8f, teriakWarna.a);
+            vnBtn.colors = vnCb;
+            vnBtn.onClick.AddListener(() =>
+            {
+                AudioManager.Instance?.Click();
+                Selesaikan(true);
+            });
+
+            var vnLbl = BuatTeks(vnGO.transform, "Label", vnTeriakLabel, teriakUkuran, Color.white, FontStyles.Bold);
+            vnLbl.alignment = TextAlignmentOptions.Center;
+            vnLbl.raycastTarget = false;
+            var vnLrt = vnLbl.rectTransform;
+            vnLrt.anchorMin = Vector2.zero; vnLrt.anchorMax = Vector2.one;
+            vnLrt.offsetMin = Vector2.zero; vnLrt.offsetMax = Vector2.zero;
+        }
+        else
+        {
         // Tombol Teriak
         var btnGO = new GameObject("TombolTeriak");
         btnGO.transform.SetParent(card.transform, false);
@@ -239,6 +551,8 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         fRT.pivot = new Vector2(0f, 0.5f);
         fRT.offsetMin = new Vector2(2f, 2f); fRT.offsetMax = new Vector2(2f, -2f);
         fRT.sizeDelta = new Vector2(0f, 0f);
+        } // tutup blok mekanik tahan-tombol (non-VN)
+
         // ── Tombol "Diam saja" (memilih TIDAK teriak → alur berbeda) ──────
         if (tampilkanTombolDiam)
         {
@@ -278,7 +592,22 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
     {
         if (_selesai) return;
 
-        if (_ditekan)
+        // Voice-Driven Action: kalau mic aktif, BERTERIAK (loudness > ambang)
+        // dianggap sama dengan menahan tombol. Tombol & keyboard (SPACE) tetap fallback.
+        bool keyboardTahan = Input.GetKey(KeyCode.Space);
+        bool teriak;
+        if (_micAktif)
+        {
+            float raw = BacaLoudnessMic();
+            _micLevel = Mathf.Lerp(_micLevel, raw, 1f - Mathf.Exp(-9f * Time.deltaTime));
+            teriak = _micLevel >= ambangTeriak || _ditekan || keyboardTahan;
+        }
+        else
+        {
+            teriak = _ditekan || keyboardTahan;
+        }
+
+        if (teriak)
         {
             _holdProgress += Time.deltaTime;
             if (_tombolImg != null) _tombolImg.color = teriakWarnaDitekan;
@@ -286,10 +615,10 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         }
         else
         {
-            // Reset hold kalau lepas
+            // Reset hold kalau lepas / suara mengecil
             if (_holdProgress > 0f) _holdProgress = Mathf.Max(0f, _holdProgress - Time.deltaTime * 2f);
             if (_tombolImg != null) _tombolImg.color = teriakWarna;
-            if (_tombolLabel != null) _tombolLabel.text = teriakLabel;
+            if (_tombolLabel != null) _tombolLabel.text = _micAktif ? teriakLabelMic : teriakLabel;
         }
 
         // Update bar
@@ -334,7 +663,7 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
             if (gs != null)
             {
                 // AddChoice sudah menambah skor (override = bonusBerhasil); jangan dobel.
-                gs.AddChoice(2, "Teriak minta tolong saat dikejar pria asing", "AMAN", bonusBerhasil);
+                gs.AddChoice(2, "Teriak panggil Pak Supir saat pria mendekat di angkot", "AMAN", bonusBerhasil);
                 if (!gs.achievements.Contains(achievementName))
                 {
                     gs.achievements.Add(achievementName);
@@ -350,7 +679,7 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         {
             if (gs != null)
             {
-                gs.AddChoice(2, "Tidak berani teriak saat dikejar pria asing", kategoriGagal, 0);
+                gs.AddChoice(2, "Tidak berani teriak saat pria mendekat di angkot", kategoriGagal, 0);
                 if (kurangiNyawaSaatGagal)
                 {
                     gs.LoseLife();

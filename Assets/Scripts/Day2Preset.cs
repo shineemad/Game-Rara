@@ -8,9 +8,9 @@ using UnityEngine.SceneManagement;
 /// PRESET SIAP PAKAI: cukup tambah satu GameObject kosong dengan komponen ini
 /// ke scene Gameplay, dan SEMUA setup berikut dilakukan otomatis di Awake:
 ///   1. Buat DayTransitionManager (kalau belum ada)
-///   2. Buat GameObject Day2_Root + 8 anak fase Day 2:
-///        Day2Controller, HalteDialog, AngkotSeatPicker, ZonaTubuhQuiz,
-///        ChatSimWhatsApp, LaporTeriakButton, EduCardDay2, Day2SummaryScreen
+///   2. Buat GameObject Day2_Root + anak-anak fase Day 2:
+///        Day2Controller, HalteDialog, AngkotSeatPicker, AngkotSentuhScene,
+///        ZonaTubuhQuiz, LaporTeriakButton, EduCardDay2, Day2SummaryScreen
 ///   3. Set Day2_Root SetActive(false) sehingga tidak ganggu Day 1
 ///   4. Auto-discover Day 1 GameObject (berdasarkan komponen-komponen Day 1)
 ///   5. Isi day1Objects[] dan day2Objects[] di DayTransitionManager
@@ -172,9 +172,10 @@ public class Day2Preset : MonoBehaviour
         EnsureChildWithComponent<Day2Controller>     (root, "Day2Controller",      log);
         EnsureChildWithComponent<HalteDialog>        (root, "HalteDialog",         log);
         EnsureChildWithComponent<AngkotSeatPicker>   (root, "AngkotSeatPicker",    log);
+        EnsureChildWithComponent<AngkotSentuhScene>  (root, "AngkotSentuhScene",   log);
         EnsureChildWithComponent<ZonaTubuhQuiz>      (root, "ZonaTubuhQuiz",       log);
-        EnsureChildWithComponent<ChatSimWhatsApp>    (root, "ChatSimWhatsApp",     log);
         EnsureChildWithComponent<LaporTeriakButton>  (root, "LaporTeriakButton",   log);
+        EnsureChildWithComponent<ChatSimWhatsApp>    (root, "ChatSimWhatsApp",     log);
         EnsureChildWithComponent<EduCardDay2>        (root, "EduCardDay2",         log);
         EnsureChildWithComponent<Day2SummaryScreen>  (root, "Day2SummaryScreen",   log);
     }

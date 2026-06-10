@@ -39,6 +39,19 @@ public class ZonaTubuhQuiz : MonoBehaviour
     public Color  instruksiWarna = new Color(1f, 1f, 0.92f, 0.85f);
     public int    instruksiUkuran = 18;
 
+    [Header("Mode Visual Novel")]
+    [Tooltip("Saat ON, quiz disajikan sebagai TANYA-JAWAB bercabang dalam box dialog VN\n" +
+             "(tiap perilaku ditanya 'BOLEH atau TIDAK BOLEH?' + 2 pilihan).\n\n" +
+             "DEFAULT OFF: mekanik DRAG-DROP arcade yang interaktif & ber-timer sengaja\n" +
+             "dipertahankan. Set true hanya kalau ingin versi novel murni tanpa drag-drop.")]
+    public bool modeVisualNovel = false;
+    [Tooltip("Template pertanyaan VN. {PERILAKU} diganti teks chip.")]
+    public string vnPertanyaanTemplate = "Menurutmu, \u201C{PERILAKU}\u201D itu BOLEH atau TIDAK BOLEH dilakukan orang lain ke tubuhmu?";
+    [Tooltip("Label tombol pilihan 'boleh' (jawaban AMAN).")]
+    public string vnLabelBoleh = "\u2713  BOLEH";
+    [Tooltip("Label tombol pilihan 'tidak boleh' (jawaban BAHAYA).")]
+    public string vnLabelTidakBoleh = "\u2716  TIDAK BOLEH";
+
     [Header("Timer")]
     public float waktuDetik = 15f;
     public Color warnaTimer = new Color(1f, 0.85f, 0.3f, 1f);
@@ -106,74 +119,51 @@ public class ZonaTubuhQuiz : MonoBehaviour
              "memilih narasiIntroAman / narasiIntroRagu / narasiIntroBahaya yang relevan.")]
     public BarisNarasiQuiz[] narasiIntro = new BarisNarasiQuiz[]
     {
+        // CATATAN: narasi ini MENYAMBUNG dari fase Sentuh (pria menyentuh bahu →
+        // Rara teriak TIDAK → PERGI/pindah kursi). JANGAN me-reset adegan dengan
+        // "Pintu angkot ditutup / mulai melaju" karena itu sudah terjadi di Halte/Sentuh.
         new BarisNarasiQuiz { pembicara = "Narasi",
-            teks = "Pintu angkot ditutup. Mesin menderu pelan, lalu mulai melaju membelah jalanan pagi." },
+            teks = "Angkot terus melaju. Setelah kejadian tadi, Rara sudah pindah ke kursi lebih depan dan mencoba menenangkan napasnya." },
+        new BarisNarasiQuiz { pembicara = "Rara",
+            teks = "\"Untung aku tadi berani bersuara dan menjauh\u2026 tapi jantungku masih berdebar. Aku perlu mengalihkan pikiran sebentar.\"" },
         new BarisNarasiQuiz { pembicara = "Narasi",
-            teks = "Untuk mengisi waktu, Rara mengeluarkan buku catatan PR Kesehatan dari tas. Bab terakhir: \u201CKenali Batas Tubuhmu\u201D." }
+            teks = "Rara mengeluarkan buku catatan PR Kesehatan dari tas. Kebetulan bab terakhirnya justru soal ini: \u201CKenali Batas Tubuhmu \u2014 Mana yang Boleh, Mana yang Tidak.\u201D" },
+        new BarisNarasiQuiz { pembicara = "Rara",
+            teks = "\"Justru sekarang aku makin paham kenapa bab ini penting. Ayo aku pelajari baik-baik \u2014 siapa yang BOLEH dan TIDAK BOLEH menyentuhku.\"" }
     };
 
-    [Header("Narasi Intro — Varian per Kursi (otomatis dipilih dari GameState.seatCategory)")]
-    [Tooltip("Narasi kalau pemain memilih kursi AMAN (Dekat Pintu / dekat supir).\n" +
-             "Tone: tenang, lega, percaya diri. Kosong = pakai 'narasiIntro' default.")]
-    public BarisNarasiQuiz[] narasiIntroAman = new BarisNarasiQuiz[]
-    {
-        new BarisNarasiQuiz { pembicara = "Narasi",
-            teks = "Pintu angkot ditutup. Rara duduk di kursi paling depan, tepat di samping pak supir \u2014 posisi paling aman, mudah dilihat semua orang." },
-        new BarisNarasiQuiz { pembicara = "Rara",
-            teks = "\"Alhamdulillah\u2026 \uD83D\uDE0C dari sini aku bisa lihat semua penumpang yang naik. Pria asing tadi juga nggak ikut. Aku tenang sekarang.\"" },
-        new BarisNarasiQuiz { pembicara = "Narasi",
-            teks = "Karena perjalanan masih jauh, Rara mengeluarkan buku catatan PR Kesehatan. Bab terakhir: \u201CKenali Batas Tubuhmu \u2014 Mana yang Boleh, Mana yang Tidak\u201D." },
-        new BarisNarasiQuiz { pembicara = "Rara",
-            teks = "\"Besok ulangan bab ini. Mumpung tenang, mending latihan dulu sekarang.\"" }
-    };
+    [Header("Narasi Intro — Varian per Kursi (DINONAKTIFKAN setelah alur Sentuh)")]
+    [Tooltip("DIKOSONGKAN secara default. Sejak insiden 'Sentuh' (pria menyentuh bahu)\n" +
+             "terjadi DI ANGKOT untuk SEMUA pilihan kursi, varian per-kursi yang\n" +
+             "menggambarkan 'pria tidak ikut / hanya melirik' jadi BERTENTANGAN dengan\n" +
+             "kejadian itu. Maka semua varian dikosongkan \u2192 fallback ke 'narasiIntro'\n" +
+             "yang menyambung dari aftermath Sentuh. Isi lagi hanya kalau kamu mengubah\n" +
+             "alur supaya insiden Sentuh tergantung pilihan kursi.")]
+    public BarisNarasiQuiz[] narasiIntroAman = new BarisNarasiQuiz[0];
 
-    [Tooltip("Narasi kalau pemain memilih kursi RAGU (Tengah, terjepit ibu-ibu).\n" +
-             "Tone: sedikit canggung tapi tetap ada saksi. Kosong = pakai 'narasiIntro' default.")]
-    public BarisNarasiQuiz[] narasiIntroRagu = new BarisNarasiQuiz[]
-    {
-        new BarisNarasiQuiz { pembicara = "Narasi",
-            teks = "Rara duduk di bangku tengah, terjepit di antara dua ibu-ibu yang sibuk menjaga keranjang belanjaan. Sesekali siku mereka menyenggol tas Rara." },
-        new BarisNarasiQuiz { pembicara = "Rara",
-            teks = "\"Hmm\u2026 \uD83D\uDE10 posisi ini agak susah kalau aku mau turun cepat. Tapi setidaknya banyak orang dewasa di sekitarku \u2014 nggak akan ada yang berani macam-macam.\"" },
-        new BarisNarasiQuiz { pembicara = "Narasi",
-            teks = "Untuk mengisi waktu sambil duduk diam, Rara mengeluarkan buku catatan PR Kesehatan dari tas. Bab terakhir: \u201CKenali Batas Tubuhmu\u201D." },
-        new BarisNarasiQuiz { pembicara = "Rara",
-            teks = "\"Besok ulangan bab ini. Mending dipelajari sekarang \u2014 biar nggak gugup besok.\"" }
-    };
+    [Tooltip("DIKOSONGKAN \u2014 lihat catatan narasiIntroAman. Fallback ke 'narasiIntro'.")]
+    public BarisNarasiQuiz[] narasiIntroRagu = new BarisNarasiQuiz[0];
 
-    [Tooltip("Narasi kalau pemain memilih kursi BAHAYA (Pojok Belakang, sepi).\n" +
-             "Tone: tegang, takut, peringatan. Kosong = pakai 'narasiIntro' default.")]
-    public BarisNarasiQuiz[] narasiIntroBahaya = new BarisNarasiQuiz[]
-    {
-        new BarisNarasiQuiz { pembicara = "Narasi",
-            teks = "Rara duduk di pojok belakang. Lampu di area ini redup. Seorang pria asing duduk hanya sebangku darinya \u2014 dan terus melirik ke arahnya tanpa bicara." },
-        new BarisNarasiQuiz { pembicara = "Rara",
-            teks = "\"(Ya Allah\u2026 \uD83D\uDE28 kenapa aku pilih di sini. Jantungku dag-dig-dug. Aku nggak berani noleh ke samping.)\"" },
-        new BarisNarasiQuiz { pembicara = "Narasi",
-            teks = "Untuk mengalihkan rasa takutnya, Rara cepat-cepat mengeluarkan buku catatan PR Kesehatan dari tas." },
-        new BarisNarasiQuiz { pembicara = "Rara",
-            teks = "\"Bab \u2018Kenali Batas Tubuhmu\u2019\u2026 mungkin ini saatnya aku benar-benar paham \u2014 siapa yang BOLEH dan TIDAK BOLEH menyentuhku.\"" }
-    };
+    [Tooltip("DIKOSONGKAN \u2014 lihat catatan narasiIntroAman. Fallback ke 'narasiIntro'.")]
+    public BarisNarasiQuiz[] narasiIntroBahaya = new BarisNarasiQuiz[0];
 
-    [Header("Narasi Outro (setelah quiz, sebelum ChatSim WhatsApp) — jembatan ke fase ChatSim")]
+    [Header("Narasi Outro (setelah quiz, sebelum fase Lapor) — jembatan ke fase Lapor")]
     [Tooltip("Baris narasi muncul SETELAH pemain klik tombol Lanjut di layar hasil quiz,\n" +
-             "SEBELUM callback _onSelesai (yang memicu ChatSim WhatsApp).\n" +
-             "Konteks: Rara turun di sekolah, masuk jam istirahat, lalu HP-nya bergetar \u2014\n" +
-             "pesan dari nomor tak dikenal. Ini memberi context kenapa tiba-tiba muncul\n" +
-             "WhatsApp dari 'Pria Asing Halte'.\n" +
-             "Kosongkan = langsung ke ChatSim tanpa narasi outro.")]
+             "SEBELUM callback _onSelesai (yang memicu fase Lapor).\n" +
+             "Konteks: Rara MASIH di dalam angkot. Pria asing yang sama (yang tadi\n" +
+             "menyentuh bahunya) belum menyerah dan kembali merapat \u2014 memberi alasan\n" +
+             "kenapa Rara harus berani CERITA / minta tolong Pak Supir di fase Lapor.\n" +
+             "Kosongkan = langsung ke fase Lapor tanpa narasi outro.")]
     public BarisNarasiQuiz[] narasiOutro = new BarisNarasiQuiz[]
     {
         new BarisNarasiQuiz { pembicara = "Narasi",
-            teks = "Angkot berhenti tepat di depan gerbang sekolah. Rara turun, mengangguk sopan ke sopir, lalu berjalan cepat menuju kelas. \u2014 Akhirnya sampai dengan selamat." },
+            teks = "Angkot masih melaju menuju sekolah. Rara menutup buku catatannya \u2014 tapi dari sudut matanya, pria tadi belum menyerah." },
         new BarisNarasiQuiz { pembicara = "Rara",
-            teks = "\"Fyuh\u2026 \uD83D\uDE0C selamat. Pelajaran pertama hampir mulai \u2014 mending fokus dulu, mikir pria tadi nanti aja.\"" },
+            teks = "\"Dia\u2026 masih terus melirik ke arahku. Aku harus tetap waspada sampai turun nanti.\"" },
         new BarisNarasiQuiz { pembicara = "Narasi",
-            teks = "Beberapa jam berlalu. Bel istirahat berbunyi. Rara duduk di kantin dengan sekotak susu \u2014 lalu HP di sakunya bergetar pelan: \uD83D\uDCF2 \u2026 \u2026" },
+            teks = "Tiba-tiba pria itu kembali menggeser duduknya, makin merapat ke arah Rara!" },
         new BarisNarasiQuiz { pembicara = "Rara",
-            teks = "\"Hah? Pesan WhatsApp\u2026 dari nomor yang nggak aku simpan. \uD83D\uDE2C\nFoto profilnya kosong. Kok\u2026 dia bisa tau nomorku?\"" },
-        new BarisNarasiQuiz { pembicara = "Narasi",
-            teks = "Dengan tangan sedikit gemetar, Rara membuka pesan itu\u2026" }
+            teks = "\"Cukup! Kalau aku merasa tidak aman, aku harus CERITA \u2014 minta tolong orang dewasa. Pak Supir ada di depan!\"" }
     };
 
     [Tooltip("Detik per karakter saat narasi diketik. 0 = langsung penuh (skip animasi).")]
@@ -198,6 +188,9 @@ public class ZonaTubuhQuiz : MonoBehaviour
     [Tooltip("Sprite latar fullscreen khusus layar narasi intro/outro.\n" +
              "Kosong = pakai 'bgFullscreenSprite' yang sama dengan layar quiz.")]
     public Sprite narasiBgFullscreenSprite;
+    [Tooltip("Warna latar solid saat semua sprite latar kosong.\n" +
+             "Default = warna interior angkot (sama dengan AngkotSentuhScene) supaya konsisten.")]
+    public Color  narasiBgWarna     = new Color(0.16f, 0.12f, 0.09f, 1f);
     public Color  narasiPanelWarna  = new Color(0f, 0f, 0f, 0f);
     public Color  narasiBorderWarna = new Color(1f, 0.85f, 0.30f, 1f);
     public Color  narasiBannerWarna = new Color(0.14f, 0.09f, 0.01f, 0f);
@@ -242,7 +235,8 @@ public class ZonaTubuhQuiz : MonoBehaviour
     [Tooltip("Body tutorial modal — instruksi singkat. Pakai \\n untuk newline.")]
     [TextArea(3, 8)]
     public string  tutorialBody  =
-        "Geser / drag nama bagian tubuh ke zona yang sesuai!\n\n" +
+        "Geser / drag nama bagian tubuh ke zona yang sesuai!\n" +
+        "(Atau KLIK chip-nya dulu, lalu KLIK zonanya.)\n\n" +
         "\u2705 ZONA AMAN = boleh disentuh teman & keluarga\n" +
         "\u274C ZONA BAHAYA = area privat, NGGAK BOLEH!\n\n" +
         "\u23F0 Waktu: 15 detik — cepat!";
@@ -281,6 +275,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
     private List<GameObject> _chipPool = new List<GameObject>();
     private Sprite     _roundedSprite;
     private Canvas     _canvasComp;
+    private DraggableChip _chipTerpilih; // chip yang dipilih lewat KLIK (fallback tanpa drag)
 
     // State narasi intro (typewriter)
     private GameObject      _narasiCanvasGO;
@@ -374,8 +369,178 @@ public class ZonaTubuhQuiz : MonoBehaviour
 
     void MulaiQuizLangsung()
     {
+        if (modeVisualNovel)
+        {
+            StartCoroutine(JalankanQuizVN());
+            return;
+        }
         BuildScene();
         StartCoroutine(TimerCoroutine());
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // MODE VISUAL NOVEL — quiz sebagai tanya-jawab bercabang dalam box dialog.
+    // Tiap perilaku ditanyakan "BOLEH / TIDAK BOLEH?" lewat 2 tombol pilihan.
+    // Skor & achievement identik dengan mode drag-drop (SCORE_QUIZ/2 per benar,
+    // bonus + achievement kalau semua benar), lalu menyambung ke narasi outro.
+    // ══════════════════════════════════════════════════════════════════════
+    IEnumerator JalankanQuizVN()
+    {
+        _quizSelesai = false;
+        _chipBenar = 0;
+
+        // Pastikan EventSystem ada supaya tombol pilihan VN bisa diklik.
+        if (FindFirstObjectByType<EventSystem>() == null)
+        {
+            var es = new GameObject("EventSystem");
+            es.AddComponent<EventSystem>();
+            es.AddComponent<StandaloneInputModule>();
+        }
+
+        BuildNarasiCanvas();
+
+        var gs = GameState.Instance;
+
+        for (int i = 0; i < chips.Length; i++)
+        {
+            var chip = chips[i];
+            if (chip == null) continue;
+
+            // Tampilkan pertanyaan (typewriter) sebagai Rara.
+            if (_narasiNamaTMP != null) _narasiNamaTMP.text = "RARA";
+            UpdateNarasiPortrait("Rara");
+            string tanya = (vnPertanyaanTemplate ?? "{PERILAKU}").Replace("{PERILAKU}", chip.teks ?? "");
+            yield return KetikTeksNarasi(tanya);
+
+            // Sembunyikan hint "klik untuk lanjut" — pemain harus memilih tombol.
+            if (_narasiHintTMP != null) _narasiHintTMP.gameObject.SetActive(false);
+
+            // Bangun 2 tombol pilihan, tunggu pemain memilih.
+            int dipilih = -1;
+            var tombolGO = BuildPilihanVN(new[] { vnLabelBoleh, vnLabelTidakBoleh }, idx => dipilih = idx);
+            while (dipilih < 0) yield return null;
+            if (tombolGO != null) Destroy(tombolGO);
+
+            string jawabanPemain = dipilih == 0 ? "AMAN" : "BAHAYA";
+            bool benar = jawabanPemain == chip.jawabanBenar;
+            if (benar) _chipBenar++;
+
+            // SFX
+            var am = AudioManager.Instance;
+            if (am != null && am.sfxSource != null)
+            {
+                if (benar && am.sfxCorrect != null) am.sfxSource.PlayOneShot(am.sfxCorrect);
+                else if (!benar && am.sfxWrong != null) am.sfxSource.PlayOneShot(am.sfxWrong);
+            }
+
+            // Skor (identik drag-drop: SCORE_QUIZ/2 per jawaban benar).
+            if (gs != null)
+            {
+                int pts = benar ? (GameState.SCORE_QUIZ / 2) : 0;
+                gs.score += pts;
+                gs.AddChoice(2, $"Quiz: {chip.teks} \u2192 {jawabanPemain}", benar ? "AMAN" : "BAHAYA", pts);
+            }
+
+            // Umpan balik (typewriter) lalu tunggu tap.
+            string benarTxt = chip.jawabanBenar == "AMAN" ? "BOLEH" : "TIDAK BOLEH";
+            string fb = benar
+                ? "\u2713 Tepat! Ini memang " + benarTxt + "."
+                : "\u2716 Kurang tepat. Yang benar: " + benarTxt + ".";
+            if (_narasiNamaTMP != null) _narasiNamaTMP.text = "NARASI";
+            UpdateNarasiPortrait("Narasi");
+            yield return KetikTeksNarasi(fb);
+            yield return TungguTapNarasi();
+        }
+
+        // Ringkasan singkat.
+        bool semuaBenar = _chipBenar == chips.Length;
+        if (_narasiNamaTMP != null) _narasiNamaTMP.text = "NARASI";
+        UpdateNarasiPortrait("Narasi");
+        yield return KetikTeksNarasi($"Kamu menjawab benar {_chipBenar}/{chips.Length}. Ingat: tubuhmu milikmu \u2014 kamu berhak bilang TIDAK.");
+        yield return TungguTapNarasi();
+
+        // Hancurkan canvas narasi quiz.
+        if (_narasiCanvasGO != null) Destroy(_narasiCanvasGO);
+        _narasiCanvasGO = null;
+
+        // Scoring akhir (bonus + achievement) — identik SelesaikanQuiz.
+        _quizSelesai = true;
+        if (semuaBenar && gs != null)
+        {
+            gs.score += bonusAllBenar;
+            if (!gs.achievements.Contains(namaAchievement))
+            {
+                gs.achievements.Add(namaAchievement);
+                AchievementPopup.Show(namaAchievement);
+            }
+            Debug.Log($"[ZonaTubuhQuiz] (VN) PERFECT! Bonus +{bonusAllBenar} + achievement.");
+        }
+
+        // Lanjut ke narasi outro (jembatan ke Lapor) atau langsung selesai.
+        if (narasiOutro != null && narasiOutro.Length > 0)
+            yield return JalankanNarasiOutroLaluSelesai();
+        else
+            _onSelesai?.Invoke();
+    }
+
+    // Bangun 2+ tombol pilihan di atas box dialog narasi VN. onPick(index) saat diklik.
+    GameObject BuildPilihanVN(string[] labels, Action<int> onPick)
+    {
+        var wrap = new GameObject("PilihanVN");
+        wrap.transform.SetParent(_narasiCanvasGO.transform, false);
+        var wrt = wrap.AddComponent<RectTransform>();
+        wrt.anchorMin = new Vector2(0.5f, 0.42f);
+        wrt.anchorMax = new Vector2(0.5f, 0.42f);
+        wrt.pivot     = new Vector2(0.5f, 0.5f);
+        wrt.anchoredPosition = Vector2.zero;
+        wrt.sizeDelta = new Vector2(760f, 180f);
+
+        var vlg = wrap.AddComponent<VerticalLayoutGroup>();
+        vlg.spacing = 18f;
+        vlg.childAlignment = TextAnchor.MiddleCenter;
+        vlg.childControlWidth = true; vlg.childControlHeight = true;
+        vlg.childForceExpandWidth = true; vlg.childForceExpandHeight = false;
+
+        Color[] warna = { new Color(0.18f, 0.62f, 0.32f, 0.96f), new Color(0.85f, 0.27f, 0.24f, 0.96f) };
+
+        for (int i = 0; i < labels.Length; i++)
+        {
+            int idx = i;
+            var btnGO = new GameObject("Pilihan_" + i);
+            btnGO.transform.SetParent(wrap.transform, false);
+            var img = btnGO.AddComponent<Image>();
+            img.sprite = GetRoundedSprite();
+            img.color  = warna[i % warna.Length];
+            img.type   = Image.Type.Sliced;
+            var le = btnGO.AddComponent<LayoutElement>();
+            le.preferredHeight = 72f; le.preferredWidth = 700f;
+            var outl = btnGO.AddComponent<Outline>();
+            outl.effectColor    = new Color(1f, 1f, 1f, 0.35f);
+            outl.effectDistance = new Vector2(2f, -2f);
+
+            var btn = btnGO.AddComponent<Button>();
+            btn.targetGraphic = img;
+            var baseC = warna[i % warna.Length];
+            var cb = btn.colors;
+            cb.normalColor      = baseC;
+            cb.highlightedColor = new Color(Mathf.Min(1f, baseC.r * 1.15f), Mathf.Min(1f, baseC.g * 1.15f), Mathf.Min(1f, baseC.b * 1.15f), baseC.a);
+            cb.pressedColor     = new Color(baseC.r * 0.8f, baseC.g * 0.8f, baseC.b * 0.8f, baseC.a);
+            btn.colors = cb;
+            btn.onClick.AddListener(() =>
+            {
+                AudioManager.Instance?.Click();
+                onPick?.Invoke(idx);
+            });
+
+            var lbl = BuatTeks(btnGO.transform, "Label", labels[i], 24, Color.white, FontStyles.Bold);
+            lbl.alignment = TextAlignmentOptions.Center;
+            lbl.raycastTarget = false;
+            var lrt = lbl.rectTransform;
+            lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one;
+            lrt.offsetMin = Vector2.zero; lrt.offsetMax = Vector2.zero;
+        }
+
+        return wrap;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -403,10 +568,10 @@ public class ZonaTubuhQuiz : MonoBehaviour
     }
 
     // ══════════════════════════════════════════════════════════════════════
-    // NARASI OUTRO — jembatan setelah quiz, sebelum ChatSim WhatsApp
-    // Pemain klik "Lanjut" di layar hasil → narasi outro muncul (Rara sampai
-    // sekolah, HP bergetar) → setelah selesai, _onSelesai() dipanggil
-    // (memicu fase berikutnya di Day2Controller, biasanya ChatSim).
+    // NARASI OUTRO — jembatan setelah quiz, sebelum fase Lapor
+    // Pemain klik "Lanjut" di layar hasil → narasi outro muncul (Rara MASIH di
+    // angkot, pria yang sama merapat lagi) → setelah selesai, _onSelesai()
+    // dipanggil (memicu fase berikutnya di Day2Controller, yaitu Lapor).
     // ══════════════════════════════════════════════════════════════════════
     IEnumerator JalankanNarasiOutroLaluSelesai()
     {
@@ -507,7 +672,9 @@ public class ZonaTubuhQuiz : MonoBehaviour
         }
         else
         {
-            bgImg.color = new Color(0f, 0f, 0f, 0.55f);
+            // Fallback: warna interior angkot SOLID (sama dengan AngkotSentuhScene),
+            // bukan dim transparan — supaya latar biru kosong scene tidak menembus.
+            bgImg.color = narasiBgWarna;
         }
         bgImg.raycastTarget = false;
 
@@ -822,6 +989,10 @@ public class ZonaTubuhQuiz : MonoBehaviour
         _zonaAmanRT   = BuatZona("ZONA_AMAN",   "\u2713  ZONA AMAN",   warnaZonaAman,   warnaBorderAman,   new Vector2(-450f, -80f));
         _zonaBahayaRT = BuatZona("ZONA_BAHAYA", "\u2716  ZONA BAHAYA", warnaZonaBahaya, warnaBorderBahaya, new Vector2( 450f, -80f));
 
+        // Fallback KLIK: klik zona untuk menempatkan chip yang sedang dipilih.
+        TambahKlikZona(_zonaAmanRT,   "AMAN");
+        TambahKlikZona(_zonaBahayaRT, "BAHAYA");
+
         // Container chip di bawah
         var chipArea = new GameObject("ChipArea");
         chipArea.transform.SetParent(_canvasGO.transform, false);
@@ -871,6 +1042,15 @@ public class ZonaTubuhQuiz : MonoBehaviour
         lrt.offsetMax = new Vector2(-20f, -15f);
 
         return rt;
+    }
+
+    // Pasang Button pada zona supaya bisa diklik untuk menempatkan chip terpilih.
+    void TambahKlikZona(RectTransform zona, string jawabanPemain)
+    {
+        if (zona == null) return;
+        var btn = zona.gameObject.AddComponent<Button>();
+        btn.transition = Selectable.Transition.None;
+        btn.onClick.AddListener(() => TempatkanKeZona(jawabanPemain));
     }
 
     GameObject BuatChip(ChipData data, Transform parent)
@@ -930,6 +1110,37 @@ public class ZonaTubuhQuiz : MonoBehaviour
         if (!diZonaAman && !diZonaBahaya) return false;
 
         string jawabanPemain = diZonaAman ? "AMAN" : "BAHAYA";
+        ProsesJawaban(data, jawabanPemain);
+        return true;
+    }
+
+    // ── FALLBACK KLIK (tap chip → tap zona) ────────────────────────────────
+    // Dipanggil DraggableChip saat chip di-KLIK (bukan di-drag). Menandai chip
+    // sebagai "terpilih". Klik lagi = batal pilih.
+    public void PilihChip(DraggableChip chip)
+    {
+        if (_quizSelesai || chip == null) return;
+        if (_chipTerpilih == chip) { chip.SetTerpilih(false); _chipTerpilih = null; return; }
+        if (_chipTerpilih != null) _chipTerpilih.SetTerpilih(false);
+        _chipTerpilih = chip;
+        chip.SetTerpilih(true);
+        AudioManager.Instance?.Click();
+    }
+
+    // Dipanggil saat ZONA diklik. Menempatkan chip terpilih ke zona tsb.
+    public void TempatkanKeZona(string jawabanPemain)
+    {
+        if (_quizSelesai || _chipTerpilih == null) return;
+        var chip = _chipTerpilih;
+        _chipTerpilih = null;
+        chip.SetTerpilih(false);
+        ProsesJawaban(chip.data, jawabanPemain);
+        chip.Tempatkan(true);
+    }
+
+    // Logika skor & feedback bersama untuk drag-drop maupun klik.
+    void ProsesJawaban(ChipData data, string jawabanPemain)
+    {
         bool benar = jawabanPemain == data.jawabanBenar;
 
         _chipDitempatkan++;
@@ -954,7 +1165,6 @@ public class ZonaTubuhQuiz : MonoBehaviour
         }
 
         if (_chipDitempatkan >= chips.Length) SelesaikanQuiz();
-        return true;
     }
 
     void SelesaikanQuiz()
@@ -1004,9 +1214,9 @@ public class ZonaTubuhQuiz : MonoBehaviour
             AudioManager.Instance?.Click();
             if (narasiOutro != null && narasiOutro.Length > 0)
             {
-                // Jangan langsung selesai — tampilkan narasi jembatan ke ChatSim
-                // ("Rara sampai sekolah, HP bergetar..."). Tombol di-disable dulu
-                // supaya tidak bisa di-spam-klik.
+                // Jangan langsung selesai — tampilkan narasi jembatan ke Lapor
+                // ("Rara masih di angkot, pria merapat lagi..."). Tombol di-disable
+                // dulu supaya tidak bisa di-spam-klik.
                 btn.interactable = false;
                 StartCoroutine(JalankanNarasiOutroLaluSelesai());
             }
@@ -1067,7 +1277,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
 // ──────────────────────────────────────────────────────────────────────────
 // Helper drag component (di file yang sama supaya nggak nambah file kecil).
 // ──────────────────────────────────────────────────────────────────────────
-public class DraggableChip : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler
+public class DraggableChip : MonoBehaviour, IBeginDragHandler, IDragHandler, IEndDragHandler, IPointerClickHandler
 {
     public Canvas canvas;
     public ZonaTubuhQuiz quiz;
@@ -1076,17 +1286,23 @@ public class DraggableChip : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
     private RectTransform _rt;
     private CanvasGroup _cg;
+    private Outline _outline;
     private Vector2 _posAwal;
     private Transform _parentAwal;
+    private bool _ditempatkan;
+    private bool _sedangDrag;
 
     void Awake()
     {
         _rt = GetComponent<RectTransform>();
         _cg = gameObject.AddComponent<CanvasGroup>();
+        _outline = GetComponent<Outline>();
     }
 
     public void OnBeginDrag(PointerEventData eventData)
     {
+        if (_ditempatkan) return;
+        _sedangDrag = true;
         _posAwal = _rt.anchoredPosition;
         _parentAwal = transform.parent;
         transform.SetParent(canvas.transform, true);
@@ -1096,6 +1312,7 @@ public class DraggableChip : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
     public void OnDrag(PointerEventData eventData)
     {
+        if (_ditempatkan) return;
         Vector2 local;
         RectTransformUtility.ScreenPointToLocalPointInRectangle(
             (RectTransform)canvas.transform, eventData.position, canvas.worldCamera, out local);
@@ -1104,13 +1321,12 @@ public class DraggableChip : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
 
     public void OnEndDrag(PointerEventData eventData)
     {
+        _sedangDrag = false;
         _cg.blocksRaycasts = true;
         bool accepted = quiz.CekDrop(data, eventData.position);
         if (accepted)
         {
-            // Disable & fade
-            _cg.interactable = false;
-            chipImage.color = new Color(chipImage.color.r, chipImage.color.g, chipImage.color.b, 0.4f);
+            Tempatkan(true);
         }
         else
         {
@@ -1119,4 +1335,32 @@ public class DraggableChip : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
             _rt.anchoredPosition = _posAwal;
         }
     }
+
+    // KLIK (tanpa drag) = pilih/batal-pilih chip ini.
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if (_ditempatkan || _sedangDrag || eventData.dragging) return;
+        quiz?.PilihChip(this);
+    }
+
+    // Tandai chip sebagai terpilih (highlight outline kuning).
+    public void SetTerpilih(bool on)
+    {
+        if (_outline == null) return;
+        _outline.effectColor    = on ? new Color(1f, 0.88f, 0.2f, 1f) : new Color(1f, 1f, 1f, 0.35f);
+        _outline.effectDistance = on ? new Vector2(3f, -3f) : new Vector2(1f, -1f);
+    }
+
+    // Tempatkan chip secara final (dipakai oleh drag ATAU klik): disable + fade.
+    public void Tempatkan(bool accepted)
+    {
+        if (!accepted) return;
+        _ditempatkan = true;
+        SetTerpilih(false);
+        _cg.interactable   = false;
+        _cg.blocksRaycasts = false;
+        if (chipImage != null)
+            chipImage.color = new Color(chipImage.color.r, chipImage.color.g, chipImage.color.b, 0.4f);
+    }
 }
+

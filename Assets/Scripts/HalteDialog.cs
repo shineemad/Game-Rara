@@ -54,6 +54,12 @@ public class HalteDialog : MonoBehaviour
                  "Kalau diisi → background halte langsung ganti ke sprite ini saat baris tampil.\n" +
                  "Kalau kosong → tetap pakai sprite fase sebelumnya.")]
         public Sprite latarSprite;
+        [Tooltip("Tampilkan badge '⚠ TANDA BAHAYA' saat baris ini muncul — untuk\n" +
+                 "mengajari anak MENGENALI perilaku grooming (red flag).")]
+        public bool tandaBahaya = false;
+        [Tooltip("Teks penjelas badge (mis. 'Memberi iming-iming gratis', 'Minta nomor HP',\n" +
+                 "'Mengajak menyimpan rahasia'). Kosong = pakai teks default badge.")]
+        public string tandaBahayaTeks = "";
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -191,33 +197,36 @@ public class HalteDialog : MonoBehaviour
              "Kalau kosong → tetap pakai sprite Fase 1 dari section di atas.")]
     public List<BarisDialog> dialogIntro = new List<BarisDialog>
     {
-        new BarisDialog { teks = "Akhirnya sampai halte. Tapi... belum ada angkot satu pun yang lewat." },
-        new BarisDialog { teks = "Rara duduk menunggu. Suasana sepi, hanya terdengar suara daun tertiup angin." },
-        new BarisDialog { teks = "Tak lama, ada motor berhenti di seberang. Seorang pria asing turun dan menatap Rara dari kejauhan..." },
-        new BarisDialog { teks = "Pelan-pelan, pria itu berjalan mendekati halte." }
+        new BarisDialog { teks = "Pagi itu Rara sampai di halte yang cukup ramai. Beberapa orang ikut menunggu angkot jurusan sekolah." },
+        new BarisDialog { teks = "Rara berdiri di pinggir sambil sesekali melihat jam. Angkotnya belum datang juga." },
+        new BarisDialog { teks = "Dari tadi, ada seorang pria asing bertopi yang terus memperhatikan Rara dari kejauhan..." },
+        new BarisDialog { teks = "Pelan-pelan, pria itu mendekat dan berdiri tepat di sebelah Rara." }
     };
 
     [Tooltip("Baris dialog Pria Asing FASE 2. Setiap baris boleh punya sprite latar sendiri (opsional).\n" +
              "Kosongkan Latar Sprite → tetap pakai sprite Fase 2 dari section di atas.")]
     public List<BarisDialog> dialogAwal = new List<BarisDialog>
     {
-        new BarisDialog { teks = "Hai dek, kenalan dong! Om dari tadi lihat kamu sendirian di sini." },
-        new BarisDialog { teks = "Mau berangkat sekolah ya? Om kebetulan searah lho. Bareng om aja, biar lebih cepat sampai." },
-        new BarisDialog { teks = "Eh, nomor HP kamu berapa? Nanti om kabarin kalau om mau jemput pulang sekolah ya." }
+        new BarisDialog { teks = "Hai, cantik! Sendirian aja nih? Om dari tadi merhatiin kamu lho.",
+                          tandaBahaya = true, tandaBahayaTeks = "Orang asing tiba-tiba sok akrab & memperhatikanmu" },
+        new BarisDialog { teks = "Mau ke sekolah ya? Om kebetulan searah. Daripada nunggu angkot lama, bareng om aja yuk — gratis kok.",
+                          tandaBahaya = true, tandaBahayaTeks = "Memberi iming-iming / tumpangan gratis" },
+        new BarisDialog { teks = "Eh, WA kamu berapa? Nanti om anter pulang sekolah ya. Rahasia aja, nggak usah bilang siapa-siapa.",
+                          tandaBahaya = true, tandaBahayaTeks = "Minta data pribadi & mengajak menyimpan rahasia" }
     };
 
     [Header("Pilihan Pemain")]
-    public string pilihanAman   = "Maaf Om, saya nggak kenal. Saya tunggu angkot saja.";
-    public string pilihanRagu   = "Hmm... saya pikir-pikir dulu Om...";
-    public string pilihanBahaya = "Boleh Om, sekalian aja deh.";
+    public string pilihanAman   = "“Maaf Om, saya nggak kenal Om. TOLONG jangan ganggu saya!” (tolak tegas + suara keras)";
+    public string pilihanRagu   = "“Hmm... saya pikir-pikir dulu ya Om...”";
+    public string pilihanBahaya = "“Boleh deh Om, ini WA saya...”";
 
     [Header("Reaksi Setelah Pilih")]
     [Tooltip("Reaksi saat pemain pilih AMAN. Latar Sprite di sini akan jadi halte background saat teks reaksi tampil.")]
-    public BarisDialog reaksiAman = new BarisDialog { teks = "\u2713 BAGUS, RA! Kamu menjauh & teriak minta tolong.\nIbu-ibu di seberang langsung nyamperin. Pria itu kabur ke arah motornya." };
+    public BarisDialog reaksiAman = new BarisDialog { teks = "\u2713 BAGUS, RA! Kamu menolak tegas & bersuara keras minta tolong.\nOrang-orang di halte langsung menoleh dan ibu-ibu menghampirimu. Pria itu salah tingkah lalu pergi.\nIngat: nomor HP/WA itu DATA PRIBADI — jangan diberi ke orang asing!" };
     [Tooltip("Reaksi saat pemain pilih RAGU. Latar Sprite di sini akan jadi halte background saat teks reaksi tampil.")]
-    public BarisDialog reaksiRagu = new BarisDialog { teks = "\u26A0 Pria itu makin ngotot & narik tanganmu.\nUntung angkot datang, kamu cepat naik. Lain kali, langsung TEGAS tolak ya!" };
+    public BarisDialog reaksiRagu = new BarisDialog { teks = "\u26A0 Kamu ragu-ragu menjawab. Pria itu makin maju dan terus memaksa minta nomormu.\nUntung angkot keburu datang dan kamu cepat naik. Lain kali, langsung TEGAS tolak ya!" };
     [Tooltip("Reaksi saat pemain pilih BAHAYA. Latar Sprite di sini akan jadi halte background saat teks reaksi tampil.")]
-    public BarisDialog reaksiBahaya = new BarisDialog { teks = "\u2716 GAWAT! Kamu hampir ikut pria itu.\nUntung Bu Ibu warung teriak & menarikmu balik. Kamu kehilangan 1 nyawa.\nIngat: orang asing baik dengan iming-iming = BAHAYA!" };
+    public BarisDialog reaksiBahaya = new BarisDialog { teks = "\u2716 GAWAT! Kamu memberi nomor WA-mu ke orang asing.\nMalamnya HP-mu dibanjiri chat aneh dari pria itu. Kamu kehilangan 1 nyawa.\nIngat: kasih sayang & hadiah dari orang asing = RED FLAG grooming!" };
 
     // Deprecated: field reaksi latar terpisah sudah di-merge ke BarisDialog di atas.
     [HideInInspector] public Sprite latarReaksiAman;
@@ -242,6 +251,14 @@ public class HalteDialog : MonoBehaviour
     [Header("Font")]
     public TMP_FontAsset fontAsset;
 
+    [Header("Badge Tanda Bahaya (Edukasi Red Flag)")]
+    [Tooltip("Judul tetap pada badge peringatan.")]
+    public string badgeJudul = "⚠  TANDA BAHAYA";
+    [Tooltip("Warna latar badge.")]
+    public Color badgeWarna = new Color(0.85f, 0.18f, 0.14f, 0.95f);
+    [Tooltip("Warna teks badge.")]
+    public Color badgeTeksWarna = Color.white;
+
     [Header("Sorting")]
     public int sortingOrder = 920;
 
@@ -255,6 +272,10 @@ public class HalteDialog : MonoBehaviour
     private Image            _portraitImg;
     private GameObject _pilihanRowGO;
     private Sprite     _roundedSprite;
+
+    // Badge "Tanda Bahaya" (edukasi red flag)
+    private GameObject      _badgeGO;
+    private TextMeshProUGUI _badgeText;
 
     // State typewriter (animasi mengetik per baris).
     private bool   _ketikSelesai;
@@ -582,6 +603,55 @@ public class HalteDialog : MonoBehaviour
         hLay.spacing = 20f;
         hLay.childForceExpandWidth = true;
         hLay.childForceExpandHeight = true;
+
+        BuildBadge();
+    }
+
+    // Badge "⚠ TANDA BAHAYA" — banner merah di atas layar untuk menandai red flag
+    // grooming. Tersembunyi secara default; ditampilkan via SetBadge().
+    void BuildBadge()
+    {
+        _badgeGO = new GameObject("BadgeTandaBahaya");
+        _badgeGO.transform.SetParent(_canvasGO.transform, false);
+        var img = _badgeGO.AddComponent<Image>();
+        img.sprite = GetRoundedSprite();
+        img.type   = Image.Type.Sliced;
+        img.color  = badgeWarna;
+        var outl = _badgeGO.AddComponent<Outline>();
+        outl.effectColor    = new Color(1f, 1f, 1f, 0.5f);
+        outl.effectDistance = new Vector2(2f, -2f);
+        var rt = _badgeGO.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 0.86f);
+        rt.anchorMax = new Vector2(0.5f, 0.86f);
+        rt.pivot     = new Vector2(0.5f, 0.5f);
+        rt.sizeDelta = new Vector2(900f, 92f);
+        rt.anchoredPosition = Vector2.zero;
+
+        var judul = BuatTeks(_badgeGO.transform, "Judul", badgeJudul, 26, badgeTeksWarna, FontStyles.Bold);
+        judul.alignment = TextAlignmentOptions.Top;
+        var jrt = judul.rectTransform;
+        jrt.anchorMin = new Vector2(0f, 0.52f); jrt.anchorMax = new Vector2(1f, 1f);
+        jrt.offsetMin = new Vector2(12f, 2f);   jrt.offsetMax = new Vector2(-12f, -4f);
+
+        _badgeText = BuatTeks(_badgeGO.transform, "Keterangan", "", 19, badgeTeksWarna, FontStyles.Italic);
+        _badgeText.alignment = TextAlignmentOptions.Bottom;
+        var krt = _badgeText.rectTransform;
+        krt.anchorMin = new Vector2(0f, 0f); krt.anchorMax = new Vector2(1f, 0.5f);
+        krt.offsetMin = new Vector2(12f, 4f); krt.offsetMax = new Vector2(-12f, -2f);
+
+        _badgeGO.SetActive(false);
+    }
+
+    // Tampilkan / sembunyikan badge red flag. keterangan kosong = pakai judul saja.
+    void SetBadge(bool tampil, string keterangan = "")
+    {
+        if (_badgeGO == null) return;
+        _badgeGO.SetActive(tampil);
+        if (tampil)
+        {
+            if (_badgeText != null) _badgeText.text = keterangan ?? "";
+            _badgeGO.transform.SetAsLastSibling();
+        }
     }
 
     // Pilih sprite portrait box berdasarkan nama speaker
@@ -605,6 +675,7 @@ public class HalteDialog : MonoBehaviour
         {
             if (baris == null) continue;
             if (baris.latarSprite != null) SetPhaseSprite(baris.latarSprite);
+            SetBadge(baris.tandaBahaya, string.IsNullOrEmpty(baris.tandaBahayaTeks) ? "" : baris.tandaBahayaTeks);
             yield return TampilkanBaris("Narasi", baris.teks);
             yield return TungguTap();
         }
@@ -615,10 +686,13 @@ public class HalteDialog : MonoBehaviour
         {
             if (baris == null) continue;
             if (baris.latarSprite != null) SetPhaseSprite(baris.latarSprite);
+            SetBadge(baris.tandaBahaya, string.IsNullOrEmpty(baris.tandaBahayaTeks) ? "" : baris.tandaBahayaTeks);
             yield return TampilkanBaris("Pria Asing", baris.teks);
             yield return TungguTap();
         }
 
+        // Sembunyikan badge sebelum pilihan tampil.
+        SetBadge(false);
         // Tampilkan pilihan (sprite halte berganti ke fase pilihan saat tombol muncul,
         // lalu ke fase reaksi setelah pemain memilih).
         yield return TampilkanPilihan();

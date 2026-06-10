@@ -38,7 +38,7 @@ public class EduCardDay2 : MonoBehaviour
     public Color  overlayColor     = new Color(0f, 0f, 0f, 0.82f);
 
     [Header("Judul")]
-    public string judul       = "\uD83D\uDCDA  KARTU EDUKASI \u2014 HARI 2";
+    public string judul       = "\uD83D\uDEE1\uFE0F  CARA MENJAGA DIRI \u2014 HARI 2";
     public Color  warnaJudul  = new Color(0.45f, 1f, 0.65f, 1f);
     public int    ukuranJudul = 32;
 
@@ -56,16 +56,24 @@ public class EduCardDay2 : MonoBehaviour
     public TipsEntry[] tipsList = new TipsEntry[]
     {
         new TipsEntry {
-            heading = "\uD83D\uDE8C Di Angkot/Transportasi Umum:",
-            isi     = "\u2022 Duduk dekat supir atau ibu-ibu, hindari pojok sepi.\n\u2022 Catat plat nomor angkot \u2014 kirim ke ortu via WhatsApp.\n\u2022 Kalau ada yang aneh, langsung turun di tempat ramai."
+            heading = "\u2728 3 KATA SAKTI saat merasa tidak aman:",
+            isi     = "\u2460 TIDAK!  \u2014 tolak dengan TEGAS & suara keras.\n\u2461 PERGI   \u2014 menjauh / pindah ke tempat ramai.\n\u2462 CERITA  \u2014 lapor orang dewasa yang kamu percaya.\nKamu TIDAK pernah salah karena menolak atau melapor."
         },
         new TipsEntry {
-            heading = "\uD83D\uDCF1 Chat dari Orang Asing:",
-            isi     = "\u2022 JANGAN balas, JANGAN kirim foto, JANGAN kasih lokasi!\n\u2022 Screenshot dulu sebagai bukti.\n\u2022 Langsung BLOKIR & ceritain ke ortu.\n\u2022 Lapor ke KPAI: 021-31901556"
+            heading = "\uD83D\uDEAB ZONA PRIBADI tubuhmu:",
+            isi     = "\u2022 Bagian tubuh yang tertutup baju renang = milik kamu sendiri.\n\u2022 Tidak ada yang boleh menyentuh / melihat / memotretnya.\n\u2022 Kalau ada yang mencoba \u2014 walau orang dikenal \u2014 itu BAHAYA. Lakukan: TIDAK, PERGI, CERITA."
         },
         new TipsEntry {
-            heading = "\uD83D\uDEA8 Berani Lapor itu HEBAT!",
-            isi     = "\u2022 Tubuh kamu = milik kamu. Nggak ada yang boleh ganggu.\n\u2022 Teriak \"TOLONG!\" sekencang-kencangnya \u2014 itu BUKAN salah kamu.\n\u2022 Lari ke tempat ramai, cari polisi/security/ibu-ibu."
+            heading = "\uD83D\uDEA9 KENALI TANDA BAHAYA (grooming):",
+            isi     = "\u2022 Orang asing sok akrab & memberi iming-iming / hadiah gratis.\n\u2022 Minta data pribadi (nomor HP, alamat, foto).\n\u2022 Mengajak menyimpan rahasia dari orang tua.\nSemua itu = RED FLAG. Jangan diladeni!"
+        },
+        new TipsEntry {
+            heading = "\uD83D\uDE8C Aman di Angkot & Jalan:",
+            isi     = "\u2022 Duduk dekat Pak Supir / ibu-ibu, hindari pojok sepi.\n\u2022 Catat plat nomor & kabari orang tua.\n\u2022 Kalau ada yang aneh, turun di tempat ramai dan minta tolong."
+        },
+        new TipsEntry {
+            heading = "\uD83D\uDC6E ORANG TEPERCAYA tempat lapor:",
+            isi     = "\u2022 Orang tua, guru, dan keluarga dekat.\n\u2022 Polisi, satpam, atau petugas berseragam.\n\u2022 Ibu-ibu / orang dewasa di tempat ramai.\nSimpan nomor mereka & beranikan diri bercerita."
         }
     };
 

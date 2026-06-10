@@ -43,7 +43,7 @@ public class ChatSimWhatsApp : MonoBehaviour
     }
 
     [Header("Header WhatsApp")]
-    public string namaKontak = "Pria Asing Halte";
+    public string namaKontak = "Nomor Tak Dikenal";
     public string statusKontak = "online";
     public Color  warnaHeader = new Color(0.05f, 0.32f, 0.27f, 1f);
     public Color  warnaTeksHeader = Color.white;
@@ -56,9 +56,9 @@ public class ChatSimWhatsApp : MonoBehaviour
     [Header("Daftar Pesan Masuk (CUSTOMIZABLE)")]
     public PesanData[] pesanMasuk = new PesanData[]
     {
-        new PesanData { teks = "Hai dek... om udah liat kamu tadi pagi di halte.",          delayDetik = 0.8f },
-        new PesanData { teks = "Kirim foto kamu yang lagi seragam dong, buat kenang-kenangan om.", delayDetik = 2.0f },
-        new PesanData { teks = "Tenang, jangan bilang siapa-siapa ya... ini rahasia kita berdua \uD83D\uDE0A", delayDetik = 2.4f }
+        new PesanData { teks = "Hai Rara \uD83D\uDE0A Ini om yang tadi pagi di halte, yang nanya kamu sekolah di mana. Masih ingat kan?", delayDetik = 0.8f },
+        new PesanData { teks = "Om dapat nomor kamu dari temanmu, si Dina. Om bilang om kenal papamu, eh dia langsung kasih \uD83D\uDE04", delayDetik = 2.2f },
+        new PesanData { teks = "Nah, sekarang kita bisa ngobrol diam-diam ya. Fotoin kamu pakai seragam dong, jangan bilang siapa-siapa \uD83E\uDD2B", delayDetik = 2.4f }
     };
 
     [Header("Timer Pilihan")]
@@ -75,26 +75,26 @@ public class ChatSimWhatsApp : MonoBehaviour
     public AksiData[] aksiList = new AksiData[]
     {
         new AksiData {
-            label = "\uD83D\uDEAB BLOKIR & HAPUS", kategori = "AMAN",
-            reaksi = "\u2713 Kontaknya diblokir. Bagus! Tunjukkan ini ke ortu juga ya.",
+            label = "\uD83D\uDEAB BLOKIR & CERITA ke ORTU", kategori = "AMAN",
+            reaksi = "\u2713 HEBAT, RA! Kamu blokir nomornya lalu CERITA ke ortu. Itu kata ajaib ke-3: CERITA. Jangan simpan rahasia dari orang dewasa yang kamu percaya!",
             bonusPoin = 500, // SCORE_LAPOR
             warna = new Color(0.91f, 0.30f, 0.24f, 1f)
         },
         new AksiData {
             label = "\u260E LAPOR KPAI 021-31901556", kategori = "AMAN",
-            reaksi = "\u2713 Hebat! Kamu lapor ke KPAI. Mereka akan tindak lanjut.",
+            reaksi = "\u2713 Hebat! Kamu lapor ke KPAI bersama ortu. Mereka akan tindak lanjut.",
             bonusPoin = 500,
             warna = new Color(0.18f, 0.62f, 0.32f, 1f)
         },
         new AksiData {
             label = "\uD83D\uDCAC Balas: 'Iya Om'", kategori = "BAHAYA",
-            reaksi = "\u2716 GAWAT! Orang itu makin pede dan minta lokasi. Kamu kehilangan 1 nyawa.",
+            reaksi = "\u2716 GAWAT! Orang itu makin pede dan minta lokasi rumahmu. Kamu kehilangan 1 nyawa. Orang asing di chat = sama bahayanya dengan di dunia nyata!",
             kurangiNyawa = true,
             warna = new Color(0.50f, 0.20f, 0.20f, 1f)
         },
         new AksiData {
             label = "\u2753 Diamkan / Abaikan", kategori = "RAGU",
-            reaksi = "\u26A0 Kamu diamkan. Tapi besok dia masih kirim chat lagi. Lebih baik blokir/lapor.",
+            reaksi = "\u26A0 Kamu diamkan. Tapi besok dia kirim chat lagi. Lebih baik BLOKIR lalu CERITA ke ortu \u2014 jangan dipendam sendiri.",
             warna = new Color(0.95f, 0.62f, 0.07f, 1f)
         }
     };
