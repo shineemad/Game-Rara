@@ -99,14 +99,37 @@ public class AchievementPopup : MonoBehaviour
 
     static void EnsureInstance()
     {
-        if (Instance != null) return;
+        if (Instance != null)
+        {
+            // GO singleton bisa saja ter-disable (mis. ikut ke-nonaktif saat transisi
+            // hari, atau di-reparent ke Day2_Root yang sempat nonaktif). Lepaskan ke
+            // root + DontDestroyOnLoad + aktifkan rantai supaya activeInHierarchy=true
+            // dan StartCoroutine tidak gagal diam-diam.
+            PastikanAktifDanRoot(Instance.gameObject);
+            return;
+        }
 
-        var existing = FindFirstObjectByType<AchievementPopup>();
-        if (existing != null) { Instance = existing; return; }
+        var existing = FindFirstObjectByType<AchievementPopup>(FindObjectsInactive.Include);
+        if (existing != null)
+        {
+            Instance = existing;
+            PastikanAktifDanRoot(Instance.gameObject);
+            return;
+        }
 
         var go = new GameObject("[AchievementPopup]");
         Instance = go.AddComponent<AchievementPopup>();
         DontDestroyOnLoad(go);
+    }
+
+    // Lepaskan GO dari parent (hindari ikut nonaktif saat parent di-SetActive(false)),
+    // jadikan objek root persisten, lalu pastikan aktif.
+    static void PastikanAktifDanRoot(GameObject go)
+    {
+        if (go.transform.parent != null)
+            go.transform.SetParent(null, true);
+        DontDestroyOnLoad(go);
+        if (!go.activeSelf) go.SetActive(true);
     }
 
     void Awake()
@@ -151,6 +174,9 @@ public class AchievementPopup : MonoBehaviour
     void TryProcessQueue()
     {
         EnsureCanvas();
+        // Jaring pengaman: kalau GO masih inactive (rantai parent belum aktif),
+        // StartCoroutine akan gagal diam-diam. Pastikan aktif dulu.
+        if (!gameObject.activeInHierarchy) PastikanAktifDanRoot(gameObject);
         while (_queue.Count > 0)
         {
             var (text, icon) = _queue.Dequeue();

@@ -91,6 +91,10 @@ public class Day2SummaryScreen : MonoBehaviour
     public Color  lanjutBorder = new Color(0.45f, 1f, 0.65f, 1f);
     public int    lanjutUkuranTeks = 24;
 
+    [Header("Refleksi (Kata Sakti & Bahaya)")]
+    [Tooltip("Tampilkan ringkasan 3 Kata Sakti yang dikuasai + hasil Meteran Bahaya di panel pencapaian.")]
+    public bool tampilkanRefleksi = true;
+
     [Header("Font (opsional)")]
     public TMP_FontAsset fontAsset;
 
@@ -125,6 +129,13 @@ public class Day2SummaryScreen : MonoBehaviour
     public void Tampilkan()
     {
         if (_tampil) return;
+        // Pastikan GameObject (+ rantai parent) aktif sebelum StartCoroutine,
+        // supaya layar ringkasan tidak gagal tampil saat leluhur sempat ter-disable.
+        if (!gameObject.activeInHierarchy)
+        {
+            for (Transform t = transform; t != null; t = t.parent)
+                if (!t.gameObject.activeSelf) t.gameObject.SetActive(true);
+        }
         StartCoroutine(TampilkanLayar());
     }
 
@@ -335,6 +346,28 @@ public class Day2SummaryScreen : MonoBehaviour
             t.alignment = TextAlignmentOptions.MidlineLeft;
             var fitter = t.gameObject.AddComponent<ContentSizeFitter>();
             fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        }
+
+        // Refleksi: 3 Kata Sakti yang dikuasai + hasil Meteran Bahaya.
+        if (tampilkanRefleksi && gs != null)
+        {
+            string ck(bool on, string kata) => (on ? "\u2705 " : "\u2B1C ") + kata;
+            string kataSaktiBaris = "\uD83D\uDDDD Kata Sakti: " +
+                ck(gs.usedTidak, "TIDAK") + "   " + ck(gs.usedPergi, "PERGI") + "   " + ck(gs.usedCerita, "CERITA");
+            var ks = BuatTeks(list.transform, "KataSakti", kataSaktiBaris, pencapaianUkuran, new Color(1f, 0.95f, 0.7f, 1f), FontStyles.Bold);
+            ks.alignment = TextAlignmentOptions.MidlineLeft;
+            ks.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+            float d = gs.dangerLevel;
+            string status = d <= 0.25f ? "TERKENDALI \u2014 kamu tenang & waspada"
+                          : d <= 0.6f  ? "WASPADA \u2014 ada beberapa keputusan berisiko"
+                                       : "RAWAN \u2014 yuk pelajari lagi cara menjaga diri";
+            Color dColor = d <= 0.25f ? new Color(0.45f, 1f, 0.65f, 1f)
+                         : d <= 0.6f  ? new Color(1f, 0.85f, 0.25f, 1f)
+                                      : new Color(1f, 0.45f, 0.4f, 1f);
+            var db = BuatTeks(list.transform, "Bahaya", $"\u26A0 Tingkat Bahaya akhir: {Mathf.RoundToInt(d * 100f)}% \u2014 {status}", pencapaianUkuran, dColor, FontStyles.Normal);
+            db.alignment = TextAlignmentOptions.MidlineLeft;
+            db.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         }
 
         if (tampilkanFooter)

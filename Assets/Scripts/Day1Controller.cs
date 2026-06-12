@@ -82,6 +82,10 @@ public class Day1Controller : MonoBehaviour
 
         [Tooltip("Daftar pilihan yang bisa dipilih pemain")]
         public ChoiceConfig[] pilihan;
+
+        [Tooltip("Tip keselamatan singkat 1 kalimat. Muncul sebagai kartu mini setelah pilihan. Kosongkan untuk menyembunyikan kartu.")]
+        [TextArea(1, 3)]
+        public string tipKeselamatan = "";
     }
 
     // ── Referensi ──────────────────────────────────────────────────────────
@@ -141,15 +145,42 @@ public class Day1Controller : MonoBehaviour
     public GameObject eduCardPanel;
     public Button     eduCardContinueBtn;
 
+    [Header("Indikator Progres Perjalanan")]
+    [Tooltip("Tampilkan bar progres 'Menuju Sekolah' di atas layar Hari 1.")]
+    public bool   tampilkanProgres   = true;
+    [Tooltip("Posisi X awal perjalanan (0% progres).")]
+    public float  progressStartX     = 0f;
+    [Tooltip("Posisi X tujuan (100% progres). Kosongkan/biarkan = pakai encEnd.")]
+    public float  progressEndX       = 50f;
+    [Tooltip("Sorting order canvas progres (di bawah dialog 990).")]
+    public int    progressSortingOrder = 40;
+    [Tooltip("Font opsional untuk teks progres. Kosong = font TMP default.")]
+    public TMP_FontAsset progressFont;
+    public Color  progressTrackColor = new Color(0.10f, 0.05f, 0.02f, 0.80f);
+    public Color  progressFillColor  = new Color(0.96f, 0.45f, 0.10f, 1f);
+    public Color  progressTextColor  = new Color(1f, 0.92f, 0.70f, 1f);
+
     [Header("Tombol Teriak (untuk yang tidak pakai mic)")]
     public Button  shoutButton;
     public Slider  shoutGauge;          // gauge teriak (0–1)
     public float   shoutFillRate = 0.5f;
     public float   shoutDecayRate = 0.3f;
 
-    [Header("Tutorial Rintangan")]
-    [Tooltip("Rintangan merah di tutorial. Kosong = dibuat otomatis saat runtime.")]
-    public GameObject tutorialObstacle;
+    [Header("Panel Latih Suara (Voice Validation)")]
+    [Tooltip("Judul panel latih suara.")]
+    public string latihJudul       = "\uD83D\uDDE3  LATIH SUARAMU!";
+    [TextArea(2, 5)]
+    [Tooltip("Deskripsi panel. Konteks tutorial Hari 1.")]
+    public string latihDeskripsi   =
+        "Sebelum jalan, latih dulu suaramu!\nTERIAK KERAS = kamu lebih aman di jalan.\n\nTAHAN tombol TERIAK (atau SPACE) sampai meter PENUH!";
+    [Tooltip("Label tombol tahan-teriak.")]
+    public string latihTeriakLabel = "\uD83D\uDD0A  TAHAN: TERIAK!";
+    [Tooltip("Teks reaksi saat meter penuh / berhasil.")]
+    [TextArea(2, 4)]
+    public string latihBerhasil    =
+        "\u2713 HEBAT! Suaramu lantang! Kalau ada yang mengganggu di jalan, berani TERIAK minta tolong, ya!";
+    [Tooltip("Window waktu (detik). 0 = tanpa batas waktu.")]
+    public float  latihWaktuWindow = 15f;
 
     // ── Konfigurasi Encounter (edit dari Inspector) ────────────────────────
     [Header("━━ KONFIGURASI DIALOG ENCOUNTER ━━")]
@@ -176,23 +207,24 @@ public class Day1Controller : MonoBehaviour
                 label         = "\"NGGAK MAU! Aku nggak kenal Bapak!\" (Teriak & lari ke tempat ramai)",
                 category      = "AMAN",
                 
-                feedbackText  = "✅ Bagus sekali! Rara menolak dengan tegas!\nOrang asing yang menawarkan hadiah dan mengajak pergi = TANDA BAHAYA!\nSelalu tolak dan pergi ke tempat yang ramai."
+                feedbackText  = "Bagus sekali! Rara menolak dengan tegas!\nOrang asing yang menawarkan hadiah dan mengajak pergi = TANDA BAHAYA!\nSelalu tolak dan pergi ke tempat yang ramai."
             },
             new ChoiceConfig
             {
                 label         = "\"Makasih pak, tapi aku sudah mau telat sekolah...\" (Menolak dengan alasan)",
                 category      = "RAGU",
                 
-                feedbackText  = "⚠️ Lumayan... Rara menolak, tapi kurang tegas.\nSebaiknya langsung pergi ke tempat yang lebih ramai\ndan ceritakan ke orang dewasa yang dipercaya."
+                feedbackText  = "Lumayan... Rara menolak, tapi kurang tegas.\nSebaiknya langsung pergi ke tempat yang lebih ramai\ndan ceritakan ke orang dewasa yang dipercaya."
             },
             new ChoiceConfig
             {
                 label         = "\"Boleh~\" (Ikut saja)",
                 category      = "BAHAYA",
                 
-                feedbackText  = "❌ BAHAYA! Rara kehilangan ❤ karena ikut orang asing!\nJANGAN PERNAH ikut dengan orang yang tidak dikenal,\napapun yang ditawarkan!"
+                feedbackText  = "BAHAYA! Rara kehilangan 1 nyawa karena ikut orang asing!\nJANGAN PERNAH ikut dengan orang yang tidak dikenal,\napapun yang ditawarkan!"
             }
-        }
+        },
+        tipKeselamatan = "Orang asing yang menawari hadiah atau ajakan pergi adalah TANDA BAHAYA — tolak dan menuju tempat ramai."
     };
 
     [Tooltip("Isi semua dialog & pilihan Encounter 2 dari sini.")]
@@ -217,21 +249,22 @@ public class Day1Controller : MonoBehaviour
             {
                 label         = "\"Maaf om, aku nggak boleh ikut orang asing!\" (Mundur & lari ke tempat ramai)",
                 category      = "AMAN",
-                feedbackText  = "✅ Tepat sekali!\nORANG TIDAK DIKENAL = JANGAN PERNAH IKUT, walau alasannya seramah apapun.\nKalau ditanya jalan, cukup tunjuk arah dari jauh — jangan dekati & jangan naik."
+                feedbackText  = "Tepat sekali!\nORANG TIDAK DIKENAL = JANGAN PERNAH IKUT, walau alasannya seramah apapun.\nKalau ditanya jalan, cukup tunjuk arah dari jauh — jangan dekati & jangan naik."
             },
             new ChoiceConfig
             {
                 label         = "\"SMP Harapan lurus aja om\u2026 maaf aku nggak bisa nganterin.\" (Jawab dari jauh)",
                 category      = "RAGU",
-                feedbackText  = "⚠️ Lumayan — Rara nggak naik motor, tapi terlalu lama ngobrol.\nLebih baik langsung pergi ke tempat ramai. Jangan kasih info detail ke orang asing."
+                feedbackText  = "Lumayan — Rara nggak naik motor, tapi terlalu lama ngobrol.\nLebih baik langsung pergi ke tempat ramai. Jangan kasih info detail ke orang asing."
             },
             new ChoiceConfig
             {
                 label         = "\"Boleh om, ayo!\" (Naik motor)",
                 category      = "BAHAYA",
-                feedbackText  = "❌ BAHAYA! Rara hampir naik motor orang asing!\nNAIK KENDARAAN ORANG TAK DIKENAL = jalan menuju penculikan.\nKamu kehilangan ❤. Ingat: \"Searah\" cuma alasan grooming yang umum dipakai."
+                feedbackText  = "BAHAYA! Rara hampir naik motor orang asing!\nNAIK KENDARAAN ORANG TAK DIKENAL = jalan menuju penculikan.\nKamu kehilangan 1 nyawa. Ingat: \"Searah\" cuma alasan grooming yang umum dipakai."
             }
-        }
+        },
+        tipKeselamatan = "Jangan pernah naik kendaraan orang tak dikenal — cukup tunjuk arah dari jauh, lalu pergi ke tempat ramai."
     };
 
     [Tooltip("Isi semua dialog & pilihan Encounter 3 dari sini.")]
@@ -244,7 +277,7 @@ public class Day1Controller : MonoBehaviour
             new DialogLine { speaker = "Narasi",
                 text = "Gerbang SMP Harapan sudah terlihat dari kejauhan.\nTiba-tiba HP Rara bergetar di saku." },
             new DialogLine { speaker = "Narasi",
-                text = "📱 Pesan dari nomor tidak dikenal:\n\"Hei Rara, aku tau kamu lagi di jalan. Mau aku jemput?\"" },
+                text = "Pesan dari nomor tidak dikenal:\n\"Hei Rara, aku tau kamu lagi di jalan. Mau aku jemput?\"" },
             new DialogLine { speaker = "Rara (dalam hati)",
                 text = "Hah?! Kok dia tau namaku?\nDan dia tau aku lagi di jalan... ini menakutkan." },
         },
@@ -255,23 +288,24 @@ public class Day1Controller : MonoBehaviour
                 label         = "Screenshot lalu blokir nomor dan cerita ke Mama",
                 category      = "AMAN",
                 
-                feedbackText  = "✅ Tepat! Screenshot sebagai bukti, blokir nomornya,\ndan SELALU ceritakan ke orang dewasa yang dipercaya."
+                feedbackText  = "Tepat! Screenshot sebagai bukti, blokir nomornya,\ndan SELALU ceritakan ke orang dewasa yang dipercaya."
             },
             new ChoiceConfig
             {
                 label         = "Balas: \"Siapa kamu?\" (penasaran)",
                 category      = "RAGU",
                 
-                feedbackText  = "⚠️ Membalas pesan orang asing bisa berbahaya.\nLebih baik abaikan, blokir, dan lapor ke orang tua."
+                feedbackText  = "Membalas pesan orang asing bisa berbahaya.\nLebih baik abaikan, blokir, dan lapor ke orang tua."
             },
             new ChoiceConfig
             {
                 label         = "Ikuti ajakannya (sangat berbahaya!)",
                 category      = "BAHAYA",
                 
-                feedbackText  = "❌ SANGAT BERBAHAYA! Jangan pernah temui orang asing\nyang hanya kamu kenal lewat pesan/medsos!"
+                feedbackText  = "SANGAT BERBAHAYA! Jangan pernah temui orang asing\nyang hanya kamu kenal lewat pesan/medsos!"
             }
-        }
+        },
+        tipKeselamatan = "Jika ada pesan dari nomor tak dikenal yang tahu identitasmu: screenshot, blokir, dan ceritakan ke orang dewasa terpercaya."
     };
 
     // ── State Machine ──────────────────────────────────────────────────────
@@ -312,6 +346,11 @@ public class Day1Controller : MonoBehaviour
     bool    tutorialStarted = false;   // guard: ShowTutorial hanya dipanggil sekali
     string  lastZoneLabel   = null;     // label zona segmen aktif (null = belum di-set)
 
+    // Indikator progres perjalanan
+    GameObject       _progressCanvasGO;
+    RectTransform    _progressFillRt;
+    TextMeshProUGUI  _progressPercentText;
+
     // Referensi yang di-cache di Start(), dipakai di OnDestroy untuk lepas listener.
     Day1Intro _introRef;
 
@@ -330,6 +369,15 @@ public class Day1Controller : MonoBehaviour
         // Auto-find komponen yang belum di-assign
         if (dialogManager == null) dialogManager = FindFirstObjectByType<DialogManager>();
         if (hudManager    == null) hudManager    = HUDManager.Instance;
+
+        // Auto-find player bila belum di-assign di Inspector. Tanpa ini,
+        // CheckEncounterTriggers() langsung return (player == null) sehingga
+        // tutorial & seluruh encounter Hari 1 tidak pernah terpicu.
+        if (player == null)
+        {
+            var p = FindFirstObjectByType<player>();
+            if (p != null) player = p.gameObject;
+        }
 
         // Pasang event tombol teriak — juga sambungkan ke VoiceMeter fallback.
         // Pakai EventTrigger yang sudah ada bila tersedia supaya tidak menambah duplikat
@@ -382,6 +430,11 @@ public class Day1Controller : MonoBehaviour
             _introRef.onIntroSelesai.RemoveListener(MulaiGame);
         if (eduCardContinueBtn != null)
             eduCardContinueBtn.onClick.RemoveListener(GoToResult);
+
+        // Hentikan ambience suasana jalan saat scene Hari 1 dilepas.
+        AudioManager.Instance?.StopAmbience();
+
+        if (_progressCanvasGO != null) Destroy(_progressCanvasGO);
     }
 
     /// Dipanggil saat Day1Intro selesai (otomatis via AddListener di Start, atau dari Inspector).
@@ -394,6 +447,12 @@ public class Day1Controller : MonoBehaviour
         if (dialogManager == null) dialogManager = FindFirstObjectByType<DialogManager>();
 
         hudManager?.Refresh();
+
+        // Mulai ambience suasana jalan Hari 1 (senyap bila klip belum diisi).
+        AudioManager.Instance?.PlayAmbience();
+
+        // Bangun indikator progres perjalanan.
+        BuildProgressBar();
 
         // Selalu pastikan player tidak frozen, apapun fase-nya
         var p = player != null
@@ -441,6 +500,107 @@ public class Day1Controller : MonoBehaviour
     }
 
     // ══════════════════════════════════════════════════════════════════════
+    // INDIKATOR PROGRES PERJALANAN
+    // ══════════════════════════════════════════════════════════════════════
+
+    /// Bangun bar progres "Menuju Sekolah" di atas-tengah layar (sekali saja).
+    void BuildProgressBar()
+    {
+        if (!tampilkanProgres || _progressCanvasGO != null) return;
+
+        _progressCanvasGO = new GameObject("Day1ProgressCanvas");
+        var canvas = _progressCanvasGO.AddComponent<Canvas>();
+        canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = progressSortingOrder;
+        var scaler = _progressCanvasGO.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.matchWidthOrHeight  = 0.5f;
+        _progressCanvasGO.AddComponent<GraphicRaycaster>();
+
+        // Root: jangkar atas-tengah
+        var root = new GameObject("ProgressRoot");
+        root.transform.SetParent(_progressCanvasGO.transform, false);
+        var rootRt = root.AddComponent<RectTransform>();
+        rootRt.anchorMin        = new Vector2(0.5f, 1f);
+        rootRt.anchorMax        = new Vector2(0.5f, 1f);
+        rootRt.pivot            = new Vector2(0.5f, 1f);
+        rootRt.anchoredPosition = new Vector2(0f, -22f);
+        rootRt.sizeDelta        = new Vector2(620f, 58f);
+
+        // Caption + persen
+        var capGO = new GameObject("Caption");
+        capGO.transform.SetParent(root.transform, false);
+        var cap = capGO.AddComponent<TextMeshProUGUI>();
+        cap.text      = "Menuju Sekolah";
+        cap.fontSize  = 22;
+        cap.alignment = TextAlignmentOptions.Left;
+        cap.color     = progressTextColor;
+        if (progressFont != null) cap.font = progressFont;
+        var capRt = capGO.GetComponent<RectTransform>();
+        capRt.anchorMin = new Vector2(0f, 1f);
+        capRt.anchorMax = new Vector2(1f, 1f);
+        capRt.pivot     = new Vector2(0.5f, 1f);
+        capRt.offsetMin = new Vector2(6f, -30f);
+        capRt.offsetMax = new Vector2(-6f, -2f);
+
+        var pctGO = new GameObject("Persen");
+        pctGO.transform.SetParent(root.transform, false);
+        _progressPercentText = pctGO.AddComponent<TextMeshProUGUI>();
+        _progressPercentText.text      = "0%";
+        _progressPercentText.fontSize  = 22;
+        _progressPercentText.alignment = TextAlignmentOptions.Right;
+        _progressPercentText.color     = progressTextColor;
+        if (progressFont != null) _progressPercentText.font = progressFont;
+        var pctRt = pctGO.GetComponent<RectTransform>();
+        pctRt.anchorMin = new Vector2(0f, 1f);
+        pctRt.anchorMax = new Vector2(1f, 1f);
+        pctRt.pivot     = new Vector2(0.5f, 1f);
+        pctRt.offsetMin = new Vector2(6f, -30f);
+        pctRt.offsetMax = new Vector2(-6f, -2f);
+
+        // Track (latar bar)
+        var trackGO = new GameObject("Track");
+        trackGO.transform.SetParent(root.transform, false);
+        var trackImg = trackGO.AddComponent<Image>();
+        trackImg.color = progressTrackColor;
+        var trackRt = trackGO.GetComponent<RectTransform>();
+        trackRt.anchorMin        = new Vector2(0f, 0f);
+        trackRt.anchorMax        = new Vector2(1f, 0f);
+        trackRt.pivot            = new Vector2(0.5f, 0f);
+        trackRt.sizeDelta        = new Vector2(0f, 22f);
+        trackRt.anchoredPosition = new Vector2(0f, 2f);
+
+        // Fill (proporsi via anchorMax.x)
+        var fillGO = new GameObject("Fill");
+        fillGO.transform.SetParent(trackGO.transform, false);
+        var fillImg = fillGO.AddComponent<Image>();
+        fillImg.color   = progressFillColor;
+        _progressFillRt = fillGO.GetComponent<RectTransform>();
+        _progressFillRt.anchorMin = new Vector2(0f, 0f);
+        _progressFillRt.anchorMax = new Vector2(0f, 1f);
+        _progressFillRt.pivot     = new Vector2(0f, 0.5f);
+        _progressFillRt.offsetMin = Vector2.zero;
+        _progressFillRt.offsetMax = Vector2.zero;
+    }
+
+    /// Perbarui lebar bar progres sesuai posisi X player.
+    void UpdateProgressBar()
+    {
+        if (_progressFillRt == null || player == null) return;
+
+        float endX = Mathf.Abs(progressEndX - progressStartX) > 0.01f ? progressEndX : encEnd;
+        float t    = Mathf.Clamp01(Mathf.InverseLerp(progressStartX, endX, player.transform.position.x));
+
+        _progressFillRt.anchorMax = new Vector2(t, 1f);
+        _progressFillRt.offsetMin = Vector2.zero;
+        _progressFillRt.offsetMax = Vector2.zero;
+
+        if (_progressPercentText != null)
+            _progressPercentText.text = Mathf.RoundToInt(t * 100f) + "%";
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
     void Update()
     {
         if (dialogActive) return;
@@ -454,6 +614,8 @@ public class Day1Controller : MonoBehaviour
         if (currentPhase == Phase.Encounter3 && npcActive) HandleNPCApproach();
 
         hudManager?.UpdateScore(GameState.Instance?.score ?? 0);
+
+        UpdateProgressBar();
     }
 
     // Perbarui label lokasi HUD sesuai posisi X player (zona segmen Hari 1).
@@ -484,64 +646,217 @@ public class Day1Controller : MonoBehaviour
 
     IEnumerator ShowTutorial()
     {
-        // ── 1. Dialog petunjuk TERIAK ─────────────────────────────────────
+        // Tutorial latih suara: panel voice-validation (tahan tombol + meter + countdown).
+        yield return StartCoroutine(ShowTutorialPanelLatihSuara());
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // TUTORIAL — Panel Voice Validation (gaya kartu LAPOR Day 2, konteks Hari 1)
+    // Modal: judul + deskripsi + countdown + tombol "TAHAN: TERIAK!" + bar isi.
+    // Membaca input lewat VoiceMeter (mic) atau fallback tombol/SPACE — sama
+    // seperti HandleShout(). Berhasil saat meter PENUH; timeout = tetap lanjut.
+    // ══════════════════════════════════════════════════════════════════════
+    IEnumerator ShowTutorialPanelLatihSuara()
+    {
         dialogActive = true;
-        bool dialogDone = false;
-        GetSharedDialog().PlayLines(new NpcDialog.DialogEntry[]
-        {
-            new NpcDialog.DialogEntry
-            {
-                speakerName = "Narasi",
-                text        = "📢 Tekan & TAHAN tombol TERIAK untuk berlatih.\nTeriak sampai meter PENUH — rintangan di depan akan terdorong!"
-            }
-        }, () => dialogDone = true);
-        // Safety timeout 60 detik — cegah WaitUntil hang jika callback tidak pernah terpanggil
-        float deadline = Time.time + 60f;
-        yield return new WaitUntil(() => dialogDone || Time.time > deadline);
-        if (!dialogDone)
-            Debug.LogWarning("[Day1Controller] ShowTutorial: dialog timeout, lanjut paksa.");
-        dialogActive = false;
-
-        // ── 2. Munculkan rintangan merah ────────────────────────────────
-        var obstacle = (tutorialObstacle != null)
-            ? tutorialObstacle
-            : BuildTutorialObstacle();
-        obstacle.SetActive(true);
-
-        // Animasi masuk: tumbuh dari atas ke bawah
-        var sr = obstacle.GetComponent<SpriteRenderer>();
-        Vector3 fullScale = obstacle.transform.localScale;
-        obstacle.transform.localScale = new Vector3(fullScale.x, 0f, 1f);
-        for (float t = 0f; t < 0.35f; t += Time.deltaTime)
-        {
-            obstacle.transform.localScale = Vector3.Lerp(
-                new Vector3(fullScale.x, 0f, 1f), fullScale, t / 0.35f);
-            yield return null;
-        }
-        obstacle.transform.localScale = fullScale;
-
-        // ── 3. Reset gauge & tunggu TERIAK penuh ─────────────────────────
         shoutLevel = 0f;
         hudManager?.SetShoutGauge(0f);
 
-        // Timeout 120 detik — cegah stuck jika shout tidak terdeteksi
-        float shoutDeadline = Time.time + 120f;
-        while (shoutLevel < 0.96f && Time.time < shoutDeadline)
+        // ── Canvas overlay ──
+        var canvasGO = new GameObject("LatihSuaraCanvas");
+        var canvas   = canvasGO.AddComponent<Canvas>();
+        canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 980; // di bawah dialog (990), di atas HUD
+        var scaler = canvasGO.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.matchWidthOrHeight  = 0.5f;
+        canvasGO.AddComponent<GraphicRaycaster>();
+
+        if (FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
         {
-            // Kedipkan obstacle saat gauge di atas 60% sebagai umpan balik
-            if (sr != null)
-                sr.color = shoutLevel > 0.6f
-                    ? Color.Lerp(new Color(0.9f, 0.15f, 0.15f, 0.9f), Color.white,
-                                 (shoutLevel - 0.6f) / 0.4f)
-                    : new Color(0.9f, 0.15f, 0.15f, 0.9f);
+            var esGO = new GameObject("EventSystem");
+            esGO.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            esGO.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+        }
+
+        // ── Dim latar belakang ──
+        var dim = new GameObject("Dim");
+        dim.transform.SetParent(canvasGO.transform, false);
+        var dimImg = dim.AddComponent<Image>();
+        dimImg.color = new Color(0f, 0f, 0f, 0.55f);
+        var dimRt = dim.GetComponent<RectTransform>();
+        dimRt.anchorMin = Vector2.zero; dimRt.anchorMax = Vector2.one;
+        dimRt.offsetMin = Vector2.zero; dimRt.offsetMax = Vector2.zero;
+
+        // ── Kartu (panel maroon) ──
+        var card = new GameObject("Card");
+        card.transform.SetParent(canvasGO.transform, false);
+        var cardImg = card.AddComponent<Image>();
+        cardImg.color = new Color(0.24f, 0.08f, 0.10f, 0.97f);
+        var cardRt = card.GetComponent<RectTransform>();
+        cardRt.anchorMin = new Vector2(0.5f, 0.5f);
+        cardRt.anchorMax = new Vector2(0.5f, 0.5f);
+        cardRt.pivot     = new Vector2(0.5f, 0.5f);
+        cardRt.sizeDelta = new Vector2(820f, 470f);
+
+        // ── Judul ──
+        var judul = BuatTeksLatih(card.transform, "Judul", latihJudul, 38,
+            new Color(1f, 0.45f, 0.45f, 1f), FontStyles.Bold);
+        var judulRt = judul.rectTransform;
+        judulRt.anchorMin = new Vector2(0f, 1f); judulRt.anchorMax = new Vector2(1f, 1f);
+        judulRt.pivot     = new Vector2(0.5f, 1f);
+        judulRt.offsetMin = new Vector2(40f, -86f); judulRt.offsetMax = new Vector2(-40f, -26f);
+
+        // ── Deskripsi ──
+        var desk = BuatTeksLatih(card.transform, "Deskripsi", latihDeskripsi, 22,
+            new Color(1f, 1f, 0.92f, 0.95f), FontStyles.Normal);
+        var deskRt = desk.rectTransform;
+        deskRt.anchorMin = new Vector2(0f, 1f); deskRt.anchorMax = new Vector2(1f, 1f);
+        deskRt.pivot     = new Vector2(0.5f, 1f);
+        deskRt.offsetMin = new Vector2(50f, -224f); deskRt.offsetMax = new Vector2(-50f, -96f);
+
+        // ── Countdown ──
+        var timerTeks = BuatTeksLatih(card.transform, "Timer", "", 24,
+            new Color(0.35f, 0.85f, 0.45f, 1f), FontStyles.Bold);
+        var timerRt = timerTeks.rectTransform;
+        timerRt.anchorMin = new Vector2(0f, 1f); timerRt.anchorMax = new Vector2(1f, 1f);
+        timerRt.pivot     = new Vector2(0.5f, 1f);
+        timerRt.offsetMin = new Vector2(40f, -270f); timerRt.offsetMax = new Vector2(-40f, -226f);
+        bool pakaiTimer = latihWaktuWindow > 0.01f;
+        timerTeks.gameObject.SetActive(pakaiTimer);
+
+        // ── Tombol TAHAN: TERIAK! ──
+        var tombolGO = new GameObject("TombolTeriak");
+        tombolGO.transform.SetParent(card.transform, false);
+        var tombolImg = tombolGO.AddComponent<Image>();
+        Color warnaTeriak  = new Color(0.91f, 0.30f, 0.24f, 1f);
+        Color warnaDitekan = new Color(0.20f, 0.78f, 0.40f, 1f);
+        tombolImg.color = warnaTeriak;
+        var tombolRt = tombolGO.GetComponent<RectTransform>();
+        tombolRt.anchorMin = new Vector2(0.5f, 0.5f);
+        tombolRt.anchorMax = new Vector2(0.5f, 0.5f);
+        tombolRt.pivot     = new Vector2(0.5f, 0.5f);
+        tombolRt.sizeDelta = new Vector2(440f, 96f);
+        tombolRt.anchoredPosition = new Vector2(0f, -70f);
+
+        var tombolLabel = BuatTeksLatih(tombolGO.transform, "Label", latihTeriakLabel, 28,
+            Color.white, FontStyles.Bold);
+        var tlRt = tombolLabel.rectTransform;
+        tlRt.anchorMin = Vector2.zero; tlRt.anchorMax = Vector2.one;
+        tlRt.offsetMin = Vector2.zero; tlRt.offsetMax = Vector2.zero;
+
+        // Wiring tahan tombol (pointer) — sambungkan ke VoiceMeter fallback.
+        bool ditekan = false;
+        var trigger = tombolGO.AddComponent<UnityEngine.EventSystems.EventTrigger>();
+        AddTrigger(trigger, UnityEngine.EventSystems.EventTriggerType.PointerDown, _ =>
+        {
+            ditekan = true;
+            if (VoiceMeter.Instance != null) VoiceMeter.Instance.fallbackButtonHeld = true;
+        });
+        AddTrigger(trigger, UnityEngine.EventSystems.EventTriggerType.PointerUp, _ =>
+        {
+            ditekan = false;
+            if (VoiceMeter.Instance != null) VoiceMeter.Instance.fallbackButtonHeld = false;
+        });
+
+        // ── Bar progres teriak ──
+        var barBg = new GameObject("BarBg");
+        barBg.transform.SetParent(card.transform, false);
+        var barBgImg = barBg.AddComponent<Image>();
+        barBgImg.color = new Color(0.10f, 0.10f, 0.12f, 1f);
+        var barBgRt = barBg.GetComponent<RectTransform>();
+        barBgRt.anchorMin = new Vector2(0.5f, 0f); barBgRt.anchorMax = new Vector2(0.5f, 0f);
+        barBgRt.pivot     = new Vector2(0.5f, 0f);
+        barBgRt.sizeDelta = new Vector2(560f, 26f);
+        barBgRt.anchoredPosition = new Vector2(0f, 40f);
+
+        var barFill = new GameObject("BarFill");
+        barFill.transform.SetParent(barBg.transform, false);
+        var barFillImg = barFill.AddComponent<Image>();
+        barFillImg.color = new Color(0.20f, 0.78f, 0.40f, 1f);
+        var barFillRt = barFill.GetComponent<RectTransform>();
+        barFillRt.anchorMin = new Vector2(0f, 0f); barFillRt.anchorMax = new Vector2(0f, 1f);
+        barFillRt.pivot     = new Vector2(0f, 0.5f);
+        barFillRt.offsetMin = Vector2.zero; barFillRt.offsetMax = Vector2.zero;
+
+        AudioManager.Instance?.Click();
+
+        // ── Loop: isi meter sampai PENUH (atau window habis) ──
+        float sisa = latihWaktuWindow;
+        bool  berhasil = false;
+        while (true)
+        {
+            // Sumber intensitas: VoiceMeter (mic/fallback) atau isi/luruh lokal.
+            bool spaceHeld = Input.GetKey(KeyCode.Space);
+            bool held      = ditekan || spaceHeld;
+            if (VoiceMeter.Instance != null)
+            {
+                VoiceMeter.Instance.fallbackButtonHeld = held;
+                shoutLevel = VoiceMeter.Instance.NormalizedLevel;
+            }
+            else
+            {
+                shoutLevel = held
+                    ? Mathf.Min(1f, shoutLevel + shoutFillRate * Time.deltaTime)
+                    : Mathf.Max(0f, shoutLevel - shoutDecayRate * Time.deltaTime);
+            }
+
+            // Umpan balik visual: warna tombol & bar isi.
+            tombolImg.color   = held ? warnaDitekan : warnaTeriak;
+            barFillRt.anchorMax = new Vector2(Mathf.Clamp01(shoutLevel), 1f);
+            barFillRt.offsetMin = Vector2.zero; barFillRt.offsetMax = Vector2.zero;
+            hudManager?.SetShoutGauge(shoutLevel);
+
+            // Countdown
+            if (pakaiTimer)
+            {
+                sisa -= Time.deltaTime;
+                int detik = Mathf.Max(0, Mathf.CeilToInt(sisa));
+                timerTeks.text = detik + " detik tersisa";
+                if (sisa <= 0f) break;
+            }
+
+            if (shoutLevel >= 0.96f) { berhasil = true; break; }
             yield return null;
         }
 
-        // ── 4. Hancurkan rintangan + lanjut ──────────────────────────────
-        yield return StartCoroutine(PlayObstacleEffect(obstacle));
-        // Pastikan player tidak frozen dan bisa jalan bebas
+        if (VoiceMeter.Instance != null) VoiceMeter.Instance.fallbackButtonHeld = false;
+
+        // ── Reaksi berhasil ──
+        if (berhasil)
+        {
+            AudioManager.Instance?.Correct();
+            barFillRt.anchorMax = new Vector2(1f, 1f);
+            tombolImg.color = warnaDitekan;
+            tombolLabel.text = "\u2713 PENUH!";
+            if (timerTeks != null) timerTeks.gameObject.SetActive(false);
+            desk.text = latihBerhasil;
+            yield return new WaitForSeconds(1.6f);
+        }
+
+        Destroy(canvasGO);
+        shoutLevel = 0f;
+        hudManager?.SetShoutGauge(0f);
         dialogActive = false;
         currentPhase = Phase.Walking;
+    }
+
+    /// Helper kecil: buat TextMeshProUGUI untuk panel Latih Suara.
+    TextMeshProUGUI BuatTeksLatih(Transform parent, string nama, string isi,
+                                  int ukuran, Color warna, FontStyles gaya)
+    {
+        var go = new GameObject(nama);
+        go.transform.SetParent(parent, false);
+        var tmp = go.AddComponent<TextMeshProUGUI>();
+        tmp.text      = isi;
+        tmp.fontSize  = ukuran;
+        tmp.fontStyle = gaya;
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.color     = warna;
+        tmp.raycastTarget = false;
+        if (progressFont != null) tmp.font = progressFont;
+        return tmp;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -706,7 +1021,7 @@ public class Day1Controller : MonoBehaviour
 
         if (!alive)
         {
-            SceneLoader.Instance?.LoadScene("GameOver");
+            GameOverScreen.Show();
             return;
         }
 
@@ -728,7 +1043,7 @@ public class Day1Controller : MonoBehaviour
             new NpcDialog.DialogEntry
             {
                 speakerName = "Narasi",
-                text        = "Hanya ada suara langkah Rara\u2026 dan langkah lain dari belakang.\nJantungnya berdegup kencang. ❤ −1"
+                text        = "Hanya ada suara langkah Rara\u2026 dan langkah lain dari belakang.\nJantungnya berdegup kencang. (Nyawa \u22121)"
             },
             new NpcDialog.DialogEntry
             {
@@ -837,6 +1152,7 @@ public class Day1Controller : MonoBehaviour
                 bool   pakaiKustom      = pc.gunakanPoinKustom;
                 int    nilaiKustom      = pc.poinKustom;
                 string labelPilihan     = pc.label;
+                string tipKeselamatan   = cfg.tipKeselamatan;
 
                 npcChoices[i] = new NpcDialog.Choice
                 {
@@ -879,7 +1195,7 @@ public class Day1Controller : MonoBehaviour
                             if (!masihHidup)
                             {
                                 StartCoroutine(TampilkanFeedback(feedbackTeks, kategori,
-                                    () => SceneLoader.Instance?.LoadScene("GameOver")));
+                                    () => GameOverScreen.Show()));
                                 return;
                             }
                         }
@@ -890,7 +1206,7 @@ public class Day1Controller : MonoBehaviour
                         else                           onBahaya?.Invoke();
 
                         // Tampilkan feedback edukasi
-                        StartCoroutine(TampilkanFeedback(feedbackTeks, kategori, afterFeedback));
+                        StartCoroutine(TampilkanFeedback(feedbackTeks, kategori, afterFeedback, tipKeselamatan));
                     }
                 };
             }
@@ -908,7 +1224,7 @@ public class Day1Controller : MonoBehaviour
     }
 
     /// Tampilkan satu baris feedback edukasi setelah pilihan, lalu panggil onSelesai.
-    IEnumerator TampilkanFeedback(string pesan, string kategori, System.Action onSelesai = null)
+    IEnumerator TampilkanFeedback(string pesan, string kategori, System.Action onSelesai = null, string tip = null)
     {
         yield return new WaitForEndOfFrame();
         if (string.IsNullOrEmpty(pesan)) { onSelesai?.Invoke(); yield break; }
@@ -921,12 +1237,12 @@ public class Day1Controller : MonoBehaviour
         {
             case "AMAN":   infoPoin = $"  (+{GameState.SCORE_AMAN} poin)";  break;
             case "RAGU":   infoPoin = $"  (+{GameState.SCORE_RAGU} poin)";  break;
-            default:       infoPoin = "  (−1 ❤  |  +0 poin)";              break;
+            default:       infoPoin = "  (−1 nyawa  |  +0 poin)";              break;
         }
 
-        string judulFeedback = kategori == "AMAN"   ? $"✅ Keputusan Tepat!{infoPoin}"
-                             : kategori == "RAGU"   ? $"⚠ Perlu Lebih Tegas{infoPoin}"
-                             :                        $"❌ Keputusan Berbahaya!{infoPoin}";
+        string judulFeedback = kategori == "AMAN"   ? $"Keputusan Tepat!{infoPoin}"
+                             : kategori == "RAGU"   ? $"Perlu Lebih Tegas{infoPoin}"
+                             :                        $"Keputusan Berbahaya!{infoPoin}";
 
         bool selesai = false;
         GetSharedDialog().PlayLines(new NpcDialog.DialogEntry[]
@@ -946,7 +1262,133 @@ public class Day1Controller : MonoBehaviour
             yield return new WaitUntil(() => laporDone);
         }
 
+        // Kartu edukasi mini — tip keselamatan singkat per encounter.
+        if (!string.IsNullOrEmpty(tip))
+            yield return StartCoroutine(TampilkanMiniEduCard(tip));
+
         onSelesai?.Invoke();
+    }
+
+    /// Tampilkan kartu edukasi mini berisi satu tip keselamatan, tunggu pemain klik "Mengerti".
+    IEnumerator TampilkanMiniEduCard(string tip)
+    {
+        dialogActive = true;
+
+        var canvasGO = new GameObject("MiniEduCardCanvas");
+        var canvas = canvasGO.AddComponent<Canvas>();
+        canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 996; // di atas dialog (990)
+        var scaler = canvasGO.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.matchWidthOrHeight  = 0.5f;
+        canvasGO.AddComponent<GraphicRaycaster>();
+
+        if (FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
+        {
+            var esGO = new GameObject("EventSystem");
+            esGO.AddComponent<UnityEngine.EventSystems.EventSystem>();
+            esGO.AddComponent<UnityEngine.EventSystems.StandaloneInputModule>();
+        }
+
+        // Dim latar belakang
+        var dim = new GameObject("Dim");
+        dim.transform.SetParent(canvasGO.transform, false);
+        var dimImg = dim.AddComponent<Image>();
+        dimImg.color = new Color(0f, 0f, 0f, 0.55f);
+        var dimRt = dim.GetComponent<RectTransform>();
+        dimRt.anchorMin = Vector2.zero; dimRt.anchorMax = Vector2.one;
+        dimRt.offsetMin = Vector2.zero; dimRt.offsetMax = Vector2.zero;
+
+        // Kartu
+        var card = new GameObject("Card");
+        card.transform.SetParent(canvasGO.transform, false);
+        var cardImg = card.AddComponent<Image>();
+        cardImg.color = new Color(0.13f, 0.09f, 0.05f, 0.98f);
+        var cardRt = card.GetComponent<RectTransform>();
+        cardRt.anchorMin = new Vector2(0.5f, 0.5f);
+        cardRt.anchorMax = new Vector2(0.5f, 0.5f);
+        cardRt.pivot     = new Vector2(0.5f, 0.5f);
+        cardRt.sizeDelta = new Vector2(820f, 360f);
+
+        // Border emas
+        var border = new GameObject("Border");
+        border.transform.SetParent(card.transform, false);
+        var borderImg = border.AddComponent<Image>();
+        borderImg.color = new Color(0.95f, 0.72f, 0.18f, 1f);
+        var borderRt = border.GetComponent<RectTransform>();
+        borderRt.anchorMin = new Vector2(0f, 1f);
+        borderRt.anchorMax = new Vector2(1f, 1f);
+        borderRt.pivot     = new Vector2(0.5f, 1f);
+        borderRt.sizeDelta = new Vector2(0f, 8f);
+        borderRt.anchoredPosition = Vector2.zero;
+
+        // Judul
+        var judulGO = new GameObject("Judul");
+        judulGO.transform.SetParent(card.transform, false);
+        var judul = judulGO.AddComponent<TextMeshProUGUI>();
+        judul.text      = "Tips Keselamatan";
+        judul.fontSize  = 34;
+        judul.fontStyle = FontStyles.Bold;
+        judul.alignment = TextAlignmentOptions.Center;
+        judul.color     = new Color(1f, 0.82f, 0.18f, 1f);
+        if (progressFont != null) judul.font = progressFont;
+        var judulRt = judulGO.GetComponent<RectTransform>();
+        judulRt.anchorMin = new Vector2(0f, 1f);
+        judulRt.anchorMax = new Vector2(1f, 1f);
+        judulRt.pivot     = new Vector2(0.5f, 1f);
+        judulRt.offsetMin = new Vector2(40f, -86f);
+        judulRt.offsetMax = new Vector2(-40f, -28f);
+
+        // Isi tip
+        var isiGO = new GameObject("Isi");
+        isiGO.transform.SetParent(card.transform, false);
+        var isi = isiGO.AddComponent<TextMeshProUGUI>();
+        isi.text      = tip;
+        isi.fontSize  = 26;
+        isi.alignment = TextAlignmentOptions.Center;
+        isi.color     = new Color(1f, 0.95f, 0.85f, 1f);
+        if (progressFont != null) isi.font = progressFont;
+        var isiRt = isiGO.GetComponent<RectTransform>();
+        isiRt.anchorMin = new Vector2(0f, 0f);
+        isiRt.anchorMax = new Vector2(1f, 1f);
+        isiRt.offsetMin = new Vector2(50f, 110f);
+        isiRt.offsetMax = new Vector2(-50f, -100f);
+
+        // Tombol "Mengerti"
+        bool lanjut = false;
+        var btnGO = new GameObject("BtnMengerti");
+        btnGO.transform.SetParent(card.transform, false);
+        var btnImg = btnGO.AddComponent<Image>();
+        btnImg.color = new Color(0.96f, 0.45f, 0.10f, 1f);
+        var btn = btnGO.AddComponent<Button>();
+        btn.onClick.AddListener(() => lanjut = true);
+        var btnRt = btnGO.GetComponent<RectTransform>();
+        btnRt.anchorMin        = new Vector2(0.5f, 0f);
+        btnRt.anchorMax        = new Vector2(0.5f, 0f);
+        btnRt.pivot            = new Vector2(0.5f, 0f);
+        btnRt.sizeDelta        = new Vector2(260f, 64f);
+        btnRt.anchoredPosition = new Vector2(0f, 28f);
+
+        var btnTxtGO = new GameObject("Label");
+        btnTxtGO.transform.SetParent(btnGO.transform, false);
+        var btnTxt = btnTxtGO.AddComponent<TextMeshProUGUI>();
+        btnTxt.text      = "Mengerti";
+        btnTxt.fontSize  = 26;
+        btnTxt.fontStyle = FontStyles.Bold;
+        btnTxt.alignment = TextAlignmentOptions.Center;
+        btnTxt.color     = Color.white;
+        if (progressFont != null) btnTxt.font = progressFont;
+        var btnTxtRt = btnTxtGO.GetComponent<RectTransform>();
+        btnTxtRt.anchorMin = Vector2.zero; btnTxtRt.anchorMax = Vector2.one;
+        btnTxtRt.offsetMin = Vector2.zero; btnTxtRt.offsetMax = Vector2.zero;
+
+        AudioManager.Instance?.Click();
+
+        yield return new WaitUntil(() => lanjut);
+        AudioManager.Instance?.Click();
+        Destroy(canvasGO);
+        dialogActive = false;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -1060,7 +1502,7 @@ public class Day1Controller : MonoBehaviour
             bool alive = GameState.Instance.LoseLife();
             GameState.Instance.AddChoice(1, "Diam saat didekati orang asing", "BAHAYA");
             hudManager?.FlashHeartLost(GameState.Instance.lives);
-            if (!alive) SceneLoader.Instance?.LoadScene("GameOver");
+            if (!alive) GameOverScreen.Show();
         }
     }
 
@@ -1088,6 +1530,11 @@ public class Day1Controller : MonoBehaviour
                 shoutLevel = Mathf.Min(1f, shoutLevel + shoutFillRate * Time.deltaTime);
             else
                 shoutLevel = Mathf.Max(0f, shoutLevel - shoutDecayRate * Time.deltaTime);
+
+            // Teriak penuh (gauge >= 0.5) → mode lari, selain itu normal.
+            AplikasiEfekSuara(shoutLevel >= 0.5f
+                ? VoiceMeter.VoiceLevel.Loud
+                : VoiceMeter.VoiceLevel.Normal);
         }
 
         if (shoutGauge != null) shoutGauge.value = shoutLevel;
@@ -1107,12 +1554,15 @@ public class Day1Controller : MonoBehaviour
         {
             case VoiceMeter.VoiceLevel.Loud:
                 p.voiceSpeedMultiplier = 1.6f;   // teriak → lari kencang
+                p.forceRun = true;               // teriak → paksa animasi & state LARI
                 break;
             case VoiceMeter.VoiceLevel.Medium:
                 p.voiceSpeedMultiplier = 0.55f;  // suara sedang → ragu, lambat
+                p.forceRun = false;
                 break;
             default:
                 p.voiceSpeedMultiplier = 1.0f;   // normal / diam → biasa
+                p.forceRun = false;
                 break;
         }
     }
@@ -1157,85 +1607,5 @@ public class Day1Controller : MonoBehaviour
         var entry = new UnityEngine.EventSystems.EventTrigger.Entry { eventID = type };
         entry.callback.AddListener(action);
         trigger.triggers.Add(entry);
-    }
-
-    // ══════════════════════════════════════════════════════════════════════
-    // TUTORIAL OBSTACLE HELPERS
-    // ══════════════════════════════════════════════════════════════════════
-
-    /// Buat rintangan merah (3 bar vertikal) yang memblokir jalur player.
-    GameObject BuildTutorialObstacle()
-    {
-        // Tentukan posisi: tepat di depan player
-        float ox = player != null ? player.transform.position.x + 3.5f : encTutorial + 2f;
-        float oy = player != null ? player.transform.position.y + 1.5f : 1.5f;
-
-        var root = new GameObject("TutorialObstacle");
-        root.transform.position = new Vector3(ox, oy, 0f);
-
-        // Collider pada root (menghalangi player secara fisika)
-        var col = root.AddComponent<BoxCollider2D>();
-        col.size   = new Vector2(1.8f, 4.0f);
-        col.offset = Vector2.zero;
-
-        // 3 bar merah vertikal sebagai visual
-        float[] barOffsets = { -0.55f, 0f, 0.55f };
-        foreach (float xOff in barOffsets)
-        {
-            var bar = new GameObject("Bar");
-            bar.transform.SetParent(root.transform, false);
-            bar.transform.localPosition = new Vector3(xOff, 0f, 0f);
-            bar.transform.localScale    = new Vector3(0.28f, 4.0f, 1f);
-
-            var sr = bar.AddComponent<SpriteRenderer>();
-            sr.sprite       = MakeSolidSprite(4, 64);
-            sr.color        = new Color(0.90f, 0.14f, 0.14f, 0.92f);
-            sr.sortingOrder = 8;
-        }
-
-        // Tanda ⚠ di tengah (bar lebih terang)
-        var warnBar = root.transform.Find("Bar");    // bar tengah sudah ada
-        // Warnanya sedikit lebih terang untuk beda
-        var bars = root.GetComponentsInChildren<SpriteRenderer>();
-        if (bars.Length >= 2) bars[1].color = new Color(1f, 0.25f, 0.25f, 0.95f);
-
-        root.SetActive(false);   // disembunyikan sampai ShowTutorial aktifkan
-        return root;
-    }
-
-    /// Efek hancur: flash putih → scale down → nonaktif.
-    IEnumerator PlayObstacleEffect(GameObject obstacle)
-    {
-        if (obstacle == null) yield break;
-        var renderers = obstacle.GetComponentsInChildren<SpriteRenderer>();
-
-        // Flash: merah → putih × 3
-        for (int i = 0; i < 4; i++)
-        {
-            Color c = (i % 2 == 0) ? Color.white : new Color(0.9f, 0.14f, 0.14f, 0.9f);
-            foreach (var sr in renderers) sr.color = c;
-            yield return new WaitForSeconds(0.07f);
-        }
-
-        // Scale down → hancur
-        Vector3 startScale = obstacle.transform.localScale;
-        for (float t = 0f; t < 0.30f; t += Time.deltaTime)
-        {
-            obstacle.transform.localScale = Vector3.Lerp(startScale, Vector3.zero, t / 0.30f);
-            yield return null;
-        }
-
-        obstacle.SetActive(false);
-    }
-
-    /// Sprite putih solid (width × height piksel) untuk pewarnaan runtime.
-    static Sprite MakeSolidSprite(int w, int h)
-    {
-        var tex    = new Texture2D(w, h, TextureFormat.RGBA32, false);
-        var pixels = new Color[w * h];
-        for (int i = 0; i < pixels.Length; i++) pixels[i] = Color.white;
-        tex.SetPixels(pixels);
-        tex.Apply();
-        return Sprite.Create(tex, new Rect(0, 0, w, h), new Vector2(0.5f, 0.5f), 100f);
     }
 }

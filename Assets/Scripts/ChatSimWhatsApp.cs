@@ -39,6 +39,8 @@ public class ChatSimWhatsApp : MonoBehaviour
         public string reaksi   = "\u2713 Bagus! Kontak orang asing diblokir.";
         public int    bonusPoin = 0;     // poin tambahan
         public bool   kurangiNyawa = false;
+        [Tooltip("Pilihan fatal: langsung GAME OVER (nyawa habis). Mis. 'Iya Om, jemput'.")]
+        public bool   akhiriGameOver = false;
         public Color  warna = new Color(0.18f, 0.62f, 0.32f, 1f);
     }
 
@@ -61,6 +63,16 @@ public class ChatSimWhatsApp : MonoBehaviour
         new PesanData { teks = "Nah, sekarang kita bisa ngobrol diam-diam ya. Fotoin kamu pakai seragam dong, jangan bilang siapa-siapa \uD83E\uDD2B", delayDetik = 2.4f }
     };
 
+    [Header("Notifikasi Masuk")]
+    [Tooltip("Berapa kali bunyi notif WA berdering di awal chat (0 = tidak ada). Hari 3: 3x.")]
+    public int notifBerderingKali = 0;
+    [Tooltip("Jeda antar deringan notif (detik).")]
+    public float jedaNotifDetik = 0.45f;
+
+    [Header("Hari untuk Pencatatan Skor")]
+    [Tooltip("Nomor hari yang dipakai saat mencatat pilihan ke GameState (Hari 2 = 2, Hari 3 = 3).")]
+    public int hariUntukSkor = 2;
+
     [Header("Timer Pilihan")]
     public float waktuPilihDetik = 8f;
     public Color warnaTimer = new Color(1f, 0.85f, 0.3f, 1f);
@@ -70,6 +82,8 @@ public class ChatSimWhatsApp : MonoBehaviour
     public string screenshotLabel = "\uD83D\uDCF7 Screenshot Bukti";
     public int    screenshotBonus = 100;
     public Color  screenshotWarna = new Color(0.20f, 0.62f, 0.86f, 1f);
+    [Tooltip("Achievement saat screenshot bukti diambil (kosong = tidak ada).")]
+    public string screenshotAchievement = "";
 
     [Header("Daftar Aksi Utama (CUSTOMIZABLE)")]
     public AksiData[] aksiList = new AksiData[]
@@ -153,19 +167,41 @@ public class ChatSimWhatsApp : MonoBehaviour
         scaler.referenceResolution = new Vector2(1920, 1080);
         _canvasGO.AddComponent<GraphicRaycaster>();
 
-        // BG Fullscreen device (opsional, paling belakang — di belakang frame HP).
+        // ── BACKDROP FULLSCREEN ─────────────────────────────────────────────
+        // Menutup TOTAL latar Day 1 di belakang frame HP + memblokir input.
+        // Pakai sprite kustom bila di-assign, kalau tidak: deep-navy opaque.
+        var backdrop = new GameObject("Backdrop");
+        backdrop.transform.SetParent(_canvasGO.transform, false);
+        var bdImg = backdrop.AddComponent<Image>();
         if (bgFullscreenSprite != null)
         {
-            var fs = new GameObject("BG_Fullscreen");
-            fs.transform.SetParent(_canvasGO.transform, false);
-            var fsImg = fs.AddComponent<Image>();
-            fsImg.sprite         = bgFullscreenSprite;
-            fsImg.preserveAspect = bgFullscreenPreserveAspect;
-            fsImg.raycastTarget  = false;
-            var fsRt = fs.GetComponent<RectTransform>();
-            fsRt.anchorMin = Vector2.zero; fsRt.anchorMax = Vector2.one;
-            fsRt.offsetMin = Vector2.zero; fsRt.offsetMax = Vector2.zero;
+            bdImg.sprite         = bgFullscreenSprite;
+            bdImg.preserveAspect = bgFullscreenPreserveAspect;
+            bdImg.color          = Color.white;
         }
+        else
+        {
+            bdImg.color = new Color(0.035f, 0.055f, 0.10f, 1f); // deep navy, opaque
+        }
+        bdImg.raycastTarget = true; // blokir input ke Day 1 di belakang
+        var bdRT = backdrop.GetComponent<RectTransform>();
+        bdRT.anchorMin = Vector2.zero; bdRT.anchorMax = Vector2.one;
+        bdRT.offsetMin = Vector2.zero; bdRT.offsetMax = Vector2.zero;
+
+        // Glow lembut di belakang frame HP untuk kedalaman.
+        var glow = new GameObject("GlowTengah");
+        glow.transform.SetParent(_canvasGO.transform, false);
+        var glowRT = glow.AddComponent<RectTransform>();
+        glowRT.anchorMin = new Vector2(0.5f, 0.5f);
+        glowRT.anchorMax = new Vector2(0.5f, 0.5f);
+        glowRT.pivot     = new Vector2(0.5f, 0.5f);
+        glowRT.sizeDelta = new Vector2(900f, 1180f);
+        glowRT.anchoredPosition = Vector2.zero;
+        var glowImg = glow.AddComponent<Image>();
+        glowImg.sprite        = GetRoundedSprite();
+        glowImg.type          = Image.Type.Sliced;
+        glowImg.color         = new Color(0.12f, 0.40f, 0.34f, 0.20f); // hijau-teal lembut (tema WA)
+        glowImg.raycastTarget = false;
 
         // Frame HP (di tengah layar)
         _phoneFrame = new GameObject("PhoneFrame");
@@ -180,7 +216,7 @@ public class ChatSimWhatsApp : MonoBehaviour
         var pRT = _phoneFrame.GetComponent<RectTransform>();
         pRT.anchorMin = new Vector2(0.5f, 0.5f); pRT.anchorMax = new Vector2(0.5f, 0.5f);
         pRT.pivot = new Vector2(0.5f, 0.5f);
-        pRT.sizeDelta = new Vector2(640f, 860f);
+        pRT.sizeDelta = new Vector2(720f, 1000f);
 
         // Header WhatsApp
         var header = new GameObject("Header");
@@ -228,7 +264,7 @@ public class ChatSimWhatsApp : MonoBehaviour
         cbImg.color = warnaChatBg;
         var cbRT = chatBg.GetComponent<RectTransform>();
         cbRT.anchorMin = new Vector2(0f, 0f); cbRT.anchorMax = new Vector2(1f, 1f);
-        cbRT.offsetMin = new Vector2(8f, 8f);
+        cbRT.offsetMin = new Vector2(8f, 312f);
         cbRT.offsetMax = new Vector2(-8f, -100f);
 
         // Scroll container utk pesan
@@ -240,7 +276,8 @@ public class ChatSimWhatsApp : MonoBehaviour
         _chatScroll.offsetMax = new Vector2(-12f, -12f);
         var vlg = scroll.AddComponent<VerticalLayoutGroup>();
         vlg.childAlignment = TextAnchor.LowerLeft;
-        vlg.spacing = 10f;
+        vlg.spacing = 14f;
+        vlg.padding = new RectOffset(6, 6, 6, 10);
         vlg.childControlWidth = true;
         vlg.childControlHeight = true;
         vlg.childForceExpandWidth = false;
@@ -250,6 +287,13 @@ public class ChatSimWhatsApp : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
     IEnumerator JalankanChat()
     {
+        // Notif WA berdering di awal (mis. Hari 3: 3x).
+        for (int i = 0; i < notifBerderingKali; i++)
+        {
+            AudioManager.Instance?.PlayChatMasuk();
+            yield return new WaitForSeconds(jedaNotifDetik);
+        }
+
         foreach (var p in pesanMasuk)
         {
             yield return TampilkanTyping();
@@ -265,83 +309,158 @@ public class ChatSimWhatsApp : MonoBehaviour
 
     IEnumerator TampilkanTyping()
     {
-        var bubble = TambahBubble("...");
-        var tmp = bubble.GetComponentInChildren<TextMeshProUGUI>();
+        // Bubble kecil khusus indikator "sedang mengetik" (tidak lebar penuh, tanpa jam).
+        var row = new GameObject("TypingRow");
+        row.transform.SetParent(_chatScroll, false);
+        var rowLE = row.AddComponent<LayoutElement>();
+        rowLE.preferredWidth = 96f;
+        rowLE.flexibleWidth  = 0f;
+        var rowVlg = row.AddComponent<HorizontalLayoutGroup>();
+        rowVlg.childAlignment      = TextAnchor.MiddleLeft;
+        rowVlg.childControlWidth   = true;
+        rowVlg.childControlHeight  = true;
+        rowVlg.childForceExpandWidth  = true;
+        rowVlg.childForceExpandHeight = false;
+
+        var bubble = new GameObject("TypingBubble");
+        bubble.transform.SetParent(row.transform, false);
+        var img = bubble.AddComponent<Image>();
+        img.sprite = GetRoundedSprite();
+        img.color  = warnaBubbleMasuk;
+        img.type   = Image.Type.Sliced;
+        var bVlg = bubble.AddComponent<VerticalLayoutGroup>();
+        bVlg.padding = new RectOffset(18, 18, 12, 14);
+        bVlg.childControlWidth = true; bVlg.childControlHeight = true;
+        bVlg.childForceExpandWidth = true; bVlg.childForceExpandHeight = false;
+
+        var tmp = BuatTeks(bubble.transform, "Dots", "\u2022 \u2022 \u2022", 22,
+                           new Color(1f, 1f, 1f, 0.6f), FontStyles.Bold);
+        tmp.alignment = TextAlignmentOptions.Center;
+
         float t = 0f;
         while (t < 0.6f)
         {
             t += Time.deltaTime;
-            int n = (Mathf.FloorToInt(t * 3f) % 3) + 1;
-            tmp.text = new string('.', n);
+            int n = (Mathf.FloorToInt(t * 4f) % 3) + 1;
+            tmp.text = string.Join(" ", System.Linq.Enumerable.Repeat("\u2022", n));
             yield return null;
         }
-        Destroy(bubble);
+        Destroy(row);
     }
 
     GameObject TambahBubble(string teks)
     {
+        // Pembungkus baris (kiri) supaya bubble tidak melar selebar area chat.
+        var row = new GameObject("Row");
+        row.transform.SetParent(_chatScroll, false);
+        var rowLE = row.AddComponent<LayoutElement>();
+        rowLE.preferredWidth = 512f;   // lebar maksimum bubble masuk
+        rowLE.flexibleWidth  = 0f;
+        var rowVlg = row.AddComponent<VerticalLayoutGroup>();
+        rowVlg.childAlignment      = TextAnchor.UpperLeft;
+        rowVlg.childControlWidth   = true;
+        rowVlg.childControlHeight  = true;
+        rowVlg.childForceExpandWidth  = true;
+        rowVlg.childForceExpandHeight = false;
+
+        // Bubble (kartu) — tinggi otomatis dari isi teks via VerticalLayoutGroup.
         var go = new GameObject("Bubble");
-        go.transform.SetParent(_chatScroll, false);
+        go.transform.SetParent(row.transform, false);
         var img = go.AddComponent<Image>();
         img.sprite = GetRoundedSprite();
         img.color  = warnaBubbleMasuk;
         img.type   = Image.Type.Sliced;
-        var le = go.AddComponent<LayoutElement>();
-        le.preferredWidth  = 460f;
-        le.flexibleWidth   = 0f;
 
-        var t = BuatTeks(go.transform, "Text", teks, 18, warnaTeksBubble, FontStyles.Normal);
-        t.alignment = TextAlignmentOptions.TopLeft;
-        var fitter = go.AddComponent<ContentSizeFitter>();
-        fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
-        var trt = t.rectTransform;
-        trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
-        trt.offsetMin = new Vector2(14f, 10f);
-        trt.offsetMax = new Vector2(-14f, -10f);
+        // Bayangan halus utk kedalaman.
+        var shadow = go.AddComponent<Shadow>();
+        shadow.effectColor    = new Color(0f, 0f, 0f, 0.28f);
+        shadow.effectDistance = new Vector2(2f, -3f);
+
+        var bubbleVlg = go.AddComponent<VerticalLayoutGroup>();
+        bubbleVlg.padding = new RectOffset(18, 18, 12, 12);
+        bubbleVlg.spacing = 2f;
+        bubbleVlg.childAlignment      = TextAnchor.UpperLeft;
+        bubbleVlg.childControlWidth   = true;
+        bubbleVlg.childControlHeight  = true;
+        bubbleVlg.childForceExpandWidth  = true;
+        bubbleVlg.childForceExpandHeight = false;
+
+        // Teks pesan — word-wrap, tinggi mengikuti panjang teks.
+        var t = BuatTeks(go.transform, "Text", teks, 21, warnaTeksBubble, FontStyles.Normal);
+        t.alignment          = TextAlignmentOptions.TopLeft;
+        t.textWrappingMode   = TextWrappingModes.Normal;
+        t.lineSpacing        = 6f;
+
+        // Jam kecil ala WhatsApp di pojok kanan bawah bubble.
+        var jam = BuatTeks(go.transform, "Jam", WaktuSekarang(), 13,
+                           new Color(1f, 1f, 1f, 0.45f), FontStyles.Normal);
+        jam.alignment = TextAlignmentOptions.BottomRight;
 
         return go;
     }
 
+    // Jam HH:mm utk stempel waktu bubble.
+    string WaktuSekarang() => System.DateTime.Now.ToString("HH:mm");
+
     // ══════════════════════════════════════════════════════════════════════
     void BuildTombolAksi()
     {
-        // Timer di atas tombol
-        _timerText = BuatTeks(_canvasGO.transform, "Timer", "", 28, warnaTimer, FontStyles.Bold);
+        // Bilah aksi di BAGIAN BAWAH dalam frame HP (seperti area input WhatsApp).
+        _tombolPanel = new GameObject("ActionBar");
+        _tombolPanel.transform.SetParent(_phoneFrame.transform, false);
+        var barImg = _tombolPanel.AddComponent<Image>();
+        barImg.sprite = GetRoundedSprite();
+        barImg.color  = new Color(0.06f, 0.09f, 0.10f, 1f);
+        barImg.type   = Image.Type.Sliced;
+        var barOutl = _tombolPanel.AddComponent<Outline>();
+        barOutl.effectColor    = new Color(1f, 1f, 1f, 0.10f);
+        barOutl.effectDistance = new Vector2(1f, -1f);
+        var tpRT = _tombolPanel.GetComponent<RectTransform>();
+        tpRT.anchorMin = new Vector2(0f, 0f); tpRT.anchorMax = new Vector2(1f, 0f);
+        tpRT.pivot = new Vector2(0.5f, 0f);
+        tpRT.sizeDelta = new Vector2(-16f, 296f);
+        tpRT.anchoredPosition = new Vector2(0f, 8f);
+
+        // Timer di bagian atas bilah aksi
+        _timerText = BuatTeks(_tombolPanel.transform, "Timer", "", 24, warnaTimer, FontStyles.Bold);
         _timerText.alignment = TextAlignmentOptions.Center;
         var trt = _timerText.rectTransform;
-        trt.anchorMin = new Vector2(0.5f, 0f); trt.anchorMax = new Vector2(0.5f, 0f);
-        trt.pivot = new Vector2(0.5f, 0f);
-        trt.sizeDelta = new Vector2(400f, 50f);
-        trt.anchoredPosition = new Vector2(0f, 230f);
+        trt.anchorMin = new Vector2(0f, 1f); trt.anchorMax = new Vector2(1f, 1f);
+        trt.pivot = new Vector2(0.5f, 1f);
+        trt.offsetMin = new Vector2(12f, -48f);
+        trt.offsetMax = new Vector2(-12f, -10f);
 
-        _tombolPanel = new GameObject("TombolPanel");
-        _tombolPanel.transform.SetParent(_canvasGO.transform, false);
-        var tpRT = _tombolPanel.AddComponent<RectTransform>();
-        tpRT.anchorMin = new Vector2(0.5f, 0f); tpRT.anchorMax = new Vector2(0.5f, 0f);
-        tpRT.pivot = new Vector2(0.5f, 0f);
-        tpRT.sizeDelta = new Vector2(900f, 200f);
-        tpRT.anchoredPosition = new Vector2(0f, 30f);
+        // Grid tombol di bawah timer
+        var gridGO = new GameObject("Grid");
+        gridGO.transform.SetParent(_tombolPanel.transform, false);
+        var gRT = gridGO.AddComponent<RectTransform>();
+        gRT.anchorMin = new Vector2(0f, 0f); gRT.anchorMax = new Vector2(1f, 1f);
+        gRT.offsetMin = new Vector2(14f, 14f);
+        gRT.offsetMax = new Vector2(-14f, -52f);
 
-        var grid = _tombolPanel.AddComponent<GridLayoutGroup>();
-        grid.cellSize = new Vector2(430f, 70f);
-        grid.spacing = new Vector2(20f, 16f);
-        grid.childAlignment = TextAnchor.MiddleCenter;
+        var grid = gridGO.AddComponent<GridLayoutGroup>();
+        grid.cellSize = new Vector2(330f, 60f);
+        grid.spacing = new Vector2(14f, 12f);
+        grid.childAlignment = TextAnchor.UpperCenter;
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         grid.constraintCount = 2;
 
         // Tombol screenshot (kalau diaktifkan)
         if (tampilkanTombolScreenshot)
         {
-            BuatTombol(_tombolPanel.transform, screenshotLabel + $" (+{screenshotBonus})", screenshotWarna, () =>
+            var ssGO = BuatTombol(gridGO.transform, screenshotLabel + $" (+{screenshotBonus})", screenshotWarna, null);
+            var ssBtn = ssGO.GetComponent<Button>();
+            ssBtn.onClick.AddListener(() =>
             {
                 if (_screenshotDiambil) return;
                 _screenshotDiambil = true;
                 AudioManager.Instance?.Click();
                 var gs = GameState.Instance;
                 if (gs != null) { gs.score += screenshotBonus; gs.screenshotTaken = true; }
+                if (!string.IsNullOrEmpty(screenshotAchievement))
+                    GameState.Instance?.EarnAchievement(screenshotAchievement);
                 Debug.Log($"[ChatSim] Screenshot diambil. +{screenshotBonus} poin.");
-                // Visual feedback: ubah teks tombol
-                var label = _tombolPanel.transform.Find(screenshotLabel + $" (+{screenshotBonus})/Label")?.GetComponent<TextMeshProUGUI>();
+                var label = ssGO.transform.Find("Label")?.GetComponent<TextMeshProUGUI>();
                 if (label != null) label.text = "\u2713 Screenshot tersimpan";
             });
         }
@@ -349,11 +468,11 @@ public class ChatSimWhatsApp : MonoBehaviour
         foreach (var a in aksiList)
         {
             var aksiRef = a; // capture
-            BuatTombol(_tombolPanel.transform, a.label, a.warna, () => PilihAksi(aksiRef));
+            BuatTombol(gridGO.transform, a.label, a.warna, () => PilihAksi(aksiRef));
         }
     }
 
-    void BuatTombol(Transform parent, string teks, Color warna, Action onClick)
+    GameObject BuatTombol(Transform parent, string teks, Color warna, Action onClick)
     {
         var go = new GameObject(teks);
         go.transform.SetParent(parent, false);
@@ -370,14 +489,18 @@ public class ChatSimWhatsApp : MonoBehaviour
         colors.highlightedColor = new Color(Mathf.Min(1f, warna.r * 1.18f), Mathf.Min(1f, warna.g * 1.18f), Mathf.Min(1f, warna.b * 1.18f), warna.a);
         colors.pressedColor     = new Color(warna.r * 0.85f, warna.g * 0.85f, warna.b * 0.85f, warna.a);
         btn.colors = colors;
-        btn.onClick.AddListener(() => onClick?.Invoke());
+        if (onClick != null) btn.onClick.AddListener(() => onClick.Invoke());
 
-        var t = BuatTeks(go.transform, "Label", teks, 18, Color.white, FontStyles.Bold);
+        var t = BuatTeks(go.transform, "Label", teks, 16, Color.white, FontStyles.Bold);
         t.alignment = TextAlignmentOptions.Center;
+        t.enableAutoSizing = true;
+        t.fontSizeMin = 12f; t.fontSizeMax = 16f;
         var trt = t.rectTransform;
         trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
-        trt.offsetMin = new Vector2(10f, 4f);
-        trt.offsetMax = new Vector2(-10f, -4f);
+        trt.offsetMin = new Vector2(8f, 4f);
+        trt.offsetMax = new Vector2(-8f, -4f);
+
+        return go;
     }
 
     IEnumerator TimerCoroutine()
@@ -407,13 +530,19 @@ public class ChatSimWhatsApp : MonoBehaviour
         var gs = GameState.Instance;
         if (gs != null)
         {
-            gs.AddChoice(2, "Chat: " + a.label, a.kategori);
+            gs.AddChoice(hariUntukSkor, "Chat: " + a.label, a.kategori);
             if (a.bonusPoin > 0)
             {
                 gs.score += a.bonusPoin;
                 Debug.Log($"[ChatSim] Bonus +{a.bonusPoin}");
             }
-            if (a.kurangiNyawa)
+            if (a.akhiriGameOver)
+            {
+                // Pilihan fatal → nyawa langsung habis (GAME OVER).
+                gs.lives = 0;
+                Debug.Log("[ChatSim] Pilihan fatal → GAME OVER.");
+            }
+            else if (a.kurangiNyawa)
             {
                 gs.lives = Mathf.Max(0, gs.lives - 1);
                 Debug.Log($"[ChatSim] Nyawa -1 (sisa {gs.lives})");

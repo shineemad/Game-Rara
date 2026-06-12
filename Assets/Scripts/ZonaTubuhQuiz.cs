@@ -31,13 +31,13 @@ public class ZonaTubuhQuiz : MonoBehaviour
     }
 
     [Header("Judul & Instruksi")]
-    public string judulTeks = "\uD83D\uDEE1  Quiz: Mana yang BOLEH, mana yang TIDAK BOLEH?";
+    public string judulTeks = "\uD83D\uDEE1  Quiz: Seret label ke zona yang tepat!";
     public Color  judulWarna = new Color(1f, 0.85f, 0.3f, 1f);
     public int    judulUkuran = 30;
     [TextArea(2, 3)]
-    public string instruksiTeks = "Tarik setiap chip ke ZONA AMAN atau ZONA BAHAYA.\nSetiap jawaban benar = poin. Waktu terbatas!";
+    public string instruksiTeks = "\u2190  Seret ke AMAN      |      Seret ke BAHAYA  \u2192";
     public Color  instruksiWarna = new Color(1f, 1f, 0.92f, 0.85f);
-    public int    instruksiUkuran = 18;
+    public int    instruksiUkuran = 20;
 
     [Header("Mode Visual Novel")]
     [Tooltip("Saat ON, quiz disajikan sebagai TANYA-JAWAB bercabang dalam box dialog VN\n" +
@@ -61,12 +61,12 @@ public class ZonaTubuhQuiz : MonoBehaviour
     [Header("Daftar Chip (CUSTOMIZABLE)")]
     public ChipData[] chips = new ChipData[]
     {
-        new ChipData { teks = "Salam jabat tangan", jawabanBenar = "AMAN" },
-        new ChipData { teks = "Peluk ortu/saudara",  jawabanBenar = "AMAN" },
-        new ChipData { teks = "Cek up dokter (didampingi)", jawabanBenar = "AMAN" },
-        new ChipData { teks = "Disentuh paksa orang asing", jawabanBenar = "BAHAYA" },
-        new ChipData { teks = "Diminta lepas baju oleh orang asing", jawabanBenar = "BAHAYA" },
-        new ChipData { teks = "Disuruh simpan rahasia 'pertemuan kita'", jawabanBenar = "BAHAYA" }
+        new ChipData { teks = "Bahu",   jawabanBenar = "AMAN" },
+        new ChipData { teks = "Tangan", jawabanBenar = "AMAN" },
+        new ChipData { teks = "Pipi",   jawabanBenar = "AMAN" },
+        new ChipData { teks = "Paha",   jawabanBenar = "BAHAYA" },
+        new ChipData { teks = "Perut",  jawabanBenar = "BAHAYA" },
+        new ChipData { teks = "Privat", jawabanBenar = "BAHAYA" }
     };
 
     [Header("Warna Zona")]
@@ -74,6 +74,27 @@ public class ZonaTubuhQuiz : MonoBehaviour
     public Color warnaZonaBahaya = new Color(0.40f, 0.12f, 0.12f, 0.92f);
     public Color warnaBorderAman = new Color(0.45f, 1f, 0.65f, 1f);
     public Color warnaBorderBahaya = new Color(1f, 0.45f, 0.45f, 1f);
+
+    [Header("Label & Subjudul Zona (CUSTOMIZABLE)")]
+    public string zonaAmanLabel      = "\u2713  ZONA AMAN";
+    public string zonaAmanSubtitle   = "Boleh disentuh\nteman/keluarga";
+    public string zonaBahayaLabel    = "\u2716  ZONA BAHAYA";
+    public string zonaBahayaSubtitle = "Area privat\nDilarang disentuh!";
+    public int    zonaSubtitleUkuran = 18;
+
+    [Header("Tata Letak Zona Samping (anchor 0\u20131 layar)")]
+    [Tooltip("Zona AMAN = strip tinggi di tepi KIRI layar.")]
+    public Vector2 zonaAmanAnchorMin   = new Vector2(0.012f, 0.10f);
+    public Vector2 zonaAmanAnchorMax   = new Vector2(0.205f, 0.86f);
+    [Tooltip("Zona BAHAYA = strip tinggi di tepi KANAN layar.")]
+    public Vector2 zonaBahayaAnchorMin = new Vector2(0.795f, 0.10f);
+    public Vector2 zonaBahayaAnchorMax = new Vector2(0.988f, 0.86f);
+
+    [Header("Karakter Tengah (opsional)")]
+    [Tooltip("Sprite ilustrasi tubuh di tengah layar (di antara dua kolom label). Opsional.")]
+    public Sprite  karakterSprite;
+    public Vector2 karakterAnchoredPos = new Vector2(0f, -20f);
+    public Vector2 karakterUkuran      = new Vector2(220f, 360f);
 
     [Header("Chip Style")]
     public Color  chipWarna       = new Color(0.18f, 0.20f, 0.30f, 0.95f);
@@ -266,6 +287,8 @@ public class ZonaTubuhQuiz : MonoBehaviour
     private GameObject _canvasGO;
     private RectTransform _zonaAmanRT;
     private RectTransform _zonaBahayaRT;
+    private Transform  _zonaAmanContent;   // wadah chip yang sudah masuk ke ZONA AMAN
+    private Transform  _zonaBahayaContent; // wadah chip yang sudah masuk ke ZONA BAHAYA
     private TextMeshProUGUI _timerText;
     private TextMeshProUGUI _skorText;
     private float      _sisaWaktu;
@@ -757,7 +780,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
             narasiUkuranTeks, narasiTeksWarna, FontStyles.Normal);
         _narasiTeksTMP.alignment           = TextAlignmentOptions.TopLeft;
         _narasiTeksTMP.textWrappingMode    = TMPro.TextWrappingModes.Normal;
-        _narasiTeksTMP.overflowMode        = TextOverflowModes.Ellipsis;
+        _narasiTeksTMP.overflowMode        = TextOverflowModes.Overflow;
         var trt = _narasiTeksTMP.rectTransform;
         trt.anchorMin = narasiTextAnchorMin;
         trt.anchorMax = narasiTextAnchorMax;
@@ -830,15 +853,41 @@ public class ZonaTubuhQuiz : MonoBehaviour
         sc.matchWidthOrHeight  = 0.5f;
         canvasGO.AddComponent<GraphicRaycaster>();
 
-        // Dim fullscreen
-        var dim = new GameObject("Dim");
+        // ── BACKDROP FULLSCREEN BURAM ───────────────────────────────────────
+        // Menutup TOTAL latar Day 1 di belakang modal (bukan sekadar dim transparan).
+        // Lapisan 1: warna dasar deep-navy OPAQUE (atau sprite kustom bila di-assign).
+        var dim = new GameObject("Backdrop");
         dim.transform.SetParent(canvasGO.transform, false);
         var dimRT = dim.AddComponent<RectTransform>();
         dimRT.anchorMin = Vector2.zero; dimRT.anchorMax = Vector2.one;
         dimRT.offsetMin = dimRT.offsetMax = Vector2.zero;
         var dimImg = dim.AddComponent<Image>();
-        dimImg.color = new Color(0f, 0f, 0f, 0.75f);
+        if (bgFullscreenSprite != null)
+        {
+            dimImg.sprite        = bgFullscreenSprite;
+            dimImg.preserveAspect = bgFullscreenPreserveAspect;
+            dimImg.color         = Color.white;
+        }
+        else
+        {
+            dimImg.color = new Color(0.035f, 0.055f, 0.12f, 1f); // deep navy, opaque
+        }
         dimImg.raycastTarget = true; // blokir input di belakang
+
+        // Lapisan 2: glow lembut di tengah (di belakang panel) untuk kedalaman.
+        var glow = new GameObject("GlowTengah");
+        glow.transform.SetParent(canvasGO.transform, false);
+        var glowRT = glow.AddComponent<RectTransform>();
+        glowRT.anchorMin = new Vector2(0.5f, 0.5f);
+        glowRT.anchorMax = new Vector2(0.5f, 0.5f);
+        glowRT.pivot     = new Vector2(0.5f, 0.5f);
+        glowRT.sizeDelta = new Vector2(1400f, 980f);
+        glowRT.anchoredPosition = Vector2.zero;
+        var glowImg = glow.AddComponent<Image>();
+        glowImg.sprite        = GetRoundedSprite();
+        glowImg.type          = Image.Type.Sliced;
+        glowImg.color         = new Color(0.16f, 0.34f, 0.70f, 0.18f); // biru lembut
+        glowImg.raycastTarget = false;
 
         // Panel utama (ukuran ~ 50% × 60% layar)
         var panel = new GameObject("Panel");
@@ -959,14 +1008,14 @@ public class ZonaTubuhQuiz : MonoBehaviour
         jrt.offsetMin = new Vector2(40f, -90f);
         jrt.offsetMax = new Vector2(-40f, -25f);
 
-        // Instruksi
+        // Instruksi (hint seret) — di BAWAH tengah layar
         var instr = BuatTeks(_canvasGO.transform, "Instruksi", instruksiTeks, instruksiUkuran, instruksiWarna, FontStyles.Italic);
         instr.alignment = TextAlignmentOptions.Center;
         var irt = instr.rectTransform;
-        irt.anchorMin = new Vector2(0f, 1f); irt.anchorMax = new Vector2(1f, 1f);
-        irt.pivot = new Vector2(0.5f, 1f);
-        irt.offsetMin = new Vector2(40f, -160f);
-        irt.offsetMax = new Vector2(-40f, -95f);
+        irt.anchorMin = new Vector2(0.2f, 0f); irt.anchorMax = new Vector2(0.8f, 0f);
+        irt.pivot = new Vector2(0.5f, 0f);
+        irt.offsetMin = new Vector2(0f, 18f);
+        irt.offsetMax = new Vector2(0f, 70f);
 
         // Timer + Skor (atas kanan & kiri)
         _timerText = BuatTeks(_canvasGO.transform, "Timer", "00:15", ukuranTimer, warnaTimer, FontStyles.Bold);
@@ -985,29 +1034,52 @@ public class ZonaTubuhQuiz : MonoBehaviour
         srt.sizeDelta = new Vector2(280f, 50f);
         srt.anchoredPosition = new Vector2(40f, -25f);
 
-        // Zona kiri (AMAN) + kanan (BAHAYA)
-        _zonaAmanRT   = BuatZona("ZONA_AMAN",   "\u2713  ZONA AMAN",   warnaZonaAman,   warnaBorderAman,   new Vector2(-450f, -80f));
-        _zonaBahayaRT = BuatZona("ZONA_BAHAYA", "\u2716  ZONA BAHAYA", warnaZonaBahaya, warnaBorderBahaya, new Vector2( 450f, -80f));
+        // Zona KIRI (AMAN) & KANAN (BAHAYA) — strip tinggi di tepi layar
+        _zonaAmanRT   = BuatZona("ZONA_AMAN",   zonaAmanLabel,   zonaAmanSubtitle,   warnaZonaAman,   warnaBorderAman,   zonaAmanAnchorMin,   zonaAmanAnchorMax,   out _zonaAmanContent);
+        _zonaBahayaRT = BuatZona("ZONA_BAHAYA", zonaBahayaLabel, zonaBahayaSubtitle, warnaZonaBahaya, warnaBorderBahaya, zonaBahayaAnchorMin, zonaBahayaAnchorMax, out _zonaBahayaContent);
 
         // Fallback KLIK: klik zona untuk menempatkan chip yang sedang dipilih.
         TambahKlikZona(_zonaAmanRT,   "AMAN");
         TambahKlikZona(_zonaBahayaRT, "BAHAYA");
 
-        // Container chip di bawah
+        // Karakter ilustrasi di tengah (opsional, di belakang label)
+        if (karakterSprite != null)
+        {
+            var karGO = new GameObject("Karakter");
+            karGO.transform.SetParent(_canvasGO.transform, false);
+            var karImg = karGO.AddComponent<Image>();
+            karImg.sprite         = karakterSprite;
+            karImg.preserveAspect = true;
+            karImg.raycastTarget  = false;
+            var karRT = karGO.GetComponent<RectTransform>();
+            karRT.anchorMin = new Vector2(0.5f, 0.5f); karRT.anchorMax = new Vector2(0.5f, 0.5f);
+            karRT.pivot = new Vector2(0.5f, 0.5f);
+            karRT.sizeDelta = karakterUkuran;
+            karRT.anchoredPosition = karakterAnchoredPos;
+        }
+
+        // Container label di TENGAH — 2 kolom x 3 baris, dengan celah tengah utk karakter
         var chipArea = new GameObject("ChipArea");
         chipArea.transform.SetParent(_canvasGO.transform, false);
         var caRT = chipArea.AddComponent<RectTransform>();
-        caRT.anchorMin = new Vector2(0.5f, 0f); caRT.anchorMax = new Vector2(0.5f, 0f);
-        caRT.pivot = new Vector2(0.5f, 0f);
-        caRT.sizeDelta = new Vector2(1700f, 200f);
-        caRT.anchoredPosition = new Vector2(0f, 50f);
+        caRT.anchorMin = new Vector2(0.5f, 0.5f); caRT.anchorMax = new Vector2(0.5f, 0.5f);
+        caRT.pivot = new Vector2(0.5f, 0.5f);
+
+        int kolom = 2;
+        int baris = Mathf.CeilToInt(chips.Length / (float)kolom);
+        float celahTengah = Mathf.Max(chipUkuran.x + 40f, karakterUkuran.x + 40f); // ruang utk karakter
+        float spasiBaris  = 26f;
+        float lebarTotal  = kolom * chipUkuran.x + celahTengah;
+        float tinggiTotal = baris * chipUkuran.y + (baris - 1) * spasiBaris;
+        caRT.sizeDelta = new Vector2(lebarTotal, tinggiTotal);
+        caRT.anchoredPosition = new Vector2(0f, -20f);
 
         var grid = chipArea.AddComponent<GridLayoutGroup>();
         grid.cellSize = chipUkuran;
-        grid.spacing  = new Vector2(20f, 20f);
+        grid.spacing  = new Vector2(celahTengah, spasiBaris);
         grid.childAlignment = TextAnchor.MiddleCenter;
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
-        grid.constraintCount = Mathf.Min(6, chips.Length);
+        grid.constraintCount = kolom;
 
         foreach (var c in chips)
         {
@@ -1016,7 +1088,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
         }
     }
 
-    RectTransform BuatZona(string name, string label, Color bg, Color border, Vector2 pos)
+    RectTransform BuatZona(string name, string label, string subtitle, Color bg, Color border, Vector2 anchorMin, Vector2 anchorMax, out Transform content)
     {
         var go = new GameObject(name);
         go.transform.SetParent(_canvasGO.transform, false);
@@ -1028,18 +1100,44 @@ public class ZonaTubuhQuiz : MonoBehaviour
         outl.effectColor    = border;
         outl.effectDistance = new Vector2(3f, -3f);
         var rt = go.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0.5f); rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(780f, 420f);
-        rt.anchoredPosition = pos;
+        rt.anchorMin = anchorMin; rt.anchorMax = anchorMax;
+        rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
 
-        var lab = BuatTeks(go.transform, "Label", label, 32, Color.white, FontStyles.Bold);
+        // Judul zona (atas)
+        var lab = BuatTeks(go.transform, "Label", label, 26, Color.white, FontStyles.Bold);
         lab.alignment = TextAlignmentOptions.Center;
         var lrt = lab.rectTransform;
         lrt.anchorMin = new Vector2(0f, 1f); lrt.anchorMax = new Vector2(1f, 1f);
         lrt.pivot = new Vector2(0.5f, 1f);
-        lrt.offsetMin = new Vector2(20f, -65f);
-        lrt.offsetMax = new Vector2(-20f, -15f);
+        lrt.offsetMin = new Vector2(8f, -56f);
+        lrt.offsetMax = new Vector2(-8f, -12f);
+
+        // Subjudul zona (di bawah judul)
+        if (!string.IsNullOrEmpty(subtitle))
+        {
+            var sub = BuatTeks(go.transform, "Subtitle", subtitle, zonaSubtitleUkuran, new Color(1f, 1f, 1f, 0.82f), FontStyles.Italic);
+            sub.alignment = TextAlignmentOptions.Center;
+            var subrt = sub.rectTransform;
+            subrt.anchorMin = new Vector2(0f, 1f); subrt.anchorMax = new Vector2(1f, 1f);
+            subrt.pivot = new Vector2(0.5f, 1f);
+            subrt.offsetMin = new Vector2(8f, -120f);
+            subrt.offsetMax = new Vector2(-8f, -58f);
+        }
+
+        // Wadah tempat chip MASUK & menumpuk (di bawah judul/subjudul)
+        var contentGO = new GameObject("Content");
+        contentGO.transform.SetParent(go.transform, false);
+        var cRT = contentGO.AddComponent<RectTransform>();
+        cRT.anchorMin = new Vector2(0f, 0f); cRT.anchorMax = new Vector2(1f, 1f);
+        cRT.offsetMin = new Vector2(14f, 14f);
+        cRT.offsetMax = new Vector2(-14f, -130f); // sisakan ruang utk judul + subjudul
+        var vlg = contentGO.AddComponent<VerticalLayoutGroup>();
+        vlg.spacing = 12f;
+        vlg.padding = new RectOffset(6, 6, 6, 6);
+        vlg.childAlignment = TextAnchor.UpperCenter;
+        vlg.childControlWidth = true;  vlg.childControlHeight = true;
+        vlg.childForceExpandWidth = true; vlg.childForceExpandHeight = false;
+        content = contentGO.transform;
 
         return rt;
     }
@@ -1100,9 +1198,9 @@ public class ZonaTubuhQuiz : MonoBehaviour
     }
 
     // Dipanggil oleh DraggableChip saat drop selesai
-    public bool CekDrop(ChipData data, Vector2 screenPos)
+    public bool CekDrop(DraggableChip chip, Vector2 screenPos)
     {
-        if (_quizSelesai) return false;
+        if (_quizSelesai || chip == null) return false;
 
         bool diZonaAman   = RectTransformUtility.RectangleContainsScreenPoint(_zonaAmanRT,   screenPos);
         bool diZonaBahaya = RectTransformUtility.RectangleContainsScreenPoint(_zonaBahayaRT, screenPos);
@@ -1110,8 +1208,17 @@ public class ZonaTubuhQuiz : MonoBehaviour
         if (!diZonaAman && !diZonaBahaya) return false;
 
         string jawabanPemain = diZonaAman ? "AMAN" : "BAHAYA";
-        ProsesJawaban(data, jawabanPemain);
+        LabuhkanChip(chip, jawabanPemain);
         return true;
+    }
+
+    // Masukkan chip ke DALAM kotak zona (reparent + menumpuk) lalu proses skor.
+    void LabuhkanChip(DraggableChip chip, string jawabanPemain)
+    {
+        Transform wadah = jawabanPemain == "AMAN" ? _zonaAmanContent : _zonaBahayaContent;
+        bool benar = chip.data != null && chip.data.jawabanBenar == jawabanPemain;
+        chip.Labuh(wadah, benar ? chipBenarWarna : chipSalahWarna);
+        ProsesJawaban(chip.data, jawabanPemain);
     }
 
     // ── FALLBACK KLIK (tap chip → tap zona) ────────────────────────────────
@@ -1134,8 +1241,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
         var chip = _chipTerpilih;
         _chipTerpilih = null;
         chip.SetTerpilih(false);
-        ProsesJawaban(chip.data, jawabanPemain);
-        chip.Tempatkan(true);
+        LabuhkanChip(chip, jawabanPemain);
     }
 
     // Logika skor & feedback bersama untuk drag-drop maupun klik.
@@ -1323,12 +1429,9 @@ public class DraggableChip : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     {
         _sedangDrag = false;
         _cg.blocksRaycasts = true;
-        bool accepted = quiz.CekDrop(data, eventData.position);
-        if (accepted)
-        {
-            Tempatkan(true);
-        }
-        else
+        // CekDrop akan memasukkan chip ke dalam kotak zona bila diterima.
+        bool accepted = quiz.CekDrop(this, eventData.position);
+        if (!accepted)
         {
             // Kembali ke posisi awal
             transform.SetParent(_parentAwal, false);
@@ -1351,16 +1454,22 @@ public class DraggableChip : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         _outline.effectDistance = on ? new Vector2(3f, -3f) : new Vector2(1f, -1f);
     }
 
-    // Tempatkan chip secara final (dipakai oleh drag ATAU klik): disable + fade.
-    public void Tempatkan(bool accepted)
+    // Labuhkan chip ke DALAM kotak zona (dipakai oleh drag ATAU klik):
+    // pindahkan chip menjadi anak wadah zona supaya menumpuk & tetap di sana.
+    public void Labuh(Transform wadahZona, Color warnaAkhir)
     {
-        if (!accepted) return;
         _ditempatkan = true;
         SetTerpilih(false);
         _cg.interactable   = false;
         _cg.blocksRaycasts = false;
+        if (wadahZona != null)
+        {
+            transform.SetParent(wadahZona, false);
+            _rt.anchoredPosition = Vector2.zero;
+            _rt.localScale = Vector3.one;
+        }
         if (chipImage != null)
-            chipImage.color = new Color(chipImage.color.r, chipImage.color.g, chipImage.color.b, 0.4f);
+            chipImage.color = warnaAkhir;
     }
 }
 

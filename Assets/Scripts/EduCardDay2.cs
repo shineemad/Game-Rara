@@ -126,6 +126,15 @@ public class EduCardDay2 : MonoBehaviour
     public void Tampilkan()
     {
         if (_kartuTampil) return;
+        // Pastikan GameObject ini (dan seluruh rantai parent-nya) AKTIF dulu.
+        // Kalau salah satu leluhur (mis. Day2_Root / Day2Preset) sempat ter-disable,
+        // activeInHierarchy bisa false -> StartCoroutine gagal diam-diam dan kartu
+        // tidak pernah muncul (tombol "Lanjut" terasa tidak berfungsi).
+        if (!gameObject.activeInHierarchy)
+        {
+            for (Transform t = transform; t != null; t = t.parent)
+                if (!t.gameObject.activeSelf) t.gameObject.SetActive(true);
+        }
         StartCoroutine(TampilkanKartu());
     }
 
@@ -183,7 +192,7 @@ public class EduCardDay2 : MonoBehaviour
         var cardRT = card.AddComponent<RectTransform>();
         cardRT.anchorMin = cardRT.anchorMax = new Vector2(0.5f, 0.5f);
         cardRT.pivot = new Vector2(0.5f, 0.5f);
-        cardRT.sizeDelta = new Vector2(960f, 680f);
+        cardRT.sizeDelta = new Vector2(1000f, 900f);
 
         var cardImg = card.AddComponent<Image>();
         cardImg.sprite = backgroundSprite != null ? backgroundSprite : GetRoundedRect();
@@ -229,20 +238,59 @@ public class EduCardDay2 : MonoBehaviour
         tRT.offsetMax = new Vector2(-30f, -25f);
         titleTMP.alignment = TextAlignmentOptions.Center;
 
-        // Tips list
-        var listGO = new GameObject("TipsList");
-        listGO.transform.SetParent(card.transform, false);
+        // Tips list — area SCROLLABLE supaya 5 tips padat tidak saling tumpang-tindih.
+        // Struktur: ScrollView(ScrollRect) → Viewport(RectMask2D) → Content(VLG+Fitter).
+        var scrollGO = new GameObject("TipsScroll");
+        scrollGO.transform.SetParent(card.transform, false);
+        var scrollRT = scrollGO.AddComponent<RectTransform>();
+        scrollRT.anchorMin = new Vector2(0f, 0f); scrollRT.anchorMax = new Vector2(1f, 1f);
+        scrollRT.offsetMin = new Vector2(36f, 168f);   // di atas footer + tombol
+        scrollRT.offsetMax = new Vector2(-36f, -104f);  // di bawah judul
+        var scrollRect = scrollGO.AddComponent<ScrollRect>();
+        scrollRect.horizontal = false;
+        scrollRect.vertical   = true;
+        scrollRect.movementType = ScrollRect.MovementType.Clamped;
+        scrollRect.scrollSensitivity = 28f;
+
+        var viewportGO = new GameObject("Viewport");
+        viewportGO.transform.SetParent(scrollGO.transform, false);
+        var viewportRT = viewportGO.AddComponent<RectTransform>();
+        viewportRT.anchorMin = Vector2.zero; viewportRT.anchorMax = Vector2.one;
+        viewportRT.offsetMin = Vector2.zero; viewportRT.offsetMax = Vector2.zero;
+        viewportRT.pivot = new Vector2(0f, 1f);
+        var vpImg = viewportGO.AddComponent<Image>();
+        vpImg.color = new Color(0f, 0f, 0f, 0.001f); // hampir transparan, perlu utk mask
+        viewportGO.AddComponent<RectMask2D>();
+        scrollRect.viewport = viewportRT;
+
+        var listGO = new GameObject("TipsContent");
+        listGO.transform.SetParent(viewportGO.transform, false);
         var listRT = listGO.AddComponent<RectTransform>();
-        listRT.anchorMin = new Vector2(0f, 0f); listRT.anchorMax = new Vector2(1f, 1f);
-        listRT.offsetMin = new Vector2(40f, 140f);
-        listRT.offsetMax = new Vector2(-40f, -110f);
+        listRT.anchorMin = new Vector2(0f, 1f); listRT.anchorMax = new Vector2(1f, 1f);
+        listRT.pivot = new Vector2(0.5f, 1f);
+        listRT.offsetMin = new Vector2(0f, 0f); listRT.offsetMax = new Vector2(0f, 0f);
         var vlg = listGO.AddComponent<VerticalLayoutGroup>();
         vlg.childAlignment = TextAnchor.UpperLeft;
         vlg.childControlWidth = true; vlg.childControlHeight = true;
         vlg.childForceExpandWidth = true; vlg.childForceExpandHeight = false;
-        vlg.spacing = 14f; vlg.padding = new RectOffset(8, 8, 8, 8);
+        vlg.spacing = 18f; vlg.padding = new RectOffset(10, 16, 6, 6);
+        var listFitter = listGO.AddComponent<ContentSizeFitter>();
+        listFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        scrollRect.content = listRT;
 
         if (tipsList != null) foreach (var tip in tipsList) BuatTipEntry(listGO.transform, tip);
+
+        // Garis pemisah tipis di atas footer (pemanis & pemisah area baca).
+        var divider = new GameObject("Divider");
+        divider.transform.SetParent(card.transform, false);
+        var dvRT = divider.AddComponent<RectTransform>();
+        dvRT.anchorMin = new Vector2(0f, 0f); dvRT.anchorMax = new Vector2(1f, 0f);
+        dvRT.pivot = new Vector2(0.5f, 0f);
+        dvRT.offsetMin = new Vector2(60f, 152f);
+        dvRT.offsetMax = new Vector2(-60f, 154f);
+        var dvImg = divider.AddComponent<Image>();
+        dvImg.color = new Color(borderColor.r, borderColor.g, borderColor.b, 0.30f);
+        dvImg.raycastTarget = false;
 
         // Footer
         if (!string.IsNullOrEmpty(footerText))
@@ -251,8 +299,8 @@ public class EduCardDay2 : MonoBehaviour
             var fRT = footTMP.rectTransform;
             fRT.anchorMin = new Vector2(0f, 0f); fRT.anchorMax = new Vector2(1f, 0f);
             fRT.pivot = new Vector2(0.5f, 0f);
-            fRT.offsetMin = new Vector2(30f, 90f);
-            fRT.offsetMax = new Vector2(-30f, 140f);
+            fRT.offsetMin = new Vector2(30f, 96f);
+            fRT.offsetMax = new Vector2(-30f, 150f);
             footTMP.alignment = TextAlignmentOptions.Center;
         }
 
@@ -321,11 +369,15 @@ public class EduCardDay2 : MonoBehaviour
         var txtLE = txtCol.AddComponent<LayoutElement>();
         txtLE.flexibleWidth = 1f;
 
-        var h = BuatTeks(txtCol.transform, "Heading", tip.heading, 22, tip.warnaHeading, FontStyles.Bold);
+        var h = BuatTeks(txtCol.transform, "Heading", tip.heading, 23, tip.warnaHeading, FontStyles.Bold);
         h.alignment = TextAlignmentOptions.TopLeft;
-        var b = BuatTeks(txtCol.transform, "Isi", tip.isi, 18, tip.warnaIsi, FontStyles.Normal);
+        var hLE = h.gameObject.AddComponent<LayoutElement>();
+        hLE.minHeight = 28f;
+        var b = BuatTeks(txtCol.transform, "Isi", tip.isi, 19, tip.warnaIsi, FontStyles.Normal);
         b.alignment = TextAlignmentOptions.TopLeft;
-        b.lineSpacing = 6f;
+        b.lineSpacing = 8f;
+        var bLE = b.gameObject.AddComponent<LayoutElement>();
+        bLE.minHeight = 24f;
     }
 
     void HandleLanjut()

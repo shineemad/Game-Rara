@@ -256,9 +256,9 @@ public class AngkotSentuhScene : MonoBehaviour
     public string judulTeriak  = "\uD83D\uDDE3  TERIAK SEKUATNYA!";
     public string instruksiTeriak = "TAHAN tombol & teriak \u201CJANGAN PEGANG SAYA!\u201D sampai meter MERAH!";
     public string teksTombolTeriak = "TAHAN UNTUK TERIAK";
-    public string labelNormal = "Suara Normal  (50-60 dB)";
-    public string labelSedang = "Suara Sedang  (60-80 dB)";
-    public string labelKeras  = "Suara KERAS  (>80 dB)";
+    public string labelNormal = "Suara Normal";
+    public string labelSedang = "Suara Sedang";
+    public string labelKeras  = "Suara KERAS";
     public string labelBerhasil = "\u2713  TERIAKAN BERHASIL!";
     public Color  hijauWarna  = new Color(0.16f, 0.74f, 0.40f, 1f);
     public Color  kuningWarna = new Color(0.96f, 0.78f, 0.10f, 1f);

@@ -1001,7 +1001,7 @@ public class Day1Intro : MonoBehaviour
         rt.anchorMin = anchorMin;
         rt.anchorMax = anchorMax;
         rt.offsetMin = rt.offsetMax = Vector2.zero;
-
+        
         var tmp = go.AddComponent<TextMeshProUGUI>();
         tmp.text               = teks;
         tmp.fontSize           = ukuranFont;

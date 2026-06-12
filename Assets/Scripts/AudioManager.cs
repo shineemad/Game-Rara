@@ -42,6 +42,24 @@ public class AudioManager : MonoBehaviour
     [Tooltip("SFX saat lencana / achievement diraih. Kosong = pakai sfxCorrect.")]
     public AudioClip sfxAchievement;
 
+    [Header("SFX — Hari 2 (Angkot & Chat)")]
+    [Tooltip("Bunyi notifikasi chat masuk (gaya WhatsApp 'ting') di ChatSim.")]
+    public AudioClip sfxChatMasuk;
+    [Tooltip("Bunyi 'tik' saat bubble chat selesai diketik / muncul. Kosong = pakai sfxChatMasuk.")]
+    public AudioClip sfxChatKetik;
+    [Tooltip("Suara mesin/klakson angkot pendek saat naik angkot.")]
+    public AudioClip sfxAngkot;
+    [Tooltip("Bunyi peluit / teriak nyaring untuk efek tombol TERIAK. Kosong = pakai sfxLapor.")]
+    public AudioClip sfxPeluit;
+    [Tooltip("Suara langkah kaki Rara saat berjalan.")]
+    public AudioClip sfxLangkah;
+
+    [Header("Ambience (loop) — Hari 2")]
+    [Tooltip("AudioSource terpisah untuk suara latar suasana (angkot/jalan). Boleh dikosongkan.")]
+    public AudioSource ambienceSource;
+    [Tooltip("Klip ambience suasana angkot/jalan yang diputar berulang (loop) selama Hari 2.")]
+    public AudioClip ambienceAngkot;
+
     // ══════════════════════════════════════════════════════════════════════
     void Awake()
     {
@@ -135,6 +153,33 @@ public class AudioManager : MonoBehaviour
     public void PlayBahaya()      => PlaySFX(sfxBahaya      != null ? sfxBahaya      : sfxWrong);
     public void PlayLapor()       => PlaySFX(sfxLapor       != null ? sfxLapor       : sfxCorrect);
     public void PlayAchievement() => PlaySFX(sfxAchievement != null ? sfxAchievement : sfxCorrect);
+
+    // ── Hari 2: Angkot & Chat ─────────────────────────────────────────────
+    public void PlayChatMasuk() => PlaySFX(sfxChatMasuk);
+    public void PlayChatKetik() => PlaySFX(sfxChatKetik != null ? sfxChatKetik : sfxChatMasuk);
+    public void PlayAngkot()    => PlaySFX(sfxAngkot);
+    public void PlayPeluit()    => PlaySFX(sfxPeluit != null ? sfxPeluit : sfxLapor);
+    public void PlayLangkah()   => PlaySFX(sfxLangkah);
+
+    // ── Ambience suasana (loop) ───────────────────────────────────────────
+    /// Mulai ambience loop (mis. suasana angkot/jalan Hari 2).
+    public void PlayAmbience(AudioClip clip = null, float volume = 0.4f)
+    {
+        if (ambienceSource == null) return;
+        var pakai = clip != null ? clip : ambienceAngkot;
+        if (pakai == null) return;
+        if (ambienceSource.clip == pakai && ambienceSource.isPlaying) return;
+        ambienceSource.clip   = pakai;
+        ambienceSource.volume = volume;
+        ambienceSource.loop   = true;
+        ambienceSource.Play();
+    }
+
+    /// Hentikan ambience loop.
+    public void StopAmbience()
+    {
+        if (ambienceSource != null) ambienceSource.Stop();
+    }
 
     /// Putar SFX sesuai kategori "AMAN" | "RAGU" | "BAHAYA" | "LAPOR".
     public void PlayKategori(string kategori)

@@ -54,6 +54,33 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
     [Tooltip("Sprite latar belakang (mis. interior angkot). Opsional.")]
     public Sprite vnLatarSprite;
 
+    [Header("Layout Box Dialog VN (mirror Day 1 intro \u2014 box-relatif 0\u20131)")]
+    [Tooltip("Area kotak dialog di layar (anchorMin/Max). Default = mirror box Day 1 intro.")]
+    public Vector2 vnBoxAnchorMin = new Vector2(0.014f, 0.0145f);
+    public Vector2 vnBoxAnchorMax = new Vector2(0.986f, 0.3055f);
+    [Tooltip("Area portrait DI DALAM box (relatif box 0\u20131).")]
+    public Vector2 vnPortraitAnchorMin = new Vector2(0.0455f, 0.304f);
+    public Vector2 vnPortraitAnchorMax = new Vector2(0.2345f, 0.864f);
+    [Tooltip("Area banner nama pembicara DI DALAM box.")]
+    public Vector2 vnNamaAnchorMin = new Vector2(0.11f, 0.11f);
+    public Vector2 vnNamaAnchorMax = new Vector2(0.253f, 0.333f);
+    [Tooltip("Area teks isi dialog DI DALAM box.")]
+    public Vector2 vnTeksAnchorMin = new Vector2(0.31f, 0.55f);
+    public Vector2 vnTeksAnchorMax = new Vector2(0.84f, 0.76f);
+    [Tooltip("Area hint 'Ketuk / SPACE untuk lanjut' DI DALAM box.")]
+    public Vector2 vnHintAnchorMin = new Vector2(0.65f, 0.182f);
+    public Vector2 vnHintAnchorMax = new Vector2(0.946f, 0.302f);
+    [Tooltip("Warna & ukuran nama pembicara VN.")]
+    public Color vnNamaWarna = new Color(1f, 0.85f, 0.30f, 1f);
+    public int   vnNamaUkuran = 30;
+    [Tooltip("Warna & ukuran teks isi dialog VN.")]
+    public Color vnTeksWarna = Color.white;
+    public int   vnTeksUkuran = 28;
+    [Tooltip("Jaga aspek rasio portrait (cegah gepeng).")]
+    public bool  vnPortraitPreserveAspect = true;
+    [Tooltip("Teks hint lanjut di pojok box.")]
+    public string vnHintTeks = "\u25BC  Ketuk / SPACE untuk lanjut";
+
     [Header("Timer")]
     [Tooltip("Window total waktu (detik) untuk menyelesaikan tantangan.")]
     public float waktuWindow = 12f;
@@ -162,6 +189,11 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
     private bool       _berhasil;
     private Sprite     _roundedSprite;
 
+    // Layar hasil: simpan aksi lanjut + flag supaya bisa di-trigger lewat
+    // fallback keyboard/klik (jaga-jaga kalau raycast tombol terblokir canvas lain).
+    private bool       _hasilTampil;
+    private Action     _aksiLanjut;
+
     // Voice-Driven (mikrofon)
     private bool       _micAktif;
     private AudioClip  _micClip;
@@ -261,44 +293,44 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
             outl.effectDistance = new Vector2(2f, -2f);
         }
         var bxRT = box.GetComponent<RectTransform>();
-        bxRT.anchorMin = new Vector2(0.04f, 0.04f);
-        bxRT.anchorMax = new Vector2(0.96f, 0.40f);
+        bxRT.anchorMin = vnBoxAnchorMin;
+        bxRT.anchorMax = vnBoxAnchorMax;
         bxRT.offsetMin = Vector2.zero; bxRT.offsetMax = Vector2.zero;
 
         // ── Portrait (kiri) ──
         var pGO = new GameObject("Portrait");
         pGO.transform.SetParent(box.transform, false);
         var pRT = pGO.AddComponent<RectTransform>();
-        pRT.anchorMin = new Vector2(0.025f, 0.14f);
-        pRT.anchorMax = new Vector2(0.20f, 0.96f);
+        pRT.anchorMin = vnPortraitAnchorMin;
+        pRT.anchorMax = vnPortraitAnchorMax;
         pRT.offsetMin = pRT.offsetMax = Vector2.zero;
         var portraitImg = pGO.AddComponent<Image>();
-        portraitImg.preserveAspect = true;
+        portraitImg.preserveAspect = vnPortraitPreserveAspect;
         portraitImg.raycastTarget  = false;
         portraitImg.enabled        = false;
 
         // ── Banner nama ──
-        var namaTmp = BuatTeks(box.transform, "Nama", "", 30, new Color(1f, 0.85f, 0.30f, 1f), FontStyles.Bold);
-        namaTmp.alignment = TextAlignmentOptions.Left;
+        var namaTmp = BuatTeks(box.transform, "Nama", "", vnNamaUkuran, vnNamaWarna, FontStyles.Bold);
+        namaTmp.alignment = TextAlignmentOptions.MidlineLeft;
         var nRT = namaTmp.rectTransform;
-        nRT.anchorMin = new Vector2(0.225f, 0.74f);
-        nRT.anchorMax = new Vector2(0.95f, 0.96f);
-        nRT.offsetMin = nRT.offsetMax = Vector2.zero;
+        nRT.anchorMin = vnNamaAnchorMin;
+        nRT.anchorMax = vnNamaAnchorMax;
+        nRT.offsetMin = new Vector2(12f, 0f); nRT.offsetMax = new Vector2(-4f, 0f);
 
         // ── Teks isi ──
-        var teksTmp = BuatTeks(box.transform, "Teks", "", 28, Color.white, FontStyles.Normal);
+        var teksTmp = BuatTeks(box.transform, "Teks", "", vnTeksUkuran, vnTeksWarna, FontStyles.Normal);
         teksTmp.alignment = TextAlignmentOptions.TopLeft;
         var tRT = teksTmp.rectTransform;
-        tRT.anchorMin = new Vector2(0.225f, 0.16f);
-        tRT.anchorMax = new Vector2(0.96f, 0.74f);
+        tRT.anchorMin = vnTeksAnchorMin;
+        tRT.anchorMax = vnTeksAnchorMax;
         tRT.offsetMin = new Vector2(4f, 4f); tRT.offsetMax = new Vector2(-8f, -4f);
 
         // ── Hint ──
-        var hintTmp = BuatTeks(box.transform, "Hint", "\u25BC  Ketuk / SPACE untuk lanjut", 16, new Color(1f,1f,1f,0.55f), FontStyles.Italic);
+        var hintTmp = BuatTeks(box.transform, "Hint", vnHintTeks, 16, new Color(1f,1f,1f,0.55f), FontStyles.Italic);
         hintTmp.alignment = TextAlignmentOptions.MidlineRight;
         var hRT = hintTmp.rectTransform;
-        hRT.anchorMin = new Vector2(0.60f, 0.04f);
-        hRT.anchorMax = new Vector2(0.965f, 0.15f);
+        hRT.anchorMin = vnHintAnchorMin;
+        hRT.anchorMax = vnHintAnchorMax;
         hRT.offsetMin = hRT.offsetMax = Vector2.zero;
 
         // ── Klik area penuh untuk maju ──
@@ -590,7 +622,18 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
 
     void Update()
     {
-        if (_selesai) return;
+        if (_selesai)
+        {
+            // Layar hasil aktif: sediakan fallback supaya pemain tetap bisa lanjut
+            // walau raycast tombol "Lanjut" sempat terblokir canvas lain.
+            if (_hasilTampil &&
+                (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return) ||
+                 Input.GetKeyDown(KeyCode.KeypadEnter) || Input.GetMouseButtonDown(0)))
+            {
+                LanjutkanDariHasil();
+            }
+            return;
+        }
 
         // Voice-Driven Action: kalau mic aktif, BERTERIAK (loudness > ambang)
         // dianggap sama dengan menahan tombol. Tombol & keyboard (SPACE) tetap fallback.
@@ -695,6 +738,39 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
 
     void BuildHasil()
     {
+        // Naikkan canvas hasil ke ATAS SEGALANYA supaya panel + tombol "Lanjut" TIDAK
+        // tertutup raycast oleh canvas lain yang sorting-nya di atas 1000
+        // (EduCard 1020, Summary 1030, AchievementPopup 1050, dll.).
+        var cvHasil = _canvasGO != null ? _canvasGO.GetComponent<Canvas>() : null;
+        if (cvHasil != null)
+        {
+            cvHasil.overrideSorting = true;
+            cvHasil.sortingOrder    = 5000;
+        }
+
+        // Pastikan ada EventSystem aktif (kalau ter-disable saat transisi hari, klik mati total).
+        PastikanEventSystemAktif();
+
+        // Simpan aksi lanjut + aktifkan layar hasil (untuk fallback input di Update).
+        _aksiLanjut  = _onSelesai;
+        _hasilTampil = true;
+        Debug.Log($"[LaporTeriak] BuildHasil selesai. _onSelesai null? {_onSelesai == null} | activeInHierarchy={gameObject.activeInHierarchy} | enabled={enabled}");
+
+        // Penangkap klik FULL-SCREEN (di belakang panel). Klik di mana saja pada layar
+        // hasil akan melanjutkan — tidak bergantung pada raycast tombol kecil saja.
+        var katcher = new GameObject("LanjutCatcher");
+        katcher.transform.SetParent(_canvasGO.transform, false);
+        var kImg = katcher.AddComponent<Image>();
+        kImg.color = new Color(0f, 0f, 0f, 0.01f); // hampir transparan tapi tetap menangkap raycast
+        kImg.raycastTarget = true;
+        var kRT = katcher.GetComponent<RectTransform>();
+        kRT.anchorMin = Vector2.zero; kRT.anchorMax = Vector2.one;
+        kRT.offsetMin = Vector2.zero; kRT.offsetMax = Vector2.zero;
+        var kBtn = katcher.AddComponent<Button>();
+        kBtn.transition    = Selectable.Transition.None;
+        kBtn.targetGraphic = kImg;
+        kBtn.onClick.AddListener(LanjutkanDariHasil);
+
         // Hapus tombol & bar, ganti dengan reaksi + lanjut
         var card = _canvasGO.transform.Find("Card");
         if (card != null)
@@ -746,18 +822,53 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
 
         var btn = btnGO.AddComponent<Button>();
         btn.targetGraphic = bImg;
-        btn.onClick.AddListener(() =>
-        {
-            AudioManager.Instance?.Click();
-            if (_canvasGO != null) Destroy(_canvasGO);
-            _onSelesai?.Invoke();
-        });
+        btn.onClick.AddListener(LanjutkanDariHasil);
 
         var lab = BuatTeks(btnGO.transform, "Label", tombolLanjutTeks, 22, Color.white, FontStyles.Bold);
         lab.alignment = TextAlignmentOptions.Center;
         var lrt = lab.rectTransform;
         lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one;
         lrt.offsetMin = Vector2.zero; lrt.offsetMax = Vector2.zero;
+    }
+
+    // Aksi lanjut dari layar hasil — bisa dipicu tombol ATAU fallback keyboard/klik.
+    void LanjutkanDariHasil()
+    {
+        Debug.Log($"[LaporTeriak] LanjutkanDariHasil dipanggil. _hasilTampil={_hasilTampil} | _aksiLanjut null? {_aksiLanjut == null}");
+        if (!_hasilTampil) return;
+        _hasilTampil = false;
+        AudioManager.Instance?.Click();
+        var aksi = _aksiLanjut;
+        _aksiLanjut = null;
+        if (_canvasGO != null) Destroy(_canvasGO);
+        aksi?.Invoke();
+    }
+
+    // Pastikan ADA TEPAT SATU EventSystem yang AKTIF. Saat transisi hari, EventSystem
+    // lama bisa ter-disable (ikut parent yang di-SetActive(false)) sehingga semua klik
+    // UI mati. FindFirstObjectByType default mengabaikan objek inactive, jadi di sini
+    // kita sertakan yang inactive lalu reaktifkan — tanpa membuat duplikat.
+    void PastikanEventSystemAktif()
+    {
+        var semua = FindObjectsByType<EventSystem>(FindObjectsInactive.Include, FindObjectsSortMode.None);
+        EventSystem aktif = null;
+        foreach (var es in semua)
+        {
+            if (es == null) continue;
+            // Aktifkan rantai parent kalau perlu.
+            for (Transform t = es.transform; t != null; t = t.parent)
+                if (!t.gameObject.activeSelf) t.gameObject.SetActive(true);
+
+            if (aktif == null) { aktif = es; es.enabled = true; }
+            else if (es != aktif) { es.gameObject.SetActive(false); } // matikan duplikat
+        }
+
+        if (aktif == null)
+        {
+            var go = new GameObject("EventSystem");
+            go.AddComponent<EventSystem>();
+            go.AddComponent<StandaloneInputModule>();
+        }
     }
 
     // ══════════════════════════════════════════════════════════════════════

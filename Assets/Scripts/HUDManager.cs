@@ -258,10 +258,13 @@ public class HUDManager : MonoBehaviour
     public void UpdateHearts(int current, int max)
     {
         // Manual setup
-        for (int i = 0; i < heartImages.Length; i++)
+        if (heartImages != null)
         {
-            if (heartImages[i] == null) continue;
-            heartImages[i].sprite = (i < current) ? heartFull : heartEmpty;
+            for (int i = 0; i < heartImages.Length; i++)
+            {
+                if (heartImages[i] == null) continue;
+                heartImages[i].sprite = (i < current) ? heartFull : heartEmpty;
+            }
         }
         // Runtime navbar
         if (_rHearts == null) return;

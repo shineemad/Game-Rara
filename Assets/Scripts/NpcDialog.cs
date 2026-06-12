@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 
 /// <summary>
@@ -198,6 +199,9 @@ public class NpcDialog : MonoBehaviour
     private Coroutine        typingCo;
     private GameObject       choicesPanel;      // panel tombol pilihan
     private Choice[]         _pendingChoices;   // choices baris aktif, diproses TypeText
+    private Button[]         _choiceButtons;    // tombol pilihan aktif (utk pintasan keyboard 1/2/3)
+    private Button           _voiceAmanButton;  // tombol AMAN aktif — dipilih saat pemain teriak
+    private float            _voiceHoldTimer;   // berapa lama mic terdeteksi keras (anti salah pencet)
     private bool             _choiceProcessed;  // guard double-fire pilihan
     private bool             _ignoreNextAdvance;// blokir Advance() 1 frame setelah klik pilihan
     private System.Action    _playLinesCallback;// callback dari PlayLines()
@@ -347,12 +351,65 @@ public class NpcDialog : MonoBehaviour
 
         if (!isPlaying) return;
 
+        // Panel pilihan aktif → pemain bisa menjawab via pintasan keyboard 1/2/3
+        // atau dengan TERIAK (mic keras → otomatis pilih jawaban AMAN/berani).
+        if (choicesPanel != null && choicesPanel.activeSelf && _choiceButtons != null)
+        {
+            HandleVoiceAnswer();
+            // HandleVoiceAnswer bisa memilih jawaban → menghancurkan panel & me-null-kan
+            // _choiceButtons. Cek ulang sebelum proses pintasan keyboard agar tidak NRE.
+            if (_choiceButtons != null)
+                HandleChoiceHotkeys();
+            return; // jangan proses Advance saat pilihan tampil
+        }
+
         if (Input.GetKeyDown(KeyCode.Space) ||
             Input.GetKeyDown(KeyCode.Return) ||
             Input.GetKeyDown(KeyCode.KeypadEnter) ||
             Input.GetMouseButtonDown(0))
         {
             Advance();
+        }
+    }
+
+    /// Jawab dengan SUARA: jika pemain berteriak (mic level Loud) selama
+    /// beberapa saat, jawaban AMAN otomatis terpilih — sesuai tema 'berani bersuara'.
+    /// Diam / suara pelan tidak memicu apa pun (tetap pakai klik atau angka).
+    void HandleVoiceAnswer()
+    {
+        if (_voiceAmanButton == null) return;
+        if (VoiceMeter.Instance == null) return;
+
+        if (VoiceMeter.Instance.Level == VoiceMeter.VoiceLevel.Loud)
+        {
+            _voiceHoldTimer += Time.unscaledDeltaTime;
+            // Tahan teriak ~0.3 detik agar tidak salah pencet karena suara sekejap.
+            if (_voiceHoldTimer >= 0.3f)
+            {
+                var b = _voiceAmanButton;
+                _voiceAmanButton = null;
+                if (b != null) b.onClick.Invoke();
+            }
+        }
+        else
+        {
+            _voiceHoldTimer = 0f;
+        }
+    }
+
+    /// Tekan angka 1/2/3 (baris atas atau keypad) untuk memilih jawaban.
+    void HandleChoiceHotkeys()
+    {
+        if (_choiceButtons == null) return;
+        for (int i = 0; i < _choiceButtons.Length && i < 9; i++)
+        {
+            if (Input.GetKeyDown(KeyCode.Alpha1 + i) ||
+                Input.GetKeyDown(KeyCode.Keypad1 + i))
+            {
+                var b = _choiceButtons[i];
+                if (b != null) b.onClick.Invoke();
+                return;
+            }
         }
     }
 
@@ -576,7 +633,10 @@ public class NpcDialog : MonoBehaviour
     {
         isPlaying = false;
         StopAllCoroutines();
-        _pendingChoices = null;
+        _pendingChoices  = null;
+        _choiceButtons   = null;
+        _voiceAmanButton = null;
+        _voiceHoldTimer  = 0f;
         if (choicesPanel != null) { Destroy(choicesPanel); choicesPanel = null; }
         panelRoot.SetActive(false);
         SetPlayerFrozen(false);
@@ -610,6 +670,10 @@ public class NpcDialog : MonoBehaviour
         cpRT.offsetMax = Vector2.zero;
 
         float slotH = 1f / choices.Length;
+        _choiceButtons   = new Button[choices.Length];
+        _voiceAmanButton = null;
+        _voiceHoldTimer  = 0f;
+        bool punyaMic    = (VoiceMeter.Instance != null);
         for (int i = 0; i < choices.Length; i++)
         {
             var   c    = choices[i];
@@ -634,12 +698,44 @@ public class NpcDialog : MonoBehaviour
             bc.colorMultiplier  = 1f;
             btn.colors = bc;
 
+            // Efek hover: tombol sedikit membesar saat disorot / ditekan.
+            btnGO.AddComponent<ChoiceButtonHover>();
+
+            // ── Badge angka (1/2/3) sebagai petunjuk pintasan keyboard ──────
+            var badgeGO = new GameObject("Badge");
+            badgeGO.transform.SetParent(btnGO.transform, false);
+            var badgeRT = badgeGO.AddComponent<RectTransform>();
+            badgeRT.anchorMin = new Vector2(0f, 0.5f);
+            badgeRT.anchorMax = new Vector2(0f, 0.5f);
+            badgeRT.pivot     = new Vector2(0f, 0.5f);
+            badgeRT.sizeDelta = new Vector2(34f, 34f);
+            badgeRT.anchoredPosition = new Vector2(12f, 0f);
+            var badgeImg = badgeGO.AddComponent<Image>();
+            badgeImg.color = new Color(1f, 1f, 1f, 0.28f);
+            badgeImg.raycastTarget = false;
+
+            var badgeTxtGO = new GameObject("BadgeNum");
+            badgeTxtGO.transform.SetParent(badgeGO.transform, false);
+            var badgeTxtRT = badgeTxtGO.AddComponent<RectTransform>();
+            badgeTxtRT.anchorMin = Vector2.zero;
+            badgeTxtRT.anchorMax = Vector2.one;
+            badgeTxtRT.offsetMin = Vector2.zero;
+            badgeTxtRT.offsetMax = Vector2.zero;
+            var badgeTmp = badgeTxtGO.AddComponent<TextMeshProUGUI>();
+            ApplyFont(badgeTmp);
+            badgeTmp.text          = (i + 1).ToString();
+            badgeTmp.fontSize      = textFontSize - 2;
+            badgeTmp.color         = Color.white;
+            badgeTmp.fontStyle     = FontStyles.Bold;
+            badgeTmp.alignment     = TextAlignmentOptions.Center;
+            badgeTmp.raycastTarget = false;
+
             var lblGO = new GameObject("Label");
             lblGO.transform.SetParent(btnGO.transform, false);
             var lblRT = lblGO.AddComponent<RectTransform>();
             lblRT.anchorMin = Vector2.zero;
             lblRT.anchorMax = Vector2.one;
-            lblRT.offsetMin = new Vector2(14f,  4f);
+            lblRT.offsetMin = new Vector2(56f,  4f);
             lblRT.offsetMax = new Vector2(-14f, -4f);
             var tmp = lblGO.AddComponent<TextMeshProUGUI>();
             ApplyFont(tmp);
@@ -653,6 +749,31 @@ public class NpcDialog : MonoBehaviour
 
             var localC = c;
             btn.onClick.AddListener(() => OnChoiceSelected(localC));
+            _choiceButtons[i] = btn;
+
+            // ── Jawaban AMAN bisa dipilih dengan TERIAK ─────────────────────
+            // Catat tombolnya & beri petunjuk mic kecil di sisi kanan tombol.
+            if (c.category == "AMAN" && punyaMic && _voiceAmanButton == null)
+            {
+                _voiceAmanButton = btn;
+
+                var hintGO = new GameObject("VoiceHint");
+                hintGO.transform.SetParent(btnGO.transform, false);
+                var hintRTb = hintGO.AddComponent<RectTransform>();
+                hintRTb.anchorMin = new Vector2(1f, 0.5f);
+                hintRTb.anchorMax = new Vector2(1f, 0.5f);
+                hintRTb.pivot     = new Vector2(1f, 0.5f);
+                hintRTb.sizeDelta = new Vector2(120f, 30f);
+                hintRTb.anchoredPosition = new Vector2(-10f, 0f);
+                var hintTmpB = hintGO.AddComponent<TextMeshProUGUI>();
+                ApplyFont(hintTmpB);
+                hintTmpB.text          = "atau TERIAK";
+                hintTmpB.fontSize      = textFontSize - 8;
+                hintTmpB.color         = new Color(1f, 1f, 1f, 0.9f);
+                hintTmpB.fontStyle     = FontStyles.Italic | FontStyles.Bold;
+                hintTmpB.alignment     = TextAlignmentOptions.MidlineRight;
+                hintTmpB.raycastTarget = false;
+            }
         }
     }
 
@@ -673,6 +794,9 @@ public class NpcDialog : MonoBehaviour
         _choiceProcessed   = true;
         _ignoreNextAdvance = true;
 
+        _choiceButtons   = null;
+        _voiceAmanButton = null;
+        _voiceHoldTimer  = 0f;
         if (choicesPanel != null) { Destroy(choicesPanel); choicesPanel = null; }
         if (hintTMP != null) hintTMP.gameObject.SetActive(true);
 
@@ -1231,3 +1355,37 @@ public class NpcDialog : MonoBehaviour
         if (f != null && tmp.font != f) tmp.font = f;
     }
 }
+
+/// <summary>
+/// Efek hover sederhana untuk tombol pilihan dialog: tombol sedikit membesar
+/// saat disorot kursor dan mengecil saat ditekan, memberi umpan balik interaktif.
+/// Ditambahkan otomatis oleh NpcDialog.BuildChoiceButtons.
+/// </summary>
+public class ChoiceButtonHover : MonoBehaviour,
+    IPointerEnterHandler, IPointerExitHandler,
+    IPointerDownHandler, IPointerUpHandler
+{
+    const float skalaNormal = 1f;
+    const float skalaHover  = 1.06f;
+    const float skalaTekan  = 0.97f;
+    const float kecepatan   = 12f;
+
+    float       _target = 1f;
+    RectTransform _rt;
+
+    void Awake()  { _rt = transform as RectTransform; _target = skalaNormal; }
+    void OnEnable() { if (_rt != null) _rt.localScale = Vector3.one * skalaNormal; }
+
+    void Update()
+    {
+        if (_rt == null) return;
+        float s = Mathf.Lerp(_rt.localScale.x, _target, Time.unscaledDeltaTime * kecepatan);
+        _rt.localScale = new Vector3(s, s, 1f);
+    }
+
+    public void OnPointerEnter(PointerEventData e) { _target = skalaHover;  }
+    public void OnPointerExit (PointerEventData e) { _target = skalaNormal; }
+    public void OnPointerDown (PointerEventData e) { _target = skalaTekan;  }
+    public void OnPointerUp   (PointerEventData e) { _target = skalaHover;  }
+}
+

@@ -12,7 +12,7 @@
 | --------------- | -------------------------------------------------------- |
 | Nama game       | RARA: Jaga Dirimu!                                       |
 | Genre           | Educational 2D Side-Scroller + Visual Novel + Boss Fight |
-| Target pemain   | Anak usia 9–14 tahun                                     |
+| Target pemain   | Siswa SMP (13–17 tahun)                                  |
 | Bahasa          | Indonesia                                                |
 | Engine          | Unity 2022 LTS (2D)                                      |
 | Referensi web   | https://game-jaga-diri.vercel.app/ (Phaser.js)           |
@@ -396,3 +396,17 @@ File → Build Settings → tambahkan urutan:
 - ❌ Jangan ganti bahasa komentar ke Inggris
 - ❌ Jangan pakai `Thread` atau `async/await` — gunakan Coroutine Unity
 - ❌ Jangan ubah struktur folder tanpa konfirmasi user
+
+---
+
+## 19. Aturan Perubahan Kode (WAJIB DIPATUHI)
+
+> **JANGAN mengubah kode apa pun selain yang diperintahkan secara eksplisit oleh user di prompt.**
+
+- ✅ Kerjakan **HANYA** apa yang diminta dalam prompt — tidak lebih.
+- ❌ Jangan menambah fitur, refactor, atau "perbaikan" yang tidak diminta.
+- ❌ Jangan mengubah file/baris/fungsi lain yang tidak disebut dalam perintah.
+- ❌ Jangan menambah komentar, docstring, atau anotasi pada kode yang tidak diubah.
+- ❌ Jangan merapikan format/gaya kode di luar bagian yang sedang dikerjakan.
+- ⚠️ Jika ada perbaikan tambahan yang menurutmu perlu, **usulkan dulu** dan tunggu persetujuan user — jangan langsung terapkan.
+- ⚠️ Jika perintah/prompt **ambigu atau tidak jelas**, **tanya dulu** untuk klarifikasi sebelum mengerjakan — jangan menebak.

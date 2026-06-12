@@ -31,7 +31,13 @@ public class player : MonoBehaviour
     public float walkFrameDuration = 0.12f; // detik per frame saat jalan
     public float runFrameDuration  = 0.07f; // detik per frame saat lari (lebih cepat)
 
-    // ── state internal ──────────────────────────────────────────────
+    [Header("Footstep SFX")]
+    [Tooltip("Jeda antar bunyi langkah saat jalan (detik). Bunyi diambil dari AudioManager.sfxLangkah — senyap bila klip belum diisi.")]
+    public float footstepIntervalWalk = 0.40f;
+    [Tooltip("Jeda antar bunyi langkah saat lari (detik).")]
+    public float footstepIntervalRun  = 0.26f;
+
+    // ── state internal ───────────────────────────────────────
     private enum MoveState { Idle, Walk, Run }
 
     private SpriteRenderer spriteRenderer;
@@ -40,6 +46,7 @@ public class player : MonoBehaviour
     private MoveState currentState = MoveState.Idle;
     private float     frameTimer;
     private int       currentFrame;
+    private float     footstepTimer;
 
     /// Jika true, karakter berhenti bergerak (dipakai saat dialog aktif).
     /// Set via Day1Controller.FreezePlayer() / ResumePlayer().
@@ -50,6 +57,9 @@ public class player : MonoBehaviour
     ///   0.55f → suara sedang (kuning 60-80dB) — lambat / ragu
     ///   1.0f → normal / diam
     [HideInInspector] public float voiceSpeedMultiplier = 1f;
+
+    /// Jika true, paksa state LARI saat bergerak (dipakai saat Rara berteriak di Hari 1).
+    [HideInInspector] public bool forceRun = false;
 
     /// Batas pergerakan horizontal player (diset oleh PathEnvironment).
     [HideInInspector] public bool  useBounds = false;
@@ -96,7 +106,7 @@ public class player : MonoBehaviour
 
         Vector2 direction = new Vector2(horizontal, vertical).normalized;
         bool    isMoving  = direction.magnitude > 0f;
-        bool    isRunning = isMoving && shiftHeld;
+        bool    isRunning = isMoving && (shiftHeld || forceRun);
 
         // ── tentukan state ──────────────────────────────────────────
         MoveState nextState;
@@ -156,6 +166,29 @@ public class player : MonoBehaviour
             case MoveState.Run:
                 AdvanceAnimation(runSprites, runFrameDuration);
                 break;
+        }
+
+        // ── SFX langkah kaki ─────────────────────────────────
+        HandleFootstep();
+    }
+
+    // Mainkan bunyi langkah berkala selama Rara berjalan / berlari.
+    // Senyap otomatis bila AudioManager.sfxLangkah belum diisi.
+    void HandleFootstep()
+    {
+        if (currentState == MoveState.Idle)
+        {
+            footstepTimer = 0f;
+            return;
+        }
+
+        footstepTimer -= Time.deltaTime;
+        if (footstepTimer <= 0f)
+        {
+            AudioManager.Instance?.PlayLangkah();
+            footstepTimer = currentState == MoveState.Run
+                ? footstepIntervalRun
+                : footstepIntervalWalk;
         }
     }
 

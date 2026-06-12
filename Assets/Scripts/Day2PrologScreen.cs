@@ -258,6 +258,19 @@ public class Day2PrologScreen : MonoBehaviour
     public void Tampilkan(System.Action callback = null)
     {
         if (callback != null) onSelesai = callback;
+
+        // PENTING: pastikan GameObject ini AKTIF di hierarki sebelum mulai.
+        // Kalau prolog berada di bawah parent yang sengaja di-disable (mis.
+        // Day2_Root yang baru di-enable SETELAH prolog selesai), maka
+        // gameObject.SetActive(true) saja tidak cukup — activeInHierarchy tetap
+        // false karena parent-nya inactive, sehingga StartCoroutine GAGAL dan
+        // prolog macet di slide pertama (tombol SPACE/KLIK tak berfungsi).
+        // Solusi: lepaskan ke root scene lalu aktifkan.
+        if (!gameObject.activeInHierarchy)
+        {
+            if (transform.parent != null) transform.SetParent(null, true);
+            gameObject.SetActive(true);
+        }
         if (slides == null || slides.Length == 0)
         {
             Debug.LogWarning("[Day2PrologScreen] Tidak ada slide — prolog dilewati.");

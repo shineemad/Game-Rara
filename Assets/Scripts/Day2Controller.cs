@@ -143,6 +143,12 @@ public class Day2Controller : MonoBehaviour
     public Color warnaLabelFase = new Color(1f, 0.85f, 0.25f, 0.85f);
     public int   ukuranLabelFase = 22;
 
+    [Header("Alat Bantu Edukasi Day 2")]
+    [Tooltip("Tampilkan Meteran Bahaya melayang yang naik/turun sesuai pilihan.")]
+    public bool tampilkanMeteranBahaya = true;
+    [Tooltip("Tampilkan tombol ? Glossary 3 Kata Sakti (TIDAK \u2192 PERGI \u2192 CERITA).")]
+    public bool tampilkanGlossaryKataSakti = true;
+
     [Header("Intro Slide (sebelum Halte) — STYLE DAY 1 PROLOG")]
     [Tooltip("Judul kecil di atas narasi (gold). Kosongkan = sembunyikan.")]
     public string introJudul = "HARI 2 · PERSIAPAN";
@@ -310,6 +316,7 @@ public class Day2Controller : MonoBehaviour
 
         if (buatBackdropProcedural) BuildBackdrop();
         if (tampilkanLabelFase)     BuildLabelFase();
+        TampilkanAlatBantuDay2();
 
         AutoFindRefs();
 
@@ -345,6 +352,7 @@ public class Day2Controller : MonoBehaviour
 
         if (buatBackdropProcedural && _backdropGO == null) BuildBackdrop();
         if (tampilkanLabelFase     && _labelFase  == null) BuildLabelFase();
+        TampilkanAlatBantuDay2();
 
         AutoFindRefs();
         yield return null;
@@ -442,12 +450,31 @@ public class Day2Controller : MonoBehaviour
                 break;
 
             case Phase.Summary:
+                // Evaluasi pencapaian Hari 2 + sembunyikan alat bantu sebelum ringkasan.
+                GameState.Instance?.EvaluateDay2Achievements();
+                SembunyikanAlatBantuDay2();
                 if (summaryScreen != null) summaryScreen.Tampilkan();
                 else if (SceneLoader.Instance != null) SceneLoader.Instance.LoadScene("Day3");
                 _fase = Phase.Done;
                 break;
         }
         yield break;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // ALAT BANTU EDUKASI: Meteran Bahaya + Glossary 3 Kata Sakti
+    // ══════════════════════════════════════════════════════════════════════
+    void TampilkanAlatBantuDay2()
+    {
+        // Meteran "TINGKAT BAHAYA" dinonaktifkan (dihapus dari tampilan) atas permintaan.
+        DangerGauge.Hide();
+        if (tampilkanGlossaryKataSakti) KataSaktiGlossary.EnsureButton();
+    }
+
+    void SembunyikanAlatBantuDay2()
+    {
+        DangerGauge.Hide();
+        KataSaktiGlossary.Hide();
     }
 
     // ══════════════════════════════════════════════════════════════════════

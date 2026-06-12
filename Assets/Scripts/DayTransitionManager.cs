@@ -55,6 +55,12 @@ public class DayTransitionManager : MonoBehaviour
     [Tooltip("Referensi langsung Day2PrologScreen. Kosongkan = auto-find via Singleton.")]
     public Day2PrologScreen day2Prolog;
 
+    [Header("Prolog Day 3 (opsional)")]
+    [Tooltip("Kalau true, tampilkan Day3PrologScreen sebelum mulai Day 3.")]
+    public bool tampilkanPrologDay3 = true;
+    [Tooltip("Referensi langsung Day3PrologScreen. Kosongkan = auto-find via Singleton.")]
+    public Day3PrologScreen day3Prolog;
+
     [Header("Debug")]
     public bool debugLog = true;
 
@@ -103,8 +109,14 @@ public class DayTransitionManager : MonoBehaviour
             if (tampilkanPrologDay2 && prolog != null)
             {
                 if (debugLog) Debug.Log("[DayTransitionManager] Tampilkan Day 2 prolog dulu...");
-                // Pastikan GO prolog aktif (kalau ia child dari day2_root yang disable, perlu di-aktifkan dulu)
-                if (!prolog.gameObject.activeInHierarchy) prolog.gameObject.SetActive(true);
+                // Pastikan GO prolog AKTIF di hierarki. Kalau ia child dari
+                // Day2_Root yang masih disable, SetActive(true) saja tidak cukup
+                // (activeInHierarchy tetap false). Lepaskan ke root scene dulu.
+                if (!prolog.gameObject.activeInHierarchy)
+                {
+                    if (prolog.transform.parent != null) prolog.transform.SetParent(null, true);
+                    prolog.gameObject.SetActive(true);
+                }
                 prolog.Tampilkan(() => MulaiDay2Sesungguhnya());
                 return;
             }
@@ -123,6 +135,15 @@ public class DayTransitionManager : MonoBehaviour
     {
         SetActiveAll(day2Objects, true);
 
+        // Pastikan GameObject Day2Controller (dan SELURUH rantai parent-nya) aktif.
+        // Day2Controller ada di bawah Day2_Root, tetapi salah satu leluhurnya
+        // (mis. Day2Preset) bisa ikut ter-disable saat SetActiveAll(day1Objects, false).
+        // Kalau begitu, mengaktifkan Day2_Root saja tidak cukup — activeInHierarchy
+        // tetap false dan StartCoroutine di TriggerStart() gagal
+        // ("game object 'Day2_NarasiScene' is inactive").
+        if (Day2Controller.Instance != null)
+            PastikanAktifHinggaAkar(Day2Controller.Instance.gameObject);
+
         // BGM Day 2
         if (AudioManager.Instance != null)
         {
@@ -133,6 +154,25 @@ public class DayTransitionManager : MonoBehaviour
         // Trigger Day2Controller (idempotent)
         if (Day2Controller.Instance != null)
             Day2Controller.Instance.TriggerStart();
+    }
+
+    /// <summary>
+    /// Aktifkan GameObject beserta seluruh rantai parent-nya sampai akar scene,
+    /// supaya activeInHierarchy menjadi true (syarat StartCoroutine bisa jalan).
+    /// </summary>
+    void PastikanAktifHinggaAkar(GameObject go)
+    {
+        if (go == null) return;
+        // Set activeSelf=true di setiap level. Urutan tidak masalah: setelah semua
+        // node ber-activeSelf true, activeInHierarchy otomatis kaskade dari akar.
+        for (Transform t = go.transform; t != null; t = t.parent)
+        {
+            if (!t.gameObject.activeSelf)
+            {
+                t.gameObject.SetActive(true);
+                if (debugLog) Debug.Log($"[DayTransitionManager] Aktifkan leluhur Day2: {t.gameObject.name}");
+            }
+        }
     }
 
     /// <summary>Lanjut dari Day 2 ke Day 3.</summary>
@@ -158,20 +198,44 @@ public class DayTransitionManager : MonoBehaviour
             SetActiveAll(day2Objects, false);
             SetActiveAll(day3Objects, true);
 
-            if (AudioManager.Instance != null)
+            // Tampilkan prolog DULU sebelum jalankan boss fight Day3Controller.
+            var prolog = day3Prolog;
+            if (prolog == null) prolog = Day3PrologScreen.Instance;
+            if (tampilkanPrologDay3 && prolog != null)
             {
-                try { AudioManager.Instance.PlayBGM(AudioManager.BGMTrack.Day3); }
-                catch { /* ignore */ }
+                if (debugLog) Debug.Log("[DayTransitionManager] Tampilkan Day 3 prolog dulu...");
+                // Pastikan GO prolog AKTIF di hierarki (lepaskan dari parent yang
+                // mungkin masih disable), sama seperti Day 2.
+                if (!prolog.gameObject.activeInHierarchy)
+                {
+                    if (prolog.transform.parent != null) prolog.transform.SetParent(null, true);
+                    prolog.gameObject.SetActive(true);
+                }
+                prolog.Tampilkan(() => MulaiDay3Sesungguhnya());
+                return;
             }
 
-            // Trigger Day3Controller secara eksplisit (idempotent) — sama seperti Day 2.
-            if (Day3Controller.Instance != null)
-                Day3Controller.Instance.TriggerStart();
+            // Tidak ada prolog → langsung jalan Day 3
+            MulaiDay3Sesungguhnya();
         }
         else
         {
             LoadSceneByName(day3SceneName);
         }
+    }
+
+    /// <summary>Tahap aktivasi Day 3 sebenarnya — dipanggil setelah prolog selesai (atau langsung kalau tidak ada prolog).</summary>
+    void MulaiDay3Sesungguhnya()
+    {
+        if (AudioManager.Instance != null)
+        {
+            try { AudioManager.Instance.PlayBGM(AudioManager.BGMTrack.Day3); }
+            catch { /* ignore */ }
+        }
+
+        // Trigger Day3Controller secara eksplisit (idempotent) — sama seperti Day 2.
+        if (Day3Controller.Instance != null)
+            Day3Controller.Instance.TriggerStart();
     }
 
     /// <summary>Ulangi Hari 1 (reset state + reload scene).</summary>
