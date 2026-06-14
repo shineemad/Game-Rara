@@ -500,26 +500,33 @@ public class PauseMenu : MonoBehaviour
         }
         pRT.sizeDelta        = panelSize;
         var pImg = panelRoot.AddComponent<Image>(); pImg.color = panelBgColor;
+        pImg.sprite = GetRoundedSpritePause();
+        pImg.type   = Image.Type.Sliced;
         var outl = panelRoot.AddComponent<Outline>(); outl.effectColor = borderColor;
-        outl.effectDistance = new Vector2(4f, -4f);
+        outl.effectDistance = new Vector2(3f, -3f);
 
+        // Judul — pita atas, terpusat.
         MakeText(panelRoot, "Title", new Vector2(0f, 1f), new Vector2(1f, 1f),
-                 new Vector2(10f, -80f), new Vector2(-10f, -10f), 44, titleColor,
+                 new Vector2(12f, -100f), new Vector2(-12f, -28f), 44, titleColor,
                  TextAlignmentOptions.Center, true, titleText);
 
-        MakeText(panelRoot, "Tips", new Vector2(0f, 1f), new Vector2(1f, 1f),
-                 new Vector2(20f, -360f), new Vector2(-20f, -90f), 26, tipsColor,
+        // Tips — blok teks rata kiri dengan jarak baris lega.
+        var tipsTmp = MakeText(panelRoot, "Tips", new Vector2(0f, 1f), new Vector2(1f, 1f),
+                 new Vector2(28f, -378f), new Vector2(-28f, -126f), 26, tipsColor,
                  TextAlignmentOptions.TopLeft, false, tipsText);
+        tipsTmp.lineSpacing = 12f;
 
+        // Nomor darurat — terpusat, ikon emoji 📞 diganti bullet agar tak jadi kotak kosong.
         MakeText(panelRoot, "Emergency", new Vector2(0f, 1f), new Vector2(1f, 1f),
-                 new Vector2(10f, -480f), new Vector2(-10f, -370f), 28, emergencyColor,
-                 TextAlignmentOptions.Center, true, emergencyText);
+                 new Vector2(16f, -500f), new Vector2(-16f, -408f), 28, emergencyColor,
+                 TextAlignmentOptions.Center, true, BersihkanIkonDarurat(emergencyText));
 
+        // Tombol — dirapatkan ke konten (hilangkan ruang kosong besar).
         MakeButton(panelRoot, "BtnResume", resumeLabel,
-                   new Vector2(0.08f, 0.13f), new Vector2(0.92f, 0.24f),
+                   new Vector2(0.09f, 0.175f), new Vector2(0.91f, 0.275f),
                    resumeColor, OnResumeClicked);
         MakeButton(panelRoot, "BtnMenu", menuLabel,
-                   new Vector2(0.08f, 0.02f), new Vector2(0.92f, 0.12f),
+                   new Vector2(0.09f, 0.05f), new Vector2(0.91f, 0.15f),
                    menuColor, OnMenuClicked);
 
         if (debugLog) Debug.Log("[PauseMenu] Mode B aktif.");
@@ -551,6 +558,11 @@ public class PauseMenu : MonoBehaviour
         rt.anchorMin = ancMin; rt.anchorMax = ancMax;
         rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
         var img = go.AddComponent<Image>(); img.color = color;
+        img.sprite = GetRoundedSpritePause();
+        img.type   = Image.Type.Sliced;
+        var btnOutline = go.AddComponent<Outline>();
+        btnOutline.effectColor    = new Color(1f, 1f, 1f, 0.30f);
+        btnOutline.effectDistance = new Vector2(2f, -2f);
         var btn = go.AddComponent<Button>(); btn.onClick.AddListener(() => onClick());
 
         var lblGO = new GameObject("Label");
@@ -569,6 +581,38 @@ public class PauseMenu : MonoBehaviour
         var f = fontAsset;
         if (f == null) f = TMP_Settings.defaultFontAsset;
         if (f != null) tmp.font = f;
+    }
+
+    // Ganti ikon telepon 📞 (U+1F4DE) — yang tak tersedia di font aktif sehingga
+    // muncul sebagai kotak kosong — dengan bullet "•" yang pasti ada.
+    static string BersihkanIkonDarurat(string s)
+    {
+        if (string.IsNullOrEmpty(s)) return s;
+        return s.Replace("\U0001F4DE", "\u2022");
+    }
+
+    // Sprite kotak sudut-membulat (9-slice) untuk panel & tombol. Di-cache statis.
+    static Sprite _sRoundedPause;
+    static Sprite GetRoundedSpritePause()
+    {
+        if (_sRoundedPause != null) return _sRoundedPause;
+        const int S = 48, R = 16;
+        var tex = new Texture2D(S, S, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp;
+        for (int y = 0; y < S; y++)
+        for (int x = 0; x < S; x++)
+        {
+            float dx = Mathf.Max(R - x, x - (S - 1 - R), 0f);
+            float dy = Mathf.Max(R - y, y - (S - 1 - R), 0f);
+            float d  = Mathf.Sqrt(dx * dx + dy * dy);
+            float a  = Mathf.Clamp01(R - d + 0.5f); // tepi anti-alias
+            tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+        }
+        tex.Apply();
+        _sRoundedPause = Sprite.Create(tex, new Rect(0, 0, S, S),
+            new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect,
+            new Vector4(R, R, R, R));
+        return _sRoundedPause;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -599,6 +643,9 @@ public class PauseMenu : MonoBehaviour
 
     void SetText(TextMeshProUGUI refTmp, string fallbackName, string val)
     {
+        // Ikon telepon 📞 tidak ada di font aktif → tampil kotak kosong. Ganti
+        // dengan bullet untuk blok Nomor Darurat (judul/tips tak terpengaruh).
+        if (fallbackName == "Emergency") val = BersihkanIkonDarurat(val);
         if (refTmp != null) { refTmp.text = val; return; }
         var t = FindChild(fallbackName);
         if (t != null) { var x = t.GetComponent<TextMeshProUGUI>(); if (x != null) x.text = val; }

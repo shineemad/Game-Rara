@@ -28,6 +28,9 @@ public class ZonaTubuhQuiz : MonoBehaviour
         public string teks;
         [Tooltip("Jawaban benar: AMAN atau BAHAYA.")]
         public string jawabanBenar = "AMAN"; // "AMAN" | "BAHAYA"
+        [Tooltip("Alasan singkat (opsional). Kosong = dipilih otomatis sesuai bagian tubuh.")]
+        [TextArea(1, 3)]
+        public string alasan = "";
     }
 
     [Header("Judul & Instruksi")]
@@ -313,6 +316,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
     public void Mulai(Action onSelesai)
     {
         _onSelesai = onSelesai;
+        HUDManager.Instance?.SetNavbarVisible(false); // sembunyikan navbar selama kuis batas tubuh
         AutoResolveNarasiAssets();
         var narasiAktif = PilihNarasiIntroBerdasarkanKursi();
         if (narasiAktif != null && narasiAktif.Length > 0)
@@ -503,7 +507,10 @@ public class ZonaTubuhQuiz : MonoBehaviour
         if (narasiOutro != null && narasiOutro.Length > 0)
             yield return JalankanNarasiOutroLaluSelesai();
         else
+        {
+            HUDManager.Instance?.SetNavbarVisible(true); // tampilkan kembali navbar saat keluar
             _onSelesai?.Invoke();
+        }
     }
 
     // Bangun 2+ tombol pilihan di atas box dialog narasi VN. onPick(index) saat diklik.
@@ -617,6 +624,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
         if (_narasiCanvasGO != null) Destroy(_narasiCanvasGO);
         _narasiCanvasGO = null;
 
+        HUDManager.Instance?.SetNavbarVisible(true); // tampilkan kembali navbar saat keluar
         _onSelesai?.Invoke();
     }
 
@@ -977,6 +985,17 @@ public class ZonaTubuhQuiz : MonoBehaviour
         scaler.referenceResolution = new Vector2(1920, 1080);
         _canvasGO.AddComponent<GraphicRaycaster>();
 
+        // Latar belakang HITAM penuh layar (paling belakang) supaya scene di
+        // belakang tidak tembus ke layar quiz. Selalu ada, walau sprite kosong.
+        var blackBg = new GameObject("BG_Hitam");
+        blackBg.transform.SetParent(_canvasGO.transform, false);
+        var blackImg = blackBg.AddComponent<Image>();
+        blackImg.color        = Color.black;
+        blackImg.raycastTarget = false;
+        var blackRt = blackBg.GetComponent<RectTransform>();
+        blackRt.anchorMin = Vector2.zero; blackRt.anchorMax = Vector2.one;
+        blackRt.offsetMin = Vector2.zero; blackRt.offsetMax = Vector2.zero;
+
         // BG Fullscreen device (opsional, paling belakang).
         if (bgFullscreenSprite != null)
         {
@@ -999,40 +1018,75 @@ public class ZonaTubuhQuiz : MonoBehaviour
             es.AddComponent<StandaloneInputModule>();
         }
 
+        // ── Panel TENGAH (arena) — bingkai gelap untuk mengelompokkan judul,
+        //    info (timer/skor), kartu, & instruksi supaya rapi + terbaca di atas
+        //    latar pasar yang ramai. Berada di antara dua zona samping, DI BAWAH
+        //    HUD persisten (skor/nyawa/nav/voice) supaya tidak bertabrakan.
+        var arenaGO = new GameObject("ArenaTengah");
+        arenaGO.transform.SetParent(_canvasGO.transform, false);
+        var arenaImg = arenaGO.AddComponent<Image>();
+        arenaImg.sprite = GetRoundedSprite();
+        arenaImg.type   = Image.Type.Sliced;
+        arenaImg.color  = new Color(0.06f, 0.05f, 0.08f, 0.86f);
+        arenaImg.raycastTarget = false;
+        var arenaOutl = arenaGO.AddComponent<Outline>();
+        arenaOutl.effectColor    = new Color(0.95f, 0.72f, 0.18f, 0.85f);
+        arenaOutl.effectDistance = new Vector2(3f, -3f);
+        var arenaRT = arenaGO.GetComponent<RectTransform>();
+        arenaRT.anchorMin = new Vector2(0.225f, 0.085f);
+        arenaRT.anchorMax = new Vector2(0.775f, 0.80f);
+        arenaRT.offsetMin = Vector2.zero; arenaRT.offsetMax = Vector2.zero;
+
+        // Pita judul (header) di puncak arena
+        var headBar = new GameObject("HeaderBar");
+        headBar.transform.SetParent(arenaGO.transform, false);
+        var headImg = headBar.AddComponent<Image>();
+        headImg.sprite = GetRoundedSprite();
+        headImg.type   = Image.Type.Sliced;
+        headImg.color  = new Color(0.16f, 0.10f, 0.05f, 0.95f);
+        headImg.raycastTarget = false;
+        var headOutl = headBar.AddComponent<Outline>();
+        headOutl.effectColor    = new Color(0.95f, 0.72f, 0.18f, 0.7f);
+        headOutl.effectDistance = new Vector2(2f, -2f);
+        var headRT = headBar.GetComponent<RectTransform>();
+        headRT.anchorMin = new Vector2(0f, 1f); headRT.anchorMax = new Vector2(1f, 1f);
+        headRT.pivot = new Vector2(0.5f, 1f);
+        headRT.offsetMin = new Vector2(14f, -64f);
+        headRT.offsetMax = new Vector2(-14f, -10f);
+
         // Judul
-        var judul = BuatTeks(_canvasGO.transform, "Judul", judulTeks, judulUkuran, judulWarna, FontStyles.Bold);
+        var judul = BuatTeks(headBar.transform, "Judul", judulTeks, judulUkuran, judulWarna, FontStyles.Bold);
         judul.alignment = TextAlignmentOptions.Center;
+        judul.enableAutoSizing = true; judul.fontSizeMin = 16f; judul.fontSizeMax = judulUkuran;
         var jrt = judul.rectTransform;
-        jrt.anchorMin = new Vector2(0f, 1f); jrt.anchorMax = new Vector2(1f, 1f);
-        jrt.pivot = new Vector2(0.5f, 1f);
-        jrt.offsetMin = new Vector2(40f, -90f);
-        jrt.offsetMax = new Vector2(-40f, -25f);
+        jrt.anchorMin = Vector2.zero; jrt.anchorMax = Vector2.one;
+        jrt.offsetMin = new Vector2(12f, 4f); jrt.offsetMax = new Vector2(-12f, -4f);
 
-        // Instruksi (hint seret) — di BAWAH tengah layar
-        var instr = BuatTeks(_canvasGO.transform, "Instruksi", instruksiTeks, instruksiUkuran, instruksiWarna, FontStyles.Italic);
-        instr.alignment = TextAlignmentOptions.Center;
-        var irt = instr.rectTransform;
-        irt.anchorMin = new Vector2(0.2f, 0f); irt.anchorMax = new Vector2(0.8f, 0f);
-        irt.pivot = new Vector2(0.5f, 0f);
-        irt.offsetMin = new Vector2(0f, 18f);
-        irt.offsetMax = new Vector2(0f, 70f);
-
-        // Timer + Skor (atas kanan & kiri)
-        _timerText = BuatTeks(_canvasGO.transform, "Timer", "00:15", ukuranTimer, warnaTimer, FontStyles.Bold);
-        _timerText.alignment = TextAlignmentOptions.MidlineRight;
-        var trt = _timerText.rectTransform;
-        trt.anchorMin = new Vector2(1f, 1f); trt.anchorMax = new Vector2(1f, 1f);
-        trt.pivot = new Vector2(1f, 1f);
-        trt.sizeDelta = new Vector2(220f, 50f);
-        trt.anchoredPosition = new Vector2(-40f, -25f);
-
-        _skorText = BuatTeks(_canvasGO.transform, "Skor", "Benar: 0/" + chips.Length, 24, new Color(1f, 1f, 0.92f, 1f), FontStyles.Bold);
+        // Baris info: Skor (kiri) + Timer (kanan), tepat di bawah header
+        _skorText = BuatTeks(arenaGO.transform, "Skor", "Benar: 0/" + chips.Length, 22, new Color(1f, 1f, 0.92f, 1f), FontStyles.Bold);
         _skorText.alignment = TextAlignmentOptions.MidlineLeft;
         var srt = _skorText.rectTransform;
-        srt.anchorMin = new Vector2(0f, 1f); srt.anchorMax = new Vector2(0f, 1f);
+        srt.anchorMin = new Vector2(0f, 1f); srt.anchorMax = new Vector2(0.5f, 1f);
         srt.pivot = new Vector2(0f, 1f);
-        srt.sizeDelta = new Vector2(280f, 50f);
-        srt.anchoredPosition = new Vector2(40f, -25f);
+        srt.offsetMin = new Vector2(22f, -104f);
+        srt.offsetMax = new Vector2(-6f, -68f);
+
+        _timerText = BuatTeks(arenaGO.transform, "Timer", "00:15", ukuranTimer, warnaTimer, FontStyles.Bold);
+        _timerText.alignment = TextAlignmentOptions.MidlineRight;
+        var trt = _timerText.rectTransform;
+        trt.anchorMin = new Vector2(0.5f, 1f); trt.anchorMax = new Vector2(1f, 1f);
+        trt.pivot = new Vector2(1f, 1f);
+        trt.offsetMin = new Vector2(6f, -104f);
+        trt.offsetMax = new Vector2(-22f, -68f);
+
+        // Instruksi (hint seret) — di dasar arena
+        var instr = BuatTeks(arenaGO.transform, "Instruksi", instruksiTeks, instruksiUkuran, instruksiWarna, FontStyles.Italic);
+        instr.alignment = TextAlignmentOptions.Center;
+        var irt = instr.rectTransform;
+        irt.anchorMin = new Vector2(0f, 0f); irt.anchorMax = new Vector2(1f, 0f);
+        irt.pivot = new Vector2(0.5f, 0f);
+        irt.offsetMin = new Vector2(16f, 14f);
+        irt.offsetMax = new Vector2(-16f, 54f);
 
         // Zona KIRI (AMAN) & KANAN (BAHAYA) — strip tinggi di tepi layar
         _zonaAmanRT   = BuatZona("ZONA_AMAN",   zonaAmanLabel,   zonaAmanSubtitle,   warnaZonaAman,   warnaBorderAman,   zonaAmanAnchorMin,   zonaAmanAnchorMax,   out _zonaAmanContent);
@@ -1058,25 +1112,25 @@ public class ZonaTubuhQuiz : MonoBehaviour
             karRT.anchoredPosition = karakterAnchoredPos;
         }
 
-        // Container label di TENGAH — 2 kolom x 3 baris, dengan celah tengah utk karakter
+        // Container label di TENGAH arena — grid 2 kolom, di antara header & instruksi.
         var chipArea = new GameObject("ChipArea");
-        chipArea.transform.SetParent(_canvasGO.transform, false);
+        chipArea.transform.SetParent(arenaGO.transform, false);
         var caRT = chipArea.AddComponent<RectTransform>();
         caRT.anchorMin = new Vector2(0.5f, 0.5f); caRT.anchorMax = new Vector2(0.5f, 0.5f);
         caRT.pivot = new Vector2(0.5f, 0.5f);
 
         int kolom = 2;
         int baris = Mathf.CeilToInt(chips.Length / (float)kolom);
-        float celahTengah = Mathf.Max(chipUkuran.x + 40f, karakterUkuran.x + 40f); // ruang utk karakter
-        float spasiBaris  = 26f;
-        float lebarTotal  = kolom * chipUkuran.x + celahTengah;
+        float celahKolom  = 28f;
+        float spasiBaris  = 18f;
+        float lebarTotal  = kolom * chipUkuran.x + celahKolom;
         float tinggiTotal = baris * chipUkuran.y + (baris - 1) * spasiBaris;
         caRT.sizeDelta = new Vector2(lebarTotal, tinggiTotal);
-        caRT.anchoredPosition = new Vector2(0f, -20f);
+        caRT.anchoredPosition = new Vector2(0f, -26f);
 
         var grid = chipArea.AddComponent<GridLayoutGroup>();
         grid.cellSize = chipUkuran;
-        grid.spacing  = new Vector2(celahTengah, spasiBaris);
+        grid.spacing  = new Vector2(celahKolom, spasiBaris);
         grid.childAlignment = TextAnchor.MiddleCenter;
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
         grid.constraintCount = kolom;
@@ -1270,8 +1324,112 @@ public class ZonaTubuhQuiz : MonoBehaviour
             gs.AddChoice(2, $"Quiz: {data.teks} \u2192 {jawabanPemain}", benar ? "AMAN" : "BAHAYA", pts);
         }
 
+        // Feedback edukatif: tampilkan ALASAN singkat kenapa benar/salah.
+        TampilkanFeedbackChip(benar, data, jawabanPemain);
+
         if (_chipDitempatkan >= chips.Length) SelesaikanQuiz();
     }
+
+    // ── Toast feedback per-chip (edukatif) ─────────────────────────────────
+    // Muncul sebentar di tengah-bawah layar: ✓ benar / ✗ salah + alasan singkat.
+    private GameObject _feedbackToast;
+    void TampilkanFeedbackChip(bool benar, ChipData data, string jawabanPemain)
+    {
+        if (_canvasGO == null) return;
+
+        // Hanya satu toast aktif — ganti yang lama.
+        if (_feedbackToast != null) Destroy(_feedbackToast);
+
+        var toast = new GameObject("FeedbackToast");
+        toast.transform.SetParent(_canvasGO.transform, false);
+        var img = toast.AddComponent<Image>();
+        img.sprite = GetRoundedSprite();
+        img.type   = Image.Type.Sliced;
+        img.color  = benar ? new Color(0.10f, 0.32f, 0.18f, 0.97f)
+                           : new Color(0.34f, 0.10f, 0.10f, 0.97f);
+        img.raycastTarget = false;
+        var outl = toast.AddComponent<Outline>();
+        outl.effectColor    = benar ? new Color(0.40f, 0.92f, 0.55f, 1f)
+                                    : new Color(0.95f, 0.45f, 0.45f, 1f);
+        outl.effectDistance = new Vector2(2f, -2f);
+        var rt = toast.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 0f); rt.anchorMax = new Vector2(0.5f, 0f);
+        rt.pivot = new Vector2(0.5f, 0f);
+        rt.sizeDelta = new Vector2(720f, 120f);
+        rt.anchoredPosition = new Vector2(0f, 130f);
+
+        string judul = benar ? "\u2713 TEPAT!" : "\u2716 KURANG TEPAT";
+        string alasan = AlasanChip(data);
+        var tmp = BuatTeks(toast.transform, "Teks",
+            $"<b>{judul}</b>\n<size=85%>{alasan}</size>",
+            22, new Color(1f, 1f, 0.95f, 1f), FontStyles.Normal);
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.enableAutoSizing = true; tmp.fontSizeMin = 15; tmp.fontSizeMax = 23;
+        tmp.textWrappingMode = TextWrappingModes.Normal;
+        var trt = tmp.rectTransform;
+        trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
+        trt.offsetMin = new Vector2(22f, 12f); trt.offsetMax = new Vector2(-22f, -12f);
+
+        _feedbackToast = toast;
+        StartCoroutine(AnimasiFeedbackToast(toast, rt));
+    }
+
+    IEnumerator AnimasiFeedbackToast(GameObject toast, RectTransform rt)
+    {
+        if (toast == null) yield break;
+        // Pop masuk
+        float t = 0f;
+        while (t < 0.2f && toast != null)
+        {
+            t += Time.deltaTime;
+            float p = Mathf.Clamp01(t / 0.2f);
+            float s = p < 0.7f ? Mathf.Lerp(0.85f, 1.05f, p / 0.7f)
+                               : Mathf.Lerp(1.05f, 1f, (p - 0.7f) / 0.3f);
+            if (rt != null) rt.localScale = Vector3.one * s;
+            yield return null;
+        }
+        if (rt != null) rt.localScale = Vector3.one;
+        // Tahan
+        yield return new WaitForSeconds(2.2f);
+        // Fade keluar
+        var img = toast != null ? toast.GetComponent<Image>() : null;
+        var tmps = toast != null ? toast.GetComponentsInChildren<TextMeshProUGUI>() : null;
+        var ol   = toast != null ? toast.GetComponent<Outline>() : null;
+        float f = 0f;
+        while (f < 0.4f && toast != null)
+        {
+            f += Time.deltaTime;
+            float a = 1f - Mathf.Clamp01(f / 0.4f);
+            if (img != null) { var c = img.color; c.a = 0.97f * a; img.color = c; }
+            if (ol  != null) { var c = ol.effectColor; c.a = a; ol.effectColor = c; }
+            if (tmps != null) foreach (var x in tmps) { if (x == null) continue; var c = x.color; c.a = a; x.color = c; }
+            yield return null;
+        }
+        if (toast != null) { if (_feedbackToast == toast) _feedbackToast = null; Destroy(toast); }
+    }
+
+    // Alasan singkat per bagian tubuh. Pakai override Inspector jika diisi,
+    // selain itu cari berdasarkan kata kunci nama chip, lalu fallback umum.
+    string AlasanChip(ChipData data)
+    {
+        if (data == null) return "";
+        if (!string.IsNullOrWhiteSpace(data.alasan)) return data.alasan;
+
+        string t = data.teks != null ? data.teks.ToLowerInvariant() : "";
+        if (t.Contains("bahu"))   return "Bahu boleh disentuh teman/keluarga dengan sopan.";
+        if (t.Contains("tangan")) return "Tangan boleh untuk bersalaman atau menyapa.";
+        if (t.Contains("pipi"))   return "Pipi boleh dari keluarga dekat, asal kamu nyaman.";
+        if (t.Contains("paha"))   return "Paha termasuk area pribadi \u2014 tidak boleh disentuh orang lain.";
+        if (t.Contains("perut"))  return "Perut termasuk area pribadi \u2014 katakan TIDAK bila disentuh.";
+        if (t.Contains("privat") || t.Contains("kelamin") || t.Contains("dada"))
+            return "Ini area sangat pribadi (tertutup baju renang) \u2014 dilarang disentuh siapa pun.";
+
+        // Fallback berdasarkan jawaban benar.
+        return data.jawabanBenar == "AMAN"
+            ? "Bagian ini umumnya aman disentuh dengan sopan dan seizinmu."
+            : "Bagian ini area pribadi \u2014 kamu berhak menolak bila disentuh.";
+    }
+
 
     void SelesaikanQuiz()
     {

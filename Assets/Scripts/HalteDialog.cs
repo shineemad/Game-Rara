@@ -239,6 +239,15 @@ public class HalteDialog : MonoBehaviour
     [Tooltip("Kurangi nyawa saat pilih BAHAYA.")]
     public bool kurangiNyawaSaatBahaya = true;
 
+    [Header("Blokir (aksi konkret menolak grooming)")]
+    [Tooltip("Setelah pilih AMAN, tampilkan tombol BLOKIR sebagai aksi konkret menolak kontak orang asing.")]
+    public bool aktifkanBlokir = true;
+    public string tombolBlokirTeks = "🚫  BLOKIR nomor orang asing";
+    [TextArea(2, 4)]
+    public string reaksiBlokirTeks = "✓ TEPAT! Kamu BLOKIR nomor orang asing itu.\nKalau ada yang memaksa minta kontak/sosmed-mu: tolak, blokir, lalu ceritakan ke orang dewasa tepercaya.";
+    [Tooltip("Bonus skor saat menekan BLOKIR (aksi perlindungan diri).")]
+    public int bonusBlokir = 50;
+
     [Header("Tombol Lanjut Setelah Reaksi")]
     public string tombolLanjutTeks = "\u25B6  Naik angkot";
 

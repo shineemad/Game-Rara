@@ -27,6 +27,8 @@ public class Day2SummaryScreen : MonoBehaviour
 
     [Header("Overlay Belakang")]
     public bool   tampilkanOverlay = true;
+    [Tooltip("Sprite latar belakang penuh layar di belakang kartu (opsional). Kosong = pakai overlayColor.")]
+    public Sprite overlaySprite;
     public Color  overlayColor = new Color(0f, 0f, 0f, 0.82f);
 
     [Header("Judul")]
@@ -41,7 +43,7 @@ public class Day2SummaryScreen : MonoBehaviour
 
     [Header("Progress Bar Skor")]
     public bool tampilkanBar = true;
-    public int  targetSkor = 600;
+    public int  targetSkor = 3500;
     public Color barBackgroundColor = new Color(0.08f, 0.25f, 0.13f, 1f);
     public Color barFillColor = new Color(0.18f, 0.78f, 0.45f, 1f);
     public string barTeksFormat = "{SKOR} / {TARGET} poin";
@@ -94,6 +96,13 @@ public class Day2SummaryScreen : MonoBehaviour
     [Header("Refleksi (Kata Sakti & Bahaya)")]
     [Tooltip("Tampilkan ringkasan 3 Kata Sakti yang dikuasai + hasil Meteran Bahaya di panel pencapaian.")]
     public bool tampilkanRefleksi = true;
+
+    [Header("Rekap Keputusan Hari 2")]
+    [Tooltip("Tampilkan daftar tiap keputusan yang diambil pemain di Hari 2 (AMAN/RAGU/BAHAYA) untuk refleksi edukatif.")]
+    public bool tampilkanRekapPilihan = true;
+    [Tooltip("Judul kecil di atas daftar keputusan.")]
+    public string rekapJudul = "\uD83D\uDCDD  Keputusanmu hari ini:";
+    public int    rekapUkuran = 17;
 
     [Header("Font (opsional)")]
     public TMP_FontAsset fontAsset;
@@ -178,12 +187,23 @@ public class Day2SummaryScreen : MonoBehaviour
         scaler.matchWidthOrHeight = 0.5f;
         _canvasGO.AddComponent<GraphicRaycaster>();
 
+        // BG hitam pekat (selalu ada) supaya scene di belakang tidak menembus kartu ringkasan.
+        var bgHitam = new GameObject("BG_Hitam");
+        bgHitam.transform.SetParent(_canvasGO.transform, false);
+        var bgHitamImg = bgHitam.AddComponent<Image>();
+        bgHitamImg.color = Color.black; bgHitamImg.raycastTarget = true;
+        var bgHitamRT = bgHitam.GetComponent<RectTransform>();
+        bgHitamRT.anchorMin = Vector2.zero; bgHitamRT.anchorMax = Vector2.one;
+        bgHitamRT.offsetMin = Vector2.zero; bgHitamRT.offsetMax = Vector2.zero;
+
         if (tampilkanOverlay)
         {
             var ov = new GameObject("Overlay");
             ov.transform.SetParent(_canvasGO.transform, false);
             var ovImg = ov.AddComponent<Image>();
-            ovImg.color = overlayColor; ovImg.raycastTarget = true;
+            if (overlaySprite != null) { ovImg.sprite = overlaySprite; ovImg.type = Image.Type.Sliced; ovImg.color = Color.white; }
+            else                       ovImg.color = overlayColor;
+            ovImg.raycastTarget = true;
             var rt = ov.GetComponent<RectTransform>();
             rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
             rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
@@ -326,7 +346,8 @@ public class Day2SummaryScreen : MonoBehaviour
         lrt.anchorMin = new Vector2(0f, 0f); lrt.anchorMax = new Vector2(1f, 1f);
         lrt.offsetMin = new Vector2(30f, footerH + 10f); lrt.offsetMax = new Vector2(-30f, -60f);
         var vlg = list.AddComponent<VerticalLayoutGroup>();
-        vlg.childAlignment = TextAnchor.UpperLeft; vlg.spacing = 8f;
+        vlg.childAlignment = TextAnchor.UpperLeft; vlg.spacing = 12f;
+        vlg.padding = new RectOffset(6, 6, 4, 4);
         vlg.childControlWidth = true; vlg.childControlHeight = true;
         vlg.childForceExpandWidth = true; vlg.childForceExpandHeight = false;
 
@@ -351,6 +372,7 @@ public class Day2SummaryScreen : MonoBehaviour
         // Refleksi: 3 Kata Sakti yang dikuasai + hasil Meteran Bahaya.
         if (tampilkanRefleksi && gs != null)
         {
+            BuatPemisah(list.transform); // garis pemisah supaya blok Refleksi terbedakan dari daftar pencapaian
             string ck(bool on, string kata) => (on ? "\u2705 " : "\u2B1C ") + kata;
             string kataSaktiBaris = "\uD83D\uDDDD Kata Sakti: " +
                 ck(gs.usedTidak, "TIDAK") + "   " + ck(gs.usedPergi, "PERGI") + "   " + ck(gs.usedCerita, "CERITA");
@@ -368,6 +390,34 @@ public class Day2SummaryScreen : MonoBehaviour
             var db = BuatTeks(list.transform, "Bahaya", $"\u26A0 Tingkat Bahaya akhir: {Mathf.RoundToInt(d * 100f)}% \u2014 {status}", pencapaianUkuran, dColor, FontStyles.Normal);
             db.alignment = TextAlignmentOptions.MidlineLeft;
             db.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        }
+
+        // Rekap keputusan Hari 2: tiap pilihan diwarnai sesuai kategori (AMAN/RAGU/BAHAYA).
+        if (tampilkanRekapPilihan && gs != null && gs.choices != null)
+        {
+            bool adaPilihan = gs.choices.Exists(c => c != null && c.day == 2);
+            if (adaPilihan)
+            {
+                BuatPemisah(list.transform); // garis pemisah supaya blok Keputusan terbedakan dari blok Refleksi
+                var rj = BuatTeks(list.transform, "RekapJudul", rekapJudul, rekapUkuran,
+                    new Color(0.75f, 0.92f, 1f, 1f), FontStyles.Bold);
+                rj.alignment = TextAlignmentOptions.MidlineLeft;
+                rj.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+                foreach (var ch in gs.choices)
+                {
+                    if (ch == null || ch.day != 2) continue;
+                    string hex = WarnaKategoriHex(ch.category);
+                    string ikon = ch.category == "AMAN" ? "\u2705"
+                                : ch.category == "RAGU" ? "\u26A0"
+                                : "\u274C";
+                    string baris = $"{ikon} {ch.label}  <color={hex}>[{ch.category}]</color>";
+                    var ct = BuatTeks(list.transform, "Pilihan", baris, rekapUkuran,
+                        new Color(0.92f, 0.92f, 0.88f, 1f), FontStyles.Normal);
+                    ct.alignment = TextAlignmentOptions.TopLeft;
+                    ct.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+                }
+            }
         }
 
         if (tampilkanFooter)
@@ -544,6 +594,27 @@ public class Day2SummaryScreen : MonoBehaviour
     }
 
     // Helpers
+    void BuatPemisah(Transform parent)
+    {
+        var sep = new GameObject("Pemisah");
+        sep.transform.SetParent(parent, false);
+        var img = sep.AddComponent<Image>();
+        img.color = new Color(1f, 1f, 1f, 0.16f); img.raycastTarget = false;
+        var le = sep.AddComponent<LayoutElement>();
+        le.preferredHeight = 2f; le.minHeight = 2f; le.flexibleWidth = 1f;
+    }
+
+    string WarnaKategoriHex(string kategori)
+    {
+        switch (kategori)
+        {
+            case "AMAN":   return "#26AD61";
+            case "RAGU":   return "#F29D12";
+            case "BAHAYA": return "#E84D3D";
+            default:       return "#339FDB";
+        }
+    }
+
     TextMeshProUGUI BuatTeks(Transform parent, string name, string content, int size, Color color, FontStyles style)
     {
         var go = new GameObject(name);

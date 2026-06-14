@@ -120,6 +120,13 @@ public class NpcGang : MonoBehaviour
         {
             var p = GameObject.FindWithTag("Player");
             if (p != null) playerTarget = p.transform;
+            // Fallback: cari komponen 'player' bila tag "Player" belum di-set di scene.
+            // Tanpa ini, playerTarget null → NPC jatuh ke patrol & jalan menjauh ke kiri.
+            if (playerTarget == null)
+            {
+                var pc = FindFirstObjectByType<player>();
+                if (pc != null) playerTarget = pc.transform;
+            }
         }
 
         // Rekam tinggi dunia frame pertama sebagai referensi ukuran
@@ -328,7 +335,9 @@ public class NpcGang : MonoBehaviour
 
         if (playerTarget == null)
         {
-            isMoving = walkSpeed > 0f;
+            // Tanpa target Rara: DIAM di tempat — jangan jalan menjauh ke kiri.
+            // (Mencegah gang ngeloyor pergi saat referensi Rara belum ke-set.)
+            isMoving = false;
             return;
         }
 
@@ -365,19 +374,22 @@ public class NpcGang : MonoBehaviour
                 sideSign = _lockedSideSign;
             }
 
+            // Titik berhenti = berjarak jarakBerhentiDariRara dari Rara di sisi NPC.
             moveTarget = new Vector2(
                 playerTarget.position.x + sideSign * jarakBerhentiDariRara,
                 playerTarget.position.y
             );
 
-            float distToRara   = Vector2.Distance(transform.position, playerTarget.position);
-            float distToTarget = Vector2.Distance(transform.position, moveTarget);
+            float distToRara = Vector2.Distance(transform.position, playerTarget.position);
 
-            // 1) Rara mendekat & NPC belum di posisi → maju ke moveTarget
-            if (distToRara <= triggerDistance && distToTarget > stopDistance)
+            // 1) Rara masuk jangkauan trigger & gap belum tertutup → MAJU ke arah Rara.
+            //    Arah dihitung langsung ke posisi Rara (bukan ke titik offset) supaya
+            //    NPC selalu terlihat bergerak mendekati Rara, lalu berhenti saat
+            //    jaraknya sudah mencapai jarakBerhentiDariRara.
+            if (distToRara <= triggerDistance && distToRara > jarakBerhentiDariRara + stopDistance)
             {
                 isMoving  = true;
-                direction = (moveTarget.x > transform.position.x) ? 1f : -1f;
+                direction = (playerTarget.position.x > transform.position.x) ? 1f : -1f;
             }
             // 2) Rara terlalu dekat (menerobos personal space) → NPC mundur jika diizinkan
             else if (jagaJarakMundur && distToRara < jarakBerhentiDariRara - 0.1f)

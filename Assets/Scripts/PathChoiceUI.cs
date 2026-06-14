@@ -300,6 +300,10 @@ public class PathChoiceUI : MonoBehaviour
     // referensi komponen Rigidbody2D Rara untuk pause gerak
     private Rigidbody2D playerRb;
 
+    // referensi komponen player Rara untuk bekukan gerak (velocity di-set tiap frame
+    // oleh player.Update, jadi isKinematic saja tidak cukup — wajib set frozen).
+    private player playerScript;
+
     // referensi PathEnvironment — dicari otomatis, tidak perlu di-assign manual
     private PathEnvironment pathEnv;
 
@@ -314,7 +318,10 @@ public class PathChoiceUI : MonoBehaviour
         }
 
         if (playerTransform != null)
-            playerRb = playerTransform.GetComponent<Rigidbody2D>();
+        {
+            playerRb     = playerTransform.GetComponent<Rigidbody2D>();
+            playerScript = playerTransform.GetComponent<player>();
+        }
 
         // Auto-find PathEnvironment di scene
         pathEnv = FindFirstObjectByType<PathEnvironment>();
@@ -908,7 +915,9 @@ public class PathChoiceUI : MonoBehaviour
         EnsurePanelOnTop();
         EnsureOverlayDoesNotBlock();
 
-        // Bekukan Rara agar tidak jalan terus
+        // Bekukan Rara agar tidak jalan terus.
+        // player.Update menulis ulang rb.velocity tiap frame, jadi set frozen wajib.
+        if (playerScript != null) playerScript.frozen = true;
         if (playerRb != null)
         {
             playerRb.velocity = Vector2.zero;
@@ -958,6 +967,7 @@ public class PathChoiceUI : MonoBehaviour
         }
 
         // Bebaskan kembali Rara
+        if (playerScript != null) playerScript.frozen = false;
         if (playerRb != null)
             playerRb.isKinematic = false;
     }

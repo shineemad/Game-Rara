@@ -299,6 +299,7 @@ public class AngkotSentuhScene : MonoBehaviour
     public void Mulai(Action onSelesai)
     {
         _onSelesai = onSelesai;
+        HUDManager.Instance?.SetNavbarVisible(false); // sembunyikan navbar selama adegan TERIAK
         BuildUI();
         StartCoroutine(JalankanAdegan());
     }
@@ -595,6 +596,7 @@ public class AngkotSentuhScene : MonoBehaviour
         // 6. Tombol lanjut
         yield return TampilkanTombolLanjut();
 
+        HUDManager.Instance?.SetNavbarVisible(true); // tampilkan kembali navbar saat keluar
         if (_canvasGO != null) Destroy(_canvasGO);
         _onSelesai?.Invoke();
     }
@@ -725,12 +727,31 @@ public class AngkotSentuhScene : MonoBehaviour
         if (_hintTxt != null) _hintTxt.gameObject.SetActive(false);
         _holdTeriak = false;
 
-        // backdrop gelap fokus
+        // Sembunyikan kotak dialog VN supaya layar teriak bersih & fokus
+        // (prompt "Bahumu disentuh..." tidak ikut tampil di balik overlay).
+        if (_dialogBoxGO != null) _dialogBoxGO.SetActive(false);
+
+        // backdrop gelap fokus (lebih pekat supaya kontras tinggi)
         var ov = new GameObject("VoiceOverlay");
         ov.transform.SetParent(_canvasGO.transform, false);
         var ovImg = ov.AddComponent<Image>();
-        ovImg.color = new Color(0f, 0f, 0f, 0.6f);
+        ovImg.color = new Color(0.02f, 0.01f, 0.04f, 0.9f);
         Stretch(ovImg.rectTransform);
+
+        // Kartu panel tengah sebagai bingkai fokus mini-game (dekoratif).
+        var kartu = new GameObject("VoiceKartu");
+        kartu.transform.SetParent(ov.transform, false);
+        var kartuImg = kartu.AddComponent<Image>();
+        kartuImg.sprite = GetRounded(); kartuImg.type = Image.Type.Sliced;
+        kartuImg.color  = new Color(0.10f, 0.07f, 0.05f, 0.97f);
+        kartuImg.raycastTarget = false;
+        var kartuRT = kartu.GetComponent<RectTransform>();
+        kartuRT.anchorMin = new Vector2(0.10f, 0.085f);
+        kartuRT.anchorMax = new Vector2(0.90f, 0.965f);
+        kartuRT.offsetMin = Vector2.zero; kartuRT.offsetMax = Vector2.zero;
+        var kartuOutl = kartu.AddComponent<Outline>();
+        kartuOutl.effectColor = new Color(0.95f, 0.72f, 0.18f, 0.9f);
+        kartuOutl.effectDistance = new Vector2(3f, -3f);
 
         // judul
         var judul = BuatTeks(ov.transform, "Judul", judulTeriak, 40, merahWarna, FontStyles.Bold);
@@ -794,11 +815,49 @@ public class AngkotSentuhScene : MonoBehaviour
         // legenda 3 baris (mirip gambar referensi)
         BuatLegenda(ov.transform);
 
-        // tombol TAHAN untuk teriak
+        // ── Indikator TAHAN (#7) — progress berapa lama suara sudah di zona MERAH.
+        // Memberi umpan balik jelas seberapa dekat pemain ke "berhasil".
+        var holdLabel = BuatTeks(ov.transform, "HoldLabel", "TAHAN SUARA DI ZONA MERAH!", 18,
+            new Color(1f, 0.85f, 0.3f, 1f), FontStyles.Bold);
+        holdLabel.alignment = TextAlignmentOptions.Center;
+        var hlrt = holdLabel.rectTransform;
+        hlrt.anchorMin = new Vector2(0.15f, 0.475f); hlrt.anchorMax = new Vector2(0.85f, 0.498f);
+        hlrt.offsetMin = Vector2.zero; hlrt.offsetMax = Vector2.zero;
+
+        var holdBg = new GameObject("HoldBg");
+        holdBg.transform.SetParent(ov.transform, false);
+        var holdBgImg = holdBg.AddComponent<Image>();
+        holdBgImg.sprite = GetRounded(); holdBgImg.type = Image.Type.Sliced;
+        holdBgImg.color = new Color(0.08f, 0.08f, 0.10f, 1f);
+        var holdBgRT = holdBg.GetComponent<RectTransform>();
+        holdBgRT.anchorMin = new Vector2(0.22f, 0.45f); holdBgRT.anchorMax = new Vector2(0.78f, 0.475f);
+        holdBgRT.offsetMin = Vector2.zero; holdBgRT.offsetMax = Vector2.zero;
+        var holdBgOutl = holdBg.AddComponent<Outline>();
+        holdBgOutl.effectColor = new Color(1f, 1f, 1f, 0.25f); holdBgOutl.effectDistance = new Vector2(2f, -2f);
+
+        var holdFill = new GameObject("HoldFill");
+        holdFill.transform.SetParent(holdBg.transform, false);
+        var holdFillImg = holdFill.AddComponent<Image>();
+        holdFillImg.sprite = GetRounded(); holdFillImg.type = Image.Type.Sliced;
+        holdFillImg.color = merahWarna;
+        holdFillImg.raycastTarget = false;
+        var holdFillRT = holdFill.GetComponent<RectTransform>();
+        holdFillRT.anchorMin = new Vector2(0f, 0f); holdFillRT.anchorMax = new Vector2(0f, 1f);
+        holdFillRT.offsetMin = Vector2.zero; holdFillRT.offsetMax = Vector2.zero;
+
+        var holdPct = BuatTeks(holdBg.transform, "HoldPct", "0%", 16, Color.white, FontStyles.Bold);
+        holdPct.alignment = TextAlignmentOptions.Center;
+        var hprt = holdPct.rectTransform;
+        hprt.anchorMin = Vector2.zero; hprt.anchorMax = Vector2.one;
+        hprt.offsetMin = Vector2.zero; hprt.offsetMax = Vector2.zero;
+
+        // tombol TAHAN untuk teriak (pendukung / fallback input mic)
         var btnGO = BuatTombol(ov.transform, teksTombolTeriak, merahWarna, null);
         var btnRT = btnGO.GetComponent<RectTransform>();
-        btnRT.anchorMin = new Vector2(0.30f, 0.11f); btnRT.anchorMax = new Vector2(0.70f, 0.205f);
+        btnRT.anchorMin = new Vector2(0.27f, 0.115f); btnRT.anchorMax = new Vector2(0.73f, 0.225f);
         btnRT.offsetMin = Vector2.zero; btnRT.offsetMax = Vector2.zero;
+        var btnGlow = btnGO.GetComponent<Outline>();
+        if (btnGlow != null) { btnGlow.effectColor = new Color(1f, 0.85f, 0.3f, 0.7f); btnGlow.effectDistance = new Vector2(3f, -3f); }
         var et = btnGO.AddComponent<EventTrigger>();
         TambahTrigger(et, EventTriggerType.PointerDown, () => _holdTeriak = true);
         TambahTrigger(et, EventTriggerType.PointerUp,   () => _holdTeriak = false);
@@ -816,7 +875,10 @@ public class AngkotSentuhScene : MonoBehaviour
             }
             catch { micAktif = false; }
         }
-        if (!micAktif) ins.text = instruksiTeriak; // tetap pakai tombol
+        // Instruksi adaptif: Voice-Driven via mic, atau tahan tombol kalau mic tak ada.
+        ins.text = micAktif
+            ? "TERIAK \u201CJANGAN PEGANG SAYA!\u201D ke mikrofon sampai meter MERAH! (boleh tahan tombol)"
+            : instruksiTeriak;
 
         // ── loop mini-game ───────────────────────────────────────────────
         float level = 0f, waktuMerah = 0f;
@@ -844,16 +906,37 @@ public class AngkotSentuhScene : MonoBehaviour
             {
                 lvl.text = labelKeras;  lvl.color = merahWarna;
                 waktuMerah += dt;
+                if (markImg != null) markImg.color = merahWarna;
+                float pulsa = 1f + 0.25f * Mathf.Sin(Time.time * 18f);
+                marker.transform.localScale = new Vector3(pulsa, 1f, 1f);
             }
             else if (level >= ambangKuning)
             {
                 lvl.text = labelSedang; lvl.color = kuningWarna;
                 waktuMerah = 0f;
+                if (markImg != null) markImg.color = Color.white;
+                marker.transform.localScale = Vector3.one;
             }
             else
             {
                 lvl.text = labelNormal; lvl.color = hijauWarna;
                 waktuMerah = 0f;
+                if (markImg != null) markImg.color = Color.white;
+                marker.transform.localScale = Vector3.one;
+            }
+
+            // Perbarui indikator TAHAN (#7): isi bar + persentase + denyut saat di merah.
+            float frac = Mathf.Clamp01(waktuMerah / Mathf.Max(0.01f, tahanDetikMerah));
+            holdFillRT.anchorMax = new Vector2(frac, 1f);
+            holdPct.text = Mathf.RoundToInt(frac * 100f) + "%";
+            if (frac > 0f)
+            {
+                float glow = 0.7f + 0.3f * Mathf.Sin(Time.time * 14f);
+                holdFillImg.color = new Color(merahWarna.r, merahWarna.g, merahWarna.b, glow);
+            }
+            else
+            {
+                holdFillImg.color = new Color(merahWarna.r, merahWarna.g, merahWarna.b, 1f);
             }
             yield return null;
         }
@@ -874,6 +957,8 @@ public class AngkotSentuhScene : MonoBehaviour
 
         _holdTeriak = false;
         if (ov != null) Destroy(ov);
+        // Tampilkan kembali kotak dialog VN untuk beat reaksi berikutnya.
+        if (_dialogBoxGO != null) _dialogBoxGO.SetActive(true);
     }
 
     // Buat 1 segmen warna pada bar (fraksi x dari→sampai).

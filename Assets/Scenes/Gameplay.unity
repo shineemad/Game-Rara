@@ -119,6 +119,139 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &24482033
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 24482034}
+  - component: {fileID: 24482036}
+  - component: {fileID: 24482035}
+  m_Layer: 0
+  m_Name: Pembatas1 (6)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &24482034
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 24482033}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 22.9, y: 0.43, z: 0.078871496}
+  m_LocalScale: {x: 0.15031117, y: 1.2015421, z: 1.2545367}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1107663593}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!61 &24482035
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 24482033}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 21.72, y: 7.243535}
+    newSize: {x: 21.72, y: 7.243535}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 21.72, y: 7.243535}
+  m_EdgeRadius: 0
+--- !u!212 &24482036
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 24482033}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: -883599925
+  m_SortingLayer: 1
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 2699170030345945923, guid: 189ceaf0b3367d640b5072dae4ec6638, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 21.72, y: 7.243535}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
 --- !u!1 &54444360
 GameObject:
   m_ObjectHideFlags: 0
@@ -149,6 +282,37 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1897304800}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &76250462
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 76250463}
+  m_Layer: 0
+  m_Name: button
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &76250463
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 76250462}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 20.283321, y: -2.6048126, z: 0.2468509}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &107440517
 GameObject:
@@ -247,7 +411,7 @@ GameObject:
   - component: {fileID: 132046234}
   - component: {fileID: 132046233}
   m_Layer: 0
-  m_Name: EduCardTrigger_Day1
+  m_Name: SampaiSekolahDay1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -262,7 +426,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 132046232}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 5bc887655e74c7446a7ba08f168916f7, type: 3}
+  m_Script: {fileID: 11500000, guid: 08c8820924a533c418b4c54b711db8b3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   player: {fileID: 396292394}
@@ -270,60 +434,12 @@ MonoBehaviour:
   triggerOnce: 1
   freezePlayerSaatTampil: 1
   jedaSebelumTampil: 0.5
-  tambahPoinKeGameState: 1
-  backgroundSprite: {fileID: 4130640169021434097, guid: d4322d67ee7c9a54e8c577cb5f3cb5e7, type: 3}
-  backgroundImageType: 1
-  backgroundColor: {r: 1, g: 1, b: 1, a: 0.97}
-  borderSprite: {fileID: 0}
-  borderColor: {r: 1, g: 0.84, b: 0.2, a: 1}
-  ornamenAtasSprite: {fileID: 0}
-  ornamenAtasSize: {x: 260, y: 130}
-  ornamenAtasOffsetY: 40
-  tampilkanOverlay: 1
-  overlaySprite: {fileID: -5678303588510908689, guid: b82c0931abe36a447911c2ba9eeafc13, type: 3}
-  overlayColor: {r: 0, g: 0, b: 0, a: 0.82}
-  judul: 
-  warnaJudul: {r: 1, g: 0.84, b: 0.2, a: 0.88235295}
-  ukuranJudul: 30
-  tampilkanPoin: 0
-  nilaiPoin: 100
-  formatPoin: "\u2726  +{0} poin  \u2726"
-  warnaPoin: {r: 1, g: 0.78, b: 0.2, a: 1}
-  ukuranPoin: 72
-  subtitel: 
-  warnaSubtitel: {r: 1, g: 0.93, b: 0.75, a: 1}
-  ukuranSubtitel: 22
-  tombolLanjutTeks: 
-  tombolSprite: {fileID: 0}
-  tombolWarna: {r: 1, g: 1, b: 1, a: 0}
-  tombolBorderColor: {r: 1, g: 0.78, b: 0.2, a: 1}
-  tombolTeksWarna: {r: 1, g: 1, b: 1, a: 1}
-  tombolUkuranTeks: 26
-  sembunyikanTombol: 0
-  autoCloseDetik: 0
+  tambahBonusJalurAman: 1
+  bonusJalurAman: 100
   fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
-  skalaAwal: 0.85
-  durasiPopIn: 0.32
-  sfxMunculKartu: {fileID: 0}
-  sfxKlikLanjut: {fileID: 0}
   sortingOrder: 1010
-  kartuEduSelanjutnya: {fileID: 0}
-  autoCariEduCard: 1
-  onLanjut:
-    m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 11500000, guid: 0adfece2dbdc9764597825e3309e9f29, type: 3}
-        m_TargetAssemblyTypeName: UnityEngine.Object, UnityEngine
-        m_MethodName: set_name
-        m_Mode: 5
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: EduCardDay1.Tampilkan
-          m_BoolArgument: 0
-        m_CallState: 2
+  layarRingkasanSelanjutnya: {fileID: 0}
+  autoCariLayarRingkasan: 1
 --- !u!4 &132046234
 Transform:
   m_ObjectHideFlags: 0
@@ -421,6 +537,11 @@ MonoBehaviour:
   tampilkanLabelFase: 0
   warnaLabelFase: {r: 1, g: 0.85, b: 0.25, a: 0}
   ukuranLabelFase: 22
+  gunakanFadeTransisi: 1
+  fadeDurasiMasuk: 0.32
+  fadeWarna: {r: 0, g: 0, b: 0, a: 1}
+  tampilkanFrameSinematik: 1
+  labelFasePill: 1
   tampilkanMeteranBahaya: 0
   tampilkanGlossaryKataSakti: 1
   introJudul: 
@@ -720,6 +841,7 @@ MonoBehaviour:
   statusKontak: online
   warnaHeader: {r: 0.05, g: 0.32, b: 0.27, a: 1}
   warnaTeksHeader: {r: 1, g: 1, b: 1, a: 1}
+  jamTampil: 
   warnaChatBg: {r: 0.05, g: 0.12, b: 0.12, a: 1}
   warnaBubbleMasuk: {r: 0.2, g: 0.3, b: 0.35, a: 1}
   warnaTeksBubble: {r: 1, g: 1, b: 0.95, a: 1}
@@ -2422,6 +2544,12 @@ MonoBehaviour:
   latarReaksiBahaya: {fileID: 0}
   berikanBonusLaporSaatAman: 1
   kurangiNyawaSaatBahaya: 1
+  aktifkanBlokir: 1
+  tombolBlokirTeks: "\U0001F6AB  BLOKIR nomor orang asing"
+  reaksiBlokirTeks: "\u2713 TEPAT! Kamu BLOKIR nomor orang asing itu.\nKalau ada
+    yang memaksa minta kontak/sosmed-mu: tolak, blokir, lalu ceritakan ke orang dewasa
+    tepercaya."
+  bonusBlokir: 50
   tombolLanjutTeks: "\u25B6  Naik angkot"
   warnaAman: {r: 0.15, g: 0.68, b: 0.38, a: 1}
   warnaRagu: {r: 0.95, g: 0.62, b: 0.07, a: 1}
@@ -2534,6 +2662,139 @@ SpriteRenderer:
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 12.400001, y: 29.58}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
+--- !u!1 &622249840
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 622249841}
+  - component: {fileID: 622249843}
+  - component: {fileID: 622249842}
+  m_Layer: 0
+  m_Name: Pembatas1 (5)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &622249841
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 622249840}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 6.7206, y: -0.94, z: 0.078871496}
+  m_LocalScale: {x: 0.3934029, y: 0.34412882, z: 1.2545367}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1107663593}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!61 &622249842
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 622249840}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 21.72, y: 7.243535}
+    newSize: {x: 21.72, y: 7.243535}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 21.72, y: 7.243535}
+  m_EdgeRadius: 0
+--- !u!212 &622249843
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 622249840}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: -883599925
+  m_SortingLayer: 1
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 2699170030345945923, guid: 189ceaf0b3367d640b5072dae4ec6638, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 21.72, y: 7.243535}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1
@@ -3293,7 +3554,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &861733422
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3308,7 +3569,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   autoTampilSaatStart: 0
   freezePlayerSaatTampil: 1
-  backgroundSprite: {fileID: -855298285791758126, guid: 7408956a572264f40a5ca67f0d935063, type: 3}
+  backgroundSprite: {fileID: 0}
   backgroundImageType: 1
   backgroundColor: {r: 1, g: 1, b: 1, a: 1}
   borderSprite: {fileID: 0}
@@ -3598,6 +3859,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 872379145}
+  - component: {fileID: 872379146}
   m_Layer: 0
   m_Name: NpcDialogCanvas
   m_TagString: Untagged
@@ -3620,6 +3882,75 @@ Transform:
   m_Children: []
   m_Father: {fileID: 1413649927}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &872379146
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 872379144}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 482ece1e70bcef74db9e1ab274508982, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 0}
+  dialogManager: {fileID: 0}
+  hudManager: {fileID: 0}
+  sharedNpcDialog: {fileID: 0}
+  npcStranger: {fileID: 0}
+  npcApproachSpeed: 0.8
+  npcSafeDistance: 4
+  npcDangerDist: 1.5
+  pathSafeMarker: {fileID: 0}
+  pathDangerMarker: {fileID: 0}
+  pathChoicePanel: {fileID: 0}
+  pathEnvironment: {fileID: 0}
+  jarakNarasiSetelahPilihJalan: 2.5
+  encTutorial: 5
+  encE1: 14
+  encE2: 22
+  encPathChoice: 9999
+  encE3: 9999
+  encEduCard: 40
+  encEnd: 50
+  zoneThresholds:
+  - 0
+  - 10
+  - 22
+  - 30
+  zoneNames:
+  - Depan Rumah
+  - Lorong Pemukiman
+  - Halte & Persimpangan
+  - Akses Sekolah
+  eduCardPanel: {fileID: 0}
+  eduCardContinueBtn: {fileID: 0}
+  tampilkanProgres: 1
+  progressStartX: 0
+  progressEndX: 50
+  progressSortingOrder: 40
+  progressFont: {fileID: 0}
+  progressTrackColor: {r: 0.1, g: 0.05, b: 0.02, a: 0.8}
+  progressFillColor: {r: 0.96, g: 0.45, b: 0.1, a: 1}
+  progressTextColor: {r: 1, g: 0.92, b: 0.7, a: 1}
+  shoutButton: {fileID: 0}
+  shoutGauge: {fileID: 0}
+  shoutFillRate: 0.5
+  shoutDecayRate: 0.3
+  latihJudul: "\U0001F5E3  LATIH SUARAMU!"
+  latihDeskripsi: 'Sebelum jalan, latih dulu suaramu!
+
+    TERIAK KERAS = kamu lebih
+    aman di jalan.
+
+
+    TAHAN tombol TERIAK (atau SPACE) sampai meter PENUH!'
+  latihTeriakLabel: "\U0001F50A  TAHAN: TERIAK!"
+  latihBerhasil: "\u2713 HEBAT! Suaramu lantang! Kalau ada yang mengganggu di jalan,
+    berani TERIAK minta tolong, ya!"
+  latihWaktuWindow: 15
+  autoMulaiTanpaIntro: 0
 --- !u!1 &881222453
 GameObject:
   m_ObjectHideFlags: 0
@@ -4045,10 +4376,11 @@ MonoBehaviour:
   pathDangerMarker: {fileID: 0}
   pathChoicePanel: {fileID: 0}
   pathEnvironment: {fileID: 0}
+  jarakNarasiSetelahPilihJalan: 2.5
   encTutorial: 5
   encE1: 14
   encE2: 22
-  encPathChoice: 30
+  encPathChoice: 9999
   encE3: 9999
   encEduCard: 40
   encEnd: 50
@@ -4076,134 +4408,18 @@ MonoBehaviour:
   shoutGauge: {fileID: 0}
   shoutFillRate: 0.5
   shoutDecayRate: 0.3
-  tutorialObstacle: {fileID: 0}
-  encounter1:
-    encounterName: "Encounter 1 \u2014 Orang Asing Penawar Permen"
-    dialogSebelumPilihan:
-    - speaker: Narasi
-      portrait: {fileID: 0}
-      text: Tiba-tiba seorang pria asing menghentikan langkah Rara...
-    - speaker: Orang Asing
-      portrait: {fileID: 0}
-      text: '"Hei dek, bentar ya~!
+  latihJudul: "\U0001F5E3  LATIH SUARAMU!"
+  latihDeskripsi: 'Sebelum jalan, latih dulu suaramu!
 
-        Mau permen nggak? Enak banget!
+    TERIAK KERAS = kamu lebih
+    aman di jalan.
 
-        Om
-        punya banyak di warung, ikut bentar aja ya, deket kok!"'
-    - speaker: Rara (dalam hati)
-      portrait: {fileID: 0}
-      text: 'Rara nggak kenal orang ini sama sekali!
 
-        Dia nawarin permen
-        DAN mau ngajak pergi... ini nggak bener!'
-    pertanyaanRara: Gimana Rara harus merespons orang ini?
-    portraitRara: {fileID: 0}
-    pilihan:
-    - label: '"NGGAK MAU! Aku nggak kenal Bapak!" (Teriak & lari ke tempat ramai)'
-      category: AMAN
-      gunakanPoinKustom: 0
-      poinKustom: 0
-      feedbackText: "\u2705 Bagus sekali! Rara menolak dengan tegas!\nOrang asing
-        yang menawarkan hadiah dan mengajak pergi = TANDA BAHAYA!\nSelalu tolak dan
-        pergi ke tempat yang ramai."
-    - label: '"Makasih pak, tapi aku sudah mau telat sekolah..." (Menolak dengan
-        alasan)'
-      category: RAGU
-      gunakanPoinKustom: 0
-      poinKustom: 0
-      feedbackText: "\u26A0\uFE0F Lumayan... Rara menolak, tapi kurang tegas.\nSebaiknya
-        langsung pergi ke tempat yang lebih ramai\ndan ceritakan ke orang dewasa
-        yang dipercaya."
-    - label: '"Boleh~" (Ikut saja)'
-      category: BAHAYA
-      gunakanPoinKustom: 0
-      poinKustom: 0
-      feedbackText: "\u274C BAHAYA! Rara kehilangan \u2764 karena ikut orang asing!\nJANGAN
-        PERNAH ikut dengan orang yang tidak dikenal,\napapun yang ditawarkan!"
-    tipKeselamatan: "Orang asing yang menawari hadiah atau ajakan pergi adalah TANDA
-      BAHAYA \u2014 tolak dan menuju tempat ramai."
-  encounter2:
-    encounterName: "Encounter 2 \u2014 Motor Nyasar Tanya Sekolah"
-    dialogSebelumPilihan:
-    - speaker: Narasi
-      portrait: {fileID: 0}
-      text: 'Sebuah motor matic berhenti pelan di sebelah Rara.
-
-        Pengendaranya
-        laki-laki, helm setengah terbuka, tersenyum lebar.'
-    - speaker: Pengendara Motor
-      portrait: {fileID: 0}
-      text: "\"Eh dek, maaf nih\u2026\nKamu tau nggak SMP Harapan di mana?\nOm nyasar,
-        mau anter ponakan.\""
-    - speaker: Pengendara Motor
-      portrait: {fileID: 0}
-      text: '"Naik aja deh, kebetulan om searah.
-
-        Daripada kamu jalan kepanasan,
-        mending bareng om aja ya?"'
-    - speaker: Rara (dalam hati)
-      portrait: {fileID: 0}
-      text: "Hmm\u2026 dia bilang nyasar tapi langsung nawarin tumpangan?\nOrang
-        asing yang tiba-tiba ramah begini bisa jadi tanda bahaya."
-    pertanyaanRara: Bagaimana Rara harus merespons orang ini?
-    portraitRara: {fileID: 0}
-    pilihan:
-    - label: '"Maaf om, aku nggak boleh ikut orang asing!" (Mundur & lari ke tempat
-        ramai)'
-      category: AMAN
-      gunakanPoinKustom: 0
-      poinKustom: 0
-      feedbackText: "\u2705 Tepat sekali!\nORANG TIDAK DIKENAL = JANGAN PERNAH IKUT,
-        walau alasannya seramah apapun.\nKalau ditanya jalan, cukup tunjuk arah dari
-        jauh \u2014 jangan dekati & jangan naik."
-    - label: "\"SMP Harapan lurus aja om\u2026 maaf aku nggak bisa nganterin.\" (Jawab
-        dari jauh)"
-      category: RAGU
-      gunakanPoinKustom: 0
-      poinKustom: 0
-      feedbackText: "\u26A0\uFE0F Lumayan \u2014 Rara nggak naik motor, tapi terlalu
-        lama ngobrol.\nLebih baik langsung pergi ke tempat ramai. Jangan kasih info
-        detail ke orang asing."
-    - label: '"Boleh om, ayo!" (Naik motor)'
-      category: BAHAYA
-      gunakanPoinKustom: 0
-      poinKustom: 0
-      feedbackText: "\u274C BAHAYA! Rara hampir naik motor orang asing!\nNAIK KENDARAAN
-        ORANG TAK DIKENAL = jalan menuju penculikan.\nKamu kehilangan \u2764. Ingat:
-        \"Searah\" cuma alasan grooming yang umum dipakai."
-    tipKeselamatan: "Jangan pernah naik kendaraan orang tak dikenal \u2014 cukup
-      tunjuk arah dari jauh, lalu pergi ke tempat ramai."
-  encounter3:
-    encounterName: "Encounter 3 \u2014 Pesan Mencurigakan di HP"
-    dialogSebelumPilihan:
-    - speaker: Narasi
-      portrait: {fileID: 0}
-      text: "\U0001F4F1 HP Rara berbunyi! Ada pesan dari nomor tidak dikenal:\n\"Hei
-        Rara, aku tau kamu lagi di jalan. Mau aku jemput?\""
-    pertanyaanRara: Apa yang harus Rara lakukan dengan pesan ini?
-    portraitRara: {fileID: 0}
-    pilihan:
-    - label: Screenshot lalu blokir nomor dan cerita ke Mama
-      category: AMAN
-      gunakanPoinKustom: 0
-      poinKustom: 0
-      feedbackText: "\u2705 Tepat! Screenshot sebagai bukti, blokir nomornya,\ndan
-        SELALU ceritakan ke orang dewasa yang dipercaya."
-    - label: 'Balas: "Siapa kamu?" (penasaran)'
-      category: RAGU
-      gunakanPoinKustom: 0
-      poinKustom: 0
-      feedbackText: "\u26A0\uFE0F Membalas pesan orang asing bisa berbahaya.\nLebih
-        baik abaikan, blokir, dan lapor ke orang tua."
-    - label: Ikuti ajakannya (sangat berbahaya!)
-      category: BAHAYA
-      gunakanPoinKustom: 0
-      poinKustom: 0
-      feedbackText: "\u274C SANGAT BERBAHAYA! Jangan pernah temui orang asing\nyang
-        hanya kamu kenal lewat pesan/medsos!"
-    tipKeselamatan: 'Jika ada pesan dari nomor tak dikenal yang tahu identitasmu:
-      screenshot, blokir, dan ceritakan ke orang dewasa terpercaya.'
+    TAHAN tombol TERIAK (atau SPACE) sampai meter PENUH!'
+  latihTeriakLabel: "\U0001F50A  TAHAN: TERIAK!"
+  latihBerhasil: "\u2713 HEBAT! Suaramu lantang! Kalau ada yang mengganggu di jalan,
+    berani TERIAK minta tolong, ya!"
+  latihWaktuWindow: 15
   autoMulaiTanpaIntro: 0
 --- !u!1 &982115341
 GameObject:
@@ -4735,8 +4951,11 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1392098002}
+  - {fileID: 1381930597}
+  - {fileID: 622249841}
   - {fileID: 1880805172}
   - {fileID: 327484023}
+  - {fileID: 24482034}
   - {fileID: 2019648941}
   m_Father: {fileID: 1256300576}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -4838,16 +5057,22 @@ MonoBehaviour:
   chips:
   - teks: Bahu
     jawabanBenar: AMAN
+    alasan: 
   - teks: Tangan
     jawabanBenar: AMAN
+    alasan: 
   - teks: Pipi
     jawabanBenar: AMAN
+    alasan: 
   - teks: Paha
     jawabanBenar: BAHAYA
+    alasan: 
   - teks: Perut
     jawabanBenar: BAHAYA
+    alasan: 
   - teks: Privat
     jawabanBenar: BAHAYA
+    alasan: 
   warnaZonaAman: {r: 0.1, g: 0.35, b: 0.22, a: 0.92}
   warnaZonaBahaya: {r: 0.4, g: 0.12, b: 0.12, a: 0.92}
   warnaBorderAman: {r: 0.45, g: 1, b: 0.65, a: 1}
@@ -5196,64 +5421,54 @@ MonoBehaviour:
     backgroundSprite: {fileID: 0}
     illustration: {fileID: 0}
     title: 'Hari 3: Pulang Sekolah Saat Hujan'
-    text: 'Hujan turun di parkiran SMP.
-
-      Rara berjalan sendirian menuju gerbang.
-
-
-      Tiba-tiba
-      seorang kakak kelas berbadan besar menghadang langkahnya.'
+    text: "Hujan deras mengguyur parkiran SMP.\nRara pulang sendirian sambil menunggu
+      ojol pesanannya.\n\nTapi orang asing yang kemarin mengiriminya\npesan
+      di HP tiba-tiba muncul langsung di depannya!"
     dialogSprite: {fileID: 0}
   - backgroundColor: {r: 0.18, g: 0.1, b: 0.12, a: 1}
     backgroundSprite: {fileID: 0}
     illustration: {fileID: 0}
-    title: Si Pengganggu
-    text: 'Kakak kelas itu mulai memalak dan mengancam Rara.
-
-
-      "Jangan berani
-      ngadu, ya!" katanya menakut-nakuti.
-
-      Rara harus tetap tenang dan berani
-      menjaga dirinya.'
+    title: Si Bayangan Gelap
+    text: "Ia menyamar jadi sopir ojol yang ramah\ndan membujuk Rara agar mau ikut
+      naik.\n\n\"Ayo cepat, nanti kamu makin kehujanan!\"\nPadahal Rara tidak pernah
+      memesannya. Ini BAHAYA!"
     dialogSprite: {fileID: 0}
   - backgroundColor: {r: 0.1, g: 0.16, b: 0.14, a: 1}
     backgroundSprite: {fileID: 0}
     illustration: {fileID: 0}
     title: Yang Perlu Rara Tahu
-    text: "\u25CF Tetap tenang & berani berkata \"TIDAK\" dengan tegas.\n\u25CF Jangan
-      menyerahkan barang karena takut.\n\u25CF Ancaman \"jangan ngadu\" justru tanda
-      kamu HARUS lapor.\n\u25CF Cari tempat ramai & orang dewasa terpercaya (guru,
-      satpam)."
+    text: "\u25CF Jangan ikut orang asing walau ngaku ojol.\n\u25CF Cek dulu nama
+      & plat sebelum naik kendaraan apa pun.\n\u25CF Kalau dipaksa: BERSUARA KERAS
+      minta tolong!\n\u25CF Tekan PANIC BUTTON & lari ke orang dewasa terdekat."
     dialogSprite: {fileID: 0}
-  globalDialogSprite: {fileID: 0}
-  panelPaddingH: 90
-  panelPaddingV: 60
+  globalDialogSprite: {fileID: 4113829005332862926, guid: 64f200f9fa47f254c8ef4d8a33f19e53, type: 3}
+  panelPaddingH: 110
+  panelPaddingV: 80
   titleColor: {r: 1, g: 0.84, b: 0, a: 1}
   textColor: {r: 1, g: 1, b: 1, a: 1}
-  hintColor: {r: 1, g: 0.84, b: 0, a: 0.85}
-  panelColor: {r: 0, g: 0, b: 0, a: 0.88}
-  borderColor: {r: 1, g: 0.85, b: 0.2, a: 1}
-  titleFontSize: 44
-  textFontSize: 32
-  hintFontSize: 22
+  hintColor: {r: 1, g: 1, b: 1, a: 0.54901963}
+  panelColor: {r: 0.81960785, g: 0.81960785, b: 0.81960785, a: 0.88}
+  borderColor: {r: 1, g: 0.85, b: 0.2, a: 0}
+  titleFontSize: 36
+  textFontSize: 26
+  hintFontSize: 18
   fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   panelCenterX: 0.5
-  panelCenterY: 0.2
-  panelWidth: 0.86
-  panelHeight: 0.3
-  titleBodyGap: 12
+  panelCenterY: 0.189
+  panelWidth: 0.94
+  panelHeight: 0.28
+  titleBodyGap: -45
   illCenterX: 0.5
-  illCenterY: 0.62
-  illWidth: 0.6
-  illHeight: 0.62
+  illCenterY: 0.67
+  illWidth: 0.84
+  illHeight: 0.58
   btnSprite: {fileID: 0}
-  btnCenterX: 0.5
-  btnCenterY: 0.045
-  btnWidth: 1
-  btnHeight: 0.075
-  btnBgColor: {r: 0.05, g: 0.08, b: 0.1, a: 0.92}
-  hintText: "\u25BC  SPACE / KLIK UNTUK LANJUT"
+  btnCenterX: 0.84
+  btnCenterY: 0.131
+  btnWidth: 0.165
+  btnHeight: 0.049
+  btnBgColor: {r: 0.15294118, g: 0.09803922, b: 0, a: 0.65882355}
+  hintText: "\u25BC  SPACE / KLIK"
   hintAlign: 514
   advanceOnKeyboard: 1
   advanceOnMouseClick: 1
@@ -5262,6 +5477,139 @@ MonoBehaviour:
   onPrologEnd:
     m_PersistentCalls:
       m_Calls: []
+--- !u!1 &1381930596
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1381930597}
+  - component: {fileID: 1381930599}
+  - component: {fileID: 1381930598}
+  m_Layer: 0
+  m_Name: Pembatas1 (4)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1381930597
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1381930596}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1.2896, y: -0.43, z: 0.078871496}
+  m_LocalScale: {x: 0.1686687, y: 0.34412882, z: 1.2545367}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 1107663593}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!61 &1381930598
+BoxCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1381930596}
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_ForceSendLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ForceReceiveLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_ContactCaptureLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_CallbackLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_CompositeOperation: 0
+  m_CompositeOrder: 0
+  m_Offset: {x: 0, y: 0}
+  m_SpriteTilingProperty:
+    border: {x: 0, y: 0, z: 0, w: 0}
+    pivot: {x: 0.5, y: 0.5}
+    oldSize: {x: 21.72, y: 7.243535}
+    newSize: {x: 21.72, y: 7.243535}
+    adaptiveTilingThreshold: 0.5
+    drawMode: 0
+    adaptiveTiling: 0
+  m_AutoTiling: 0
+  m_Size: {x: 21.72, y: 7.243535}
+  m_EdgeRadius: 0
+--- !u!212 &1381930599
+SpriteRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1381930596}
+  m_Enabled: 1
+  m_CastShadows: 0
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 1
+  m_StaticShadowCaster: 0
+  m_MotionVectors: 1
+  m_LightProbeUsage: 1
+  m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 0
+  m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_RenderingLayerMask: 1
+  m_RendererPriority: 0
+  m_Materials:
+  - {fileID: 10754, guid: 0000000000000000f000000000000000, type: 0}
+  m_StaticBatchInfo:
+    firstSubMesh: 0
+    subMeshCount: 0
+  m_StaticBatchRoot: {fileID: 0}
+  m_ProbeAnchor: {fileID: 0}
+  m_LightProbeVolumeOverride: {fileID: 0}
+  m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
+  m_PreserveUVs: 0
+  m_IgnoreNormalsForChartDetection: 0
+  m_ImportantGI: 0
+  m_StitchLightmapSeams: 1
+  m_SelectedEditorRenderState: 0
+  m_MinimumChartSize: 4
+  m_AutoUVMaxDistance: 0.5
+  m_AutoUVMaxAngle: 89
+  m_LightmapParameters: {fileID: 0}
+  m_SortingLayerID: -883599925
+  m_SortingLayer: 1
+  m_SortingOrder: 0
+  m_Sprite: {fileID: 2699170030345945923, guid: 189ceaf0b3367d640b5072dae4ec6638, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 0}
+  m_FlipX: 0
+  m_FlipY: 0
+  m_DrawMode: 0
+  m_Size: {x: 21.72, y: 7.243535}
+  m_AdaptiveModeThreshold: 0.5
+  m_SpriteTileMode: 0
+  m_WasSpriteAssigned: 1
+  m_MaskInteraction: 0
+  m_SpriteSortPoint: 0
 --- !u!1 &1392098001
 GameObject:
   m_ObjectHideFlags: 0
@@ -5289,8 +5637,8 @@ Transform:
   m_GameObject: {fileID: 1392098001}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.6167, y: -0.6815, z: 0.078871496}
-  m_LocalScale: {x: 0.87098974, y: 0.34412882, z: 1.2545367}
+  m_LocalPosition: {x: -5.4266, y: -0.94, z: 0.078871496}
+  m_LocalScale: {x: 0.44585964, y: 0.34412882, z: 1.2545367}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1107663593}
@@ -5556,7 +5904,7 @@ MonoBehaviour:
   tampilkanOverlay: 1
   overlaySprite: {fileID: 0}
   overlayColor: {r: 0, g: 0, b: 0, a: 0.82}
-  judul: "\u2713  Hari 1 Selesai!"
+  judul: Hari 1 Selesai!
   warnaJudul: {r: 0.45, g: 1, b: 0.65, a: 1}
   ukuranJudul: 44
   subtitleFormat: 'Skor Hari 1   |   Nyawa tersisa: {NYAWA}/{MAXNYAWA}'
@@ -5576,13 +5924,13 @@ MonoBehaviour:
   redFlagBgSprite: {fileID: 0}
   redFlagBgColor: {r: 0.18, g: 0.04, b: 0.06, a: 0.85}
   redFlagBorderColor: {r: 0.95, g: 0.3, b: 0.3, a: 1}
-  redFlagJudul: "\U0001F6A9  KENALI TANDA BAHAYA (RED FLAG)"
+  redFlagJudul: KENALI TANDA BAHAYA (RED FLAG)
   redFlagJudulWarna: {r: 1, g: 0.55, b: 0.55, a: 1}
   redFlagJudulUkuran: 22
   redFlagItems:
   - Orang asing ngajak kamu pergi tanpa izin ortu
   - Ada yang nawarin hadiah atau makanan berlebihan
-  - "Orang dewasa minta rahasiain pertemuan kalian \u2014 \U0001F6A9"
+  - Orang dewasa minta rahasiain pertemuan kalian
   - "Ada yang sentuh tubuhmu tanpa izin \u2014 TERIAK & LARI!"
   - "Jangan lewatin gang sepi sendirian \u2014 pilih jalan rame!"
   bulletChar: "\u2022 "
@@ -5590,13 +5938,15 @@ MonoBehaviour:
   bulletUkuran: 18
   bulletJarakBaris: 10
   tampilkanTombolPilihanku: 1
-  pilihankuTeks: "\U0001F4DC Pilihanku"
+  pilihankuTeks: Pilihanku
   pilihankuWarna: {r: 0.85, g: 0.45, b: 0.1, a: 1}
   pilihankuTeksWarna: {r: 1, g: 1, b: 1, a: 1}
   pilihankuUkuranTeks: 16
   tampilkanFooter: 1
-  footerText: "\u2755  Kalau ada yang ngancam kamu:\nPolisi 110  |  Hotline Anak
-    129  |  KPAI 021-31901556"
+  footerText: 'Kalau ada yang ngancam kamu:
+
+    Polisi 110  |  Hotline Anak 129 
+    |  KPAI 021-31901556'
   warnaFooter: {r: 1, g: 0.85, b: 0.25, a: 1}
   ukuranFooter: 16
   tampilkanNyawa: 1
@@ -5609,13 +5959,13 @@ MonoBehaviour:
   nyawaLabelWarna: {r: 1, g: 1, b: 1, a: 1}
   nyawaLabelUkuran: 18
   tampilkanTombolUlangi: 1
-  ulangiTeks: "\u21BB  ULANGI HARI 1"
+  ulangiTeks: ULANGI HARI 1
   ulangiSprite: {fileID: 0}
   ulangiWarna: {r: 0.78, g: 0.58, b: 0.2, a: 1}
   ulangiBorder: {r: 1, g: 0.78, b: 0.2, a: 1}
   ulangiTeksWarna: {r: 1, g: 1, b: 1, a: 1}
   ulangiUkuranTeks: 22
-  lanjutTeks: "\u25B6  LANJUT HARI 2"
+  lanjutTeks: LANJUT HARI 2
   lanjutSprite: {fileID: 0}
   lanjutWarna: {r: 0.18, g: 0.62, b: 0.32, a: 1}
   lanjutBorder: {r: 0.45, g: 1, b: 0.65, a: 1}
@@ -5684,6 +6034,7 @@ MonoBehaviour:
   statusKontak: online
   warnaHeader: {r: 0.05, g: 0.32, b: 0.27, a: 1}
   warnaTeksHeader: {r: 1, g: 1, b: 1, a: 1}
+  jamTampil: 
   warnaChatBg: {r: 0.05, g: 0.12, b: 0.12, a: 1}
   warnaBubbleMasuk: {r: 0.2, g: 0.3, b: 0.35, a: 1}
   warnaTeksBubble: {r: 1, g: 1, b: 0.95, a: 1}
@@ -6045,7 +6396,13 @@ MonoBehaviour:
   - speakerName: Rara
     profile: {fileID: -621021955452869361, guid: 74e32d7b50454b44fa273c2384918263, type: 3}
     text: Gimana Rara harus merespons orang ini?
-    choices: []
+    choices:
+    - label: '"NGGAK MAU! Aku nggak kenal Bapak!" (Lari ke tempat rame)'
+      category: AMAN
+    - label: '"Makasih Pak, tapi aku udah mau telat sekolah..."'
+      category: RAGU
+    - label: '"Boleh~ Om punya permen apa aja?"'
+      category: BAHAYA
   - speakerName: Narasi
     profile: {fileID: -7771728774132427043, guid: 6809b27ca40283248be0310e4d5f4ef1, type: 3}
     text: 'INGAT: Orang asing yang kasih hadiah atau ngajak pergi = TANDA BAHAYA!
@@ -6513,6 +6870,127 @@ MonoBehaviour:
   - '"Kamu cantik ya... pacar mana? Pasti banyak yang naksir."'
   - '"Ini rahasia kita berdua aja ya, jangan bilang orang tua."'
   - '"Foto dong bentar, buat kenang-kenangan om."'
+  groomingRonde:
+  - ucapanBoss: "\"Eh hei, mau kemana sendirian? \U0001F60F Ikut aku dulu deh. Sebentar
+      aja kok~\""
+    pilihan:
+    - label: "\"PERGI! Aku NGGAK KENAL kamu! TOLONG!! \U0001F50A\""
+      kategori: AMAN
+      reaksi: "\u2713 BERANI! Suara Rara bikin pelaku kaget dan mundur selangkah."
+      bonusPoin: 50
+      kurangiNyawa: 0
+      butuhVoiceKeras: 0
+      panicButton: 0
+      hasil: 0
+      warna: {r: 0.15, g: 0.68, b: 0.38, a: 1}
+    - label: '"E-emm... nggak usah deh..." (suara pelan)'
+      kategori: RAGU
+      reaksi: "\u26A0 Kurang tegas. Lain kali bersuara lebih lantang ya!"
+      bonusPoin: 0
+      kurangiNyawa: 0
+      butuhVoiceKeras: 0
+      panicButton: 0
+      hasil: 0
+      warna: {r: 0.95, g: 0.61, b: 0.07, a: 1}
+    - label: (diam, bingung mau gimana...)
+      kategori: BAHAYA
+      reaksi: "\u2716 DIAM ITU BAHAYA! Pelaku makin berani. Kamu kehilangan 1 nyawa."
+      bonusPoin: 0
+      kurangiNyawa: 1
+      butuhVoiceKeras: 0
+      panicButton: 0
+      hasil: 0
+      warna: {r: 0.5, g: 0.2, b: 0.2, a: 1}
+  - ucapanBoss: '"Sssst! Jangan teriak-teriak, nanti kamu yang dimarahin orang. Diam
+      aja ya~"'
+    pilihan:
+    - label: "\"JANGAN DEKET-DEKET! TOLONG!! \U0001F50A\" (Teriak KERAS!)"
+      kategori: AMAN
+      reaksi: "\u2713 HEBAT! Teriakan Rara menggema. Pelaku makin ciut nyalinya."
+      bonusPoin: 50
+      kurangiNyawa: 0
+      butuhVoiceKeras: 0
+      panicButton: 0
+      hasil: 0
+      warna: {r: 0.15, g: 0.68, b: 0.38, a: 1}
+    - label: '"T-tolong..." (hampir nggak kedengeran)'
+      kategori: RAGU
+      reaksi: "\u26A0 Suaramu kepelanan. TERIAK sekuat tenaga lain kali!"
+      bonusPoin: 0
+      kurangiNyawa: 0
+      butuhVoiceKeras: 0
+      panicButton: 0
+      hasil: 0
+      warna: {r: 0.95, g: 0.61, b: 0.07, a: 1}
+    - label: (beku di tempat, nggak bisa ngomong...)
+      kategori: BAHAYA
+      reaksi: "\u2716 Rara beku ketakutan. Pelaku makin mendesak. Kehilangan 1 nyawa."
+      bonusPoin: 0
+      kurangiNyawa: 1
+      butuhVoiceKeras: 0
+      panicButton: 0
+      hasil: 0
+      warna: {r: 0.5, g: 0.2, b: 0.2, a: 1}
+  - ucapanBoss: '"Haha, emangnya siapa yang bakal percaya sama kamu? Nggak ada! Diam
+      aja~"'
+    pilihan:
+    - label: "\"PERGI! Aku PERCAYA SAMA DIRI SENDIRI! TOLONG!! \U0001F4AA\""
+      kategori: AMAN
+      reaksi: "\u2713 KEREN! Rara percaya diri. Mental pelaku makin jatuh."
+      bonusPoin: 50
+      kurangiNyawa: 0
+      butuhVoiceKeras: 0
+      panicButton: 0
+      hasil: 0
+      warna: {r: 0.15, g: 0.68, b: 0.38, a: 1}
+    - label: '"Emangnya... kenapa sih?" (masih ragu-ragu)'
+      kategori: RAGU
+      reaksi: "\u26A0 Jangan terpancing. Tetap tegas menolak ya!"
+      bonusPoin: 0
+      kurangiNyawa: 0
+      butuhVoiceKeras: 0
+      panicButton: 0
+      hasil: 0
+      warna: {r: 0.95, g: 0.61, b: 0.07, a: 1}
+    - label: (nangis diem-diem, nggak berani berbuat apa-apa)
+      kategori: BAHAYA
+      reaksi: "\u2716 Rara terlalu takut. Pelaku menang sesaat. Kehilangan 1 nyawa."
+      bonusPoin: 0
+      kurangiNyawa: 1
+      butuhVoiceKeras: 0
+      panicButton: 0
+      hasil: 0
+      warna: {r: 0.5, g: 0.2, b: 0.2, a: 1}
+  - ucapanBoss: '"Ini rahasia kita berdua ya. Kalau kamu ngadu, kamu sendiri yang
+      bakal kena masalah!"'
+    pilihan:
+    - label: "\"Bohong! AKU BAKAL CERITA ke guru sekarang! \U0001F50A\""
+      kategori: AMAN
+      reaksi: "\u2713 TEPAT! Rahasia jahat HARUS diceritakan. Pelaku panik!"
+      bonusPoin: 50
+      kurangiNyawa: 0
+      butuhVoiceKeras: 0
+      panicButton: 0
+      hasil: 0
+      warna: {r: 0.15, g: 0.68, b: 0.38, a: 1}
+    - label: '"Aku nggak tau harus ngapain..." (bingung banget)'
+      kategori: RAGU
+      reaksi: "\u26A0 Ingat: kamu boleh cerita ke orang dewasa yang dipercaya!"
+      bonusPoin: 0
+      kurangiNyawa: 0
+      butuhVoiceKeras: 0
+      panicButton: 0
+      hasil: 0
+      warna: {r: 0.95, g: 0.61, b: 0.07, a: 1}
+    - label: '"Mungkin... emang salah aku ya..." (mulai pasrah)'
+      kategori: BAHAYA
+      reaksi: "\u2716 Ini BUKAN salahmu! Jangan pasrah. Kehilangan 1 nyawa."
+      bonusPoin: 0
+      kurangiNyawa: 1
+      butuhVoiceKeras: 0
+      panicButton: 0
+      hasil: 0
+      warna: {r: 0.5, g: 0.2, b: 0.2, a: 1}
   konfrontasiUcapan: "\"Cepat dong! \U0001F620\""
   konfrontasiPilihan:
   - label: Diam saja (takut)
@@ -6568,11 +7046,17 @@ MonoBehaviour:
   buatBackdrop: 1
   warnaBackdrop: {r: 0.1, g: 0.12, b: 0.18, a: 1}
   backdropSortingOrder: -100
-  bossNama: Si Bully
+  arenaLatarSprite: {fileID: 0}
+  arenaLatarWarna: {r: 0.1, g: 0.12, b: 0.18, a: 1}
+  bossNama: Si Bayangan Gelap
   bossSprite: {fileID: 0}
   bossWarnaFallback: {r: 0.35, g: 0.1, b: 0.12, a: 1}
   bossMentalMax: 100
-  bossBarLabel: Mental Si Bully
+  gayaHalteDialog: {fileID: 0}
+  portraitNarasi: {fileID: 0}
+  portraitBoss: {fileID: 0}
+  portraitRara: {fileID: 0}
+  bossBarLabel: Mental Pelaku
   bossBarWarnaIsi: {r: 0.85, g: 0.2, b: 0.22, a: 1}
   bossBarWarnaKosong: {r: 0.15, g: 0.15, b: 0.18, a: 1}
   rondeList:
@@ -6635,6 +7119,8 @@ MonoBehaviour:
   achievementMenang: Penakluk Si Bully
   eduJudul: "\U0001F4DA  KARTU EDUKASI \u2014 HARI 3"
   eduWarnaJudul: {r: 1, g: 0.85, b: 0.3, a: 1}
+  eduLatarSprite: {fileID: 0}
+  eduLatarWarna: {r: 0, g: 0, b: 0, a: 0.82}
   eduIsi: "\U0001F6E1 Menghadapi Perundungan (Bullying):\n\u2022 Tetap tenang & berani
     berkata \"TIDAK\" dengan tegas.\n\u2022 Jangan menyerahkan barang karena takut
     \u2014 itu bukan salahmu.\n\u2022 Cari tempat ramai & orang dewasa terpercaya
@@ -6642,6 +7128,7 @@ MonoBehaviour:
     lapor.\n\u2022 Simpan bukti (chat/foto) bila ada.\n\n\u260E Hotline: Polisi 110 
     |  Hotline Anak 129  |  KPAI 021-31901556"
   hasilJudul: "\U0001F3C1  TANTANGAN SELESAI!"
+  hasilLatarSprite: {fileID: 0}
   ambangLuarBiasa: 800
   ambangBagus: 500
   pesanLuarBiasa: Luar Biasa! Kamu sangat waspada dan berani menjaga diri.
@@ -6829,10 +7316,34 @@ MonoBehaviour:
   scalerMatchWidthOrHeight: 0.5
   onSafeChosen:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 943494055}
+        m_TargetAssemblyTypeName: Day1Controller, Assembly-CSharp
+        m_MethodName: ChooseSafePath
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onDangerChosen:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 943494055}
+        m_TargetAssemblyTypeName: Day1Controller, Assembly-CSharp
+        m_MethodName: ChooseDangerPath
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!212 &1669208158
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -7093,7 +7604,7 @@ MonoBehaviour:
   tampilkanOverlay: 1
   overlaySprite: {fileID: 0}
   overlayColor: {r: 0, g: 0, b: 0, a: 0.82}
-  judul: "\u2713  Hari 1 Selesai!"
+  judul: Hari 1 Selesai!
   warnaJudul: {r: 0.45, g: 1, b: 0.65, a: 1}
   ukuranJudul: 44
   subtitleFormat: 'Skor Hari 1   |   Nyawa tersisa: {NYAWA}/{MAXNYAWA}'
@@ -7113,13 +7624,13 @@ MonoBehaviour:
   redFlagBgSprite: {fileID: 0}
   redFlagBgColor: {r: 0.18, g: 0.04, b: 0.06, a: 0.85}
   redFlagBorderColor: {r: 0.95, g: 0.3, b: 0.3, a: 1}
-  redFlagJudul: "\U0001F6A9  KENALI TANDA BAHAYA (RED FLAG)"
+  redFlagJudul: KENALI TANDA BAHAYA (RED FLAG)
   redFlagJudulWarna: {r: 1, g: 0.55, b: 0.55, a: 1}
   redFlagJudulUkuran: 22
   redFlagItems:
   - Orang asing ngajak kamu pergi tanpa izin ortu
   - Ada yang nawarin hadiah atau makanan berlebihan
-  - "Orang dewasa minta rahasiain pertemuan kalian \u2014 \U0001F6A9"
+  - Orang dewasa minta rahasiain pertemuan kalian
   - "Ada yang sentuh tubuhmu tanpa izin \u2014 TERIAK & LARI!"
   - "Jangan lewatin gang sepi sendirian \u2014 pilih jalan rame!"
   bulletChar: "\u2022 "
@@ -7127,13 +7638,15 @@ MonoBehaviour:
   bulletUkuran: 18
   bulletJarakBaris: 10
   tampilkanTombolPilihanku: 1
-  pilihankuTeks: "\U0001F4DC Pilihanku"
+  pilihankuTeks: Pilihanku
   pilihankuWarna: {r: 0.85, g: 0.45, b: 0.1, a: 1}
   pilihankuTeksWarna: {r: 1, g: 1, b: 1, a: 1}
   pilihankuUkuranTeks: 16
   tampilkanFooter: 1
-  footerText: "\u2755  Kalau ada yang ngancam kamu:\nPolisi 110  |  Hotline Anak
-    129  |  KPAI 021-31901556"
+  footerText: 'Kalau ada yang ngancam kamu:
+
+    Polisi 110  |  Hotline Anak 129 
+    |  KPAI 021-31901556'
   warnaFooter: {r: 1, g: 0.85, b: 0.25, a: 1}
   ukuranFooter: 16
   tampilkanNyawa: 1
@@ -7146,13 +7659,13 @@ MonoBehaviour:
   nyawaLabelWarna: {r: 1, g: 1, b: 1, a: 1}
   nyawaLabelUkuran: 18
   tampilkanTombolUlangi: 1
-  ulangiTeks: "\u21BB  ULANGI HARI 1"
+  ulangiTeks: ULANGI HARI 1
   ulangiSprite: {fileID: 0}
   ulangiWarna: {r: 0.78, g: 0.58, b: 0.2, a: 1}
   ulangiBorder: {r: 1, g: 0.78, b: 0.2, a: 1}
   ulangiTeksWarna: {r: 1, g: 1, b: 1, a: 1}
   ulangiUkuranTeks: 22
-  lanjutTeks: "\u25B6  LANJUT HARI 2"
+  lanjutTeks: LANJUT HARI 2
   lanjutSprite: {fileID: 0}
   lanjutWarna: {r: 0.18, g: 0.62, b: 0.32, a: 1}
   lanjutBorder: {r: 0.45, g: 1, b: 0.65, a: 1}
@@ -7359,8 +7872,8 @@ Transform:
   m_GameObject: {fileID: 1880805171}
   serializedVersion: 2
   m_LocalRotation: {x: -0.016019246, y: -0.3595504, z: 0.016007587, w: 0.93285084}
-  m_LocalPosition: {x: 15.39, y: -0.46, z: 7.45}
-  m_LocalScale: {x: 0.2038348, y: 0.37769312, z: 1.2101763}
+  m_LocalPosition: {x: 17.32, y: -0.55, z: 7.45}
+  m_LocalScale: {x: 0.40528473, y: 0.37769312, z: 1.2101763}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1107663593}
@@ -8025,6 +8538,7 @@ MonoBehaviour:
   score: 0
   day: 1
   playerName: Rara
+  autoGameOver: 1
   pathChoice: safe
   screenshotTaken: 0
   platChecked: 0
@@ -8461,6 +8975,7 @@ MonoBehaviour:
   borderSprite: {fileID: 0}
   borderColor: {r: 1, g: 0.85, b: 0.2, a: 1}
   tampilkanOverlay: 1
+  overlaySprite: {fileID: 0}
   overlayColor: {r: 0, g: 0, b: 0, a: 0.82}
   judul: "\u2713  Hari 2 Selesai!"
   warnaJudul: {r: 0.45, g: 1, b: 0.65, a: 1}
@@ -8507,6 +9022,9 @@ MonoBehaviour:
   lanjutBorder: {r: 0.45, g: 1, b: 0.65, a: 1}
   lanjutUkuranTeks: 24
   tampilkanRefleksi: 1
+  tampilkanRekapPilihan: 1
+  rekapJudul: "\U0001F4DD  Keputusanmu hari ini:"
+  rekapUkuran: 17
   fontAsset: {fileID: 0}
   skalaAwal: 0.85
   durasiPopIn: 0.32
@@ -8548,7 +9066,7 @@ Transform:
   m_GameObject: {fileID: 2019648940}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 7.7661, y: -3.48, z: 0.078871496}
+  m_LocalPosition: {x: 7.73, y: -3.74, z: 0.078871496}
   m_LocalScale: {x: 1.6955444, y: 0.091349214, z: 1.2545367}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -9126,6 +9644,9 @@ GameObject:
   m_Component:
   - component: {fileID: 2146913939}
   - component: {fileID: 2146913938}
+  - component: {fileID: 2146913940}
+  - component: {fileID: 2146913941}
+  - component: {fileID: 2146913942}
   m_Layer: 0
   m_Name: audio
   m_TagString: Untagged
@@ -9145,28 +9666,295 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4f10af93583f3ba40a164108c1429ff5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  bgmSource: {fileID: 0}
-  sfxSource: {fileID: 0}
-  bgmClips: []
-  sfxClick: {fileID: 0}
-  sfxCorrect: {fileID: 0}
-  sfxWrong: {fileID: 0}
-  sfxBossHit: {fileID: 0}
-  sfxBossGroan: {fileID: 0}
-  sfxVictory: {fileID: 0}
-  sfxNeutral: {fileID: 0}
-  sfxAman: {fileID: 0}
-  sfxRagu: {fileID: 0}
-  sfxBahaya: {fileID: 0}
-  sfxLapor: {fileID: 0}
-  sfxAchievement: {fileID: 0}
-  sfxChatMasuk: {fileID: 0}
-  sfxChatKetik: {fileID: 0}
-  sfxAngkot: {fileID: 0}
-  sfxPeluit: {fileID: 0}
-  sfxLangkah: {fileID: 0}
-  ambienceSource: {fileID: 0}
-  ambienceAngkot: {fileID: 0}
+  bgmSource: {fileID: 2146913940}
+  sfxSource: {fileID: 2146913941}
+  bgmClips:
+  - {fileID: 8300000, guid: 078a64e6c510614418a02694d4432e40, type: 3}
+  - {fileID: 8300000, guid: 5b229bc2d0dda7e479bde8bd8d046e2a, type: 3}
+  - {fileID: 8300000, guid: 434197d1f6c6370458deb048da4931b2, type: 3}
+  - {fileID: 8300000, guid: 318459ff34fea264b984a5afc84745a7, type: 3}
+  - {fileID: 8300000, guid: 7377a6f2c808ed5459c61d2bed99dc4b, type: 3}
+  - {fileID: 8300000, guid: 3555868f90092ff48b9ed3f8148457e6, type: 3}
+  sfxClick: {fileID: 8300000, guid: 4b2f91fe3768faf498efc47367389623, type: 3}
+  sfxCorrect: {fileID: 8300000, guid: c9289a4b388536a4588c7afe87d09b35, type: 3}
+  sfxWrong: {fileID: 8300000, guid: 666ce0e77fdbec546bc45ac98f97e09d, type: 3}
+  sfxBossHit: {fileID: 8300000, guid: 91daa1ec29de49c46ad0fa1f9a34d4f1, type: 3}
+  sfxBossGroan: {fileID: 8300000, guid: 68c1ddfd1ec819c449005f4937787b42, type: 3}
+  sfxVictory: {fileID: 8300000, guid: d603607bb09841545a9700c596dadffc, type: 3}
+  sfxNeutral: {fileID: 8300000, guid: e1cd0ab46ff2f234293182f262d0d7a1, type: 3}
+  sfxAman: {fileID: 8300000, guid: 97a67c6c01455f5469f109645d4613ae, type: 3}
+  sfxRagu: {fileID: 8300000, guid: 27cf7e56b748dfd4cbc56f076a0ae83a, type: 3}
+  sfxBahaya: {fileID: 8300000, guid: c1b3cfe1df74ac94ebaee08f627ec95f, type: 3}
+  sfxLapor: {fileID: 8300000, guid: f7d7481f91258a24295c841886d96d94, type: 3}
+  sfxAchievement: {fileID: 8300000, guid: a183eec01f489134ca5ec0cc90cce020, type: 3}
+  sfxChatMasuk: {fileID: 8300000, guid: 89cc2758df8041a4d8da9a916cf813b4, type: 3}
+  sfxChatKetik: {fileID: 8300000, guid: 4b4ddb63aecb22a4d9de861be77d9366, type: 3}
+  sfxAngkot: {fileID: 8300000, guid: 86eca3073980038429af33fe91727b0c, type: 3}
+  sfxPeluit: {fileID: 8300000, guid: f347b65e86a7e364ea892c5d40d9106a, type: 3}
+  sfxLangkah: {fileID: 8300000, guid: 80c12fd04da7290439827a799ffc0ac1, type: 3}
+  ambienceSource: {fileID: 2146913942}
+  ambienceAngkot: {fileID: 8300000, guid: 9d540afb67c69e141b825226185ea53c, type: 3}
+--- !u!82 &2146913940
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2146913937}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 0.7
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!82 &2146913941
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2146913937}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 1
+  m_Pitch: 1
+  Loop: 0
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+--- !u!82 &2146913942
+AudioSource:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2146913937}
+  m_Enabled: 1
+  serializedVersion: 4
+  OutputAudioMixerGroup: {fileID: 0}
+  m_audioClip: {fileID: 0}
+  m_PlayOnAwake: 0
+  m_Volume: 0.4
+  m_Pitch: 1
+  Loop: 1
+  Mute: 0
+  Spatialize: 0
+  SpatializePostEffects: 0
+  Priority: 128
+  DopplerLevel: 1
+  MinDistance: 1
+  MaxDistance: 500
+  Pan2D: 0
+  rolloffMode: 0
+  BypassEffects: 0
+  BypassListenerEffects: 0
+  BypassReverbZones: 0
+  rolloffCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  panLevelCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  spreadCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  reverbZoneMixCustomCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 1
+      inSlope: 0
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.33333334
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
 --- !u!4 &2146913939
 Transform:
   m_ObjectHideFlags: 0
@@ -9192,3 +9980,4 @@ SceneRoots:
   - {fileID: 1897304800}
   - {fileID: 686459209}
   - {fileID: 2146913939}
+  - {fileID: 76250463}

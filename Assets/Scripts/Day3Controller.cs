@@ -72,7 +72,7 @@ public class Day3Controller : MonoBehaviour
         [Tooltip("Poin bonus tambahan di luar skor kategori (mis. +100 bukti foto plat).")]
         public int bonusPoin = 0;
         [TextArea(2, 4)]
-        public string reaksi = "\u2713 Bagus! Si Bully kehilangan nyali.";
+        public string reaksi = "\u2713 Bagus! Pelaku kehilangan nyali.";
     }
 
     [System.Serializable]
@@ -81,7 +81,7 @@ public class Day3Controller : MonoBehaviour
         public string namaRonde = "Ronde 1";
         [TextArea(2, 5)]
         [Tooltip("Ejekan/ancaman dari Si Bully untuk ronde ini.")]
-        public string ucapanBully = "\"Heh, anak baru! Sini sodorin uang jajanmu!\"";
+        public string ucapanBully = "\"Hai dek, sendirian ya? Ayo ikut om sebentar~\"";
         public PilihanRonde[] pilihan;
     }
 
@@ -115,6 +115,20 @@ public class Day3Controller : MonoBehaviour
         public string pembicara = "Narasi";
         [TextArea(2, 4)]
         public string teks = "";
+    }
+
+    /// <summary>
+    /// Satu ronde konfrontasi boss yang INTERAKTIF (selaras alur game referensi):
+    /// boss bicara → Rara memilih AMAN/RAGU/BAHAYA. Tiap ronde menguras Mental pelaku.
+    /// </summary>
+    [System.Serializable]
+    public class RondeKonfrontasi
+    {
+        [TextArea(2, 4)]
+        [Tooltip("Ucapan/ancaman boss di ronde ini.")]
+        public string ucapanBoss = "\"...\"";
+        [Tooltip("Pilihan respons Rara (AMAN/RAGU/BAHAYA). AMAN menguras Mental paling banyak.")]
+        public PilihanKonfrontasi[] pilihan;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -156,10 +170,11 @@ public class Day3Controller : MonoBehaviour
     [Tooltip("Baris dialog pembuka. 'Narasi' = kotak narasi kuning; nama lain = dialog pembicara.")]
     public BarisIntro[] introBaris = new BarisIntro[]
     {
+        // Catatan: cerita pembuka (hujan, pulang sendiri, ojol) sudah diceritakan di
+        // Day3PrologScreen. Baris di sini sengaja dibuat ringkas sebagai JEMBATAN ke
+        // segmen jalan supaya tidak mengulang prolog.
         new BarisIntro { pembicara = "Narasi",
-            teks = "Bel pulang udah bunyi di SMP Harapan! \uD83D\uDD14\nTapi hujan deras banget hari ini...\nIbu Rara nggak bisa jemput. Rara harus pulang sendiri." },
-        new BarisIntro { pembicara = "Rara",
-            teks = "\"Yah... tapi nggak apa-apa kok! \uD83D\uDE24\nAku udah pesen ojol lewat HP.\nTinggal jalan dikit ke parkiran deh.\"" },
+            teks = "Hujan makin deras. Rara harus cepat menuju parkiran. \uD83C\uDF27" },
         new BarisIntro { pembicara = "Narasi",
             teks = "Tap layar / TERIAK buat jalan ke parkiran!\nSemakin keras teriak = makin cepet jalannya! \uD83C\uDFC3" }
     };
@@ -196,7 +211,7 @@ public class Day3Controller : MonoBehaviour
     {
         "Hai cantik! Hujan deras ya \uD83D\uDE22 Hati-hati basah...",
         "Mau jemput? Gratis kok, kasihan kamu basah sendirian!",
-        "\uD83E\uDD7A\uD83D\uDCF1 Cepat balas dong sayang... Mana foto kamu?"
+        "\uD83E\uDD7A\uD83D\uDCF1 Eh, foto kamu pakai seragam dong... buat om simpan ya sayang~"
     };
     [Tooltip("Detik tersisa untuk memilih respons chat.")]
     public float chatTimerDetik = 6f;
@@ -242,6 +257,100 @@ public class Day3Controller : MonoBehaviour
         "\"Haha, emangnya siapa yang bakal percaya sama kamu? Nggak ada! Diam aja~\"",
         "\"Ini rahasia kita berdua ya. Kalau kamu ngadu, kamu sendiri yang bakal kena masalah!\""
     };
+    [Tooltip("RONDE KONFRONTASI INTERAKTIF (selaras alur game referensi). Tiap baris grooming jadi " +
+             "satu ronde: boss bicara \u2192 Rara memilih AMAN/RAGU/BAHAYA, menguras Mental pelaku. " +
+             "Kosong = pakai mode lama (groomingLines diketik tanpa pilihan).")]
+    public RondeKonfrontasi[] groomingRonde = new RondeKonfrontasi[]
+    {
+        new RondeKonfrontasi {
+            ucapanBoss = "\"Eh hei, mau kemana sendirian? \uD83D\uDE0F Ikut aku dulu deh. Sebentar aja kok~\"",
+            pilihan = new PilihanKonfrontasi[]
+            {
+                new PilihanKonfrontasi {
+                    label = "\"PERGI! Aku NGGAK KENAL kamu! TOLONG!! \uD83D\uDD0A\"", kategori = "AMAN", bonusPoin = 50,
+                    reaksi = "\u2713 BERANI! Suara Rara bikin pelaku kaget dan mundur selangkah.",
+                    warna = new Color(0.15f, 0.68f, 0.38f, 1f)
+                },
+                new PilihanKonfrontasi {
+                    label = "\"E-emm... nggak usah deh...\" (suara pelan)", kategori = "RAGU",
+                    reaksi = "\u26A0 Kurang tegas. Lain kali bersuara lebih lantang ya!",
+                    warna = new Color(0.95f, 0.61f, 0.07f, 1f)
+                },
+                new PilihanKonfrontasi {
+                    label = "(diam, bingung mau gimana...)", kategori = "BAHAYA",
+                    reaksi = "\u2716 DIAM ITU BAHAYA! Pelaku makin berani. Kamu kehilangan 1 nyawa.",
+                    kurangiNyawa = true,
+                    warna = new Color(0.50f, 0.20f, 0.20f, 1f)
+                }
+            }
+        },
+        new RondeKonfrontasi {
+            ucapanBoss = "\"Sssst! Jangan teriak-teriak, nanti kamu yang dimarahin orang. Diam aja ya~\"",
+            pilihan = new PilihanKonfrontasi[]
+            {
+                new PilihanKonfrontasi {
+                    label = "\"JANGAN DEKET-DEKET! TOLONG!! \uD83D\uDD0A\" (Teriak KERAS!)", kategori = "AMAN", bonusPoin = 50,
+                    reaksi = "\u2713 HEBAT! Teriakan Rara menggema. Pelaku makin ciut nyalinya.",
+                    warna = new Color(0.15f, 0.68f, 0.38f, 1f)
+                },
+                new PilihanKonfrontasi {
+                    label = "\"T-tolong...\" (hampir nggak kedengeran)", kategori = "RAGU",
+                    reaksi = "\u26A0 Suaramu kepelanan. TERIAK sekuat tenaga lain kali!",
+                    warna = new Color(0.95f, 0.61f, 0.07f, 1f)
+                },
+                new PilihanKonfrontasi {
+                    label = "(beku di tempat, nggak bisa ngomong...)", kategori = "BAHAYA",
+                    reaksi = "\u2716 Rara beku ketakutan. Pelaku makin mendesak. Kehilangan 1 nyawa.",
+                    kurangiNyawa = true,
+                    warna = new Color(0.50f, 0.20f, 0.20f, 1f)
+                }
+            }
+        },
+        new RondeKonfrontasi {
+            ucapanBoss = "\"Haha, emangnya siapa yang bakal percaya sama kamu? Nggak ada! Diam aja~\"",
+            pilihan = new PilihanKonfrontasi[]
+            {
+                new PilihanKonfrontasi {
+                    label = "\"PERGI! Aku PERCAYA SAMA DIRI SENDIRI! TOLONG!! \uD83D\uDCAA\"", kategori = "AMAN", bonusPoin = 50,
+                    reaksi = "\u2713 KEREN! Rara percaya diri. Mental pelaku makin jatuh.",
+                    warna = new Color(0.15f, 0.68f, 0.38f, 1f)
+                },
+                new PilihanKonfrontasi {
+                    label = "\"Emangnya... kenapa sih?\" (masih ragu-ragu)", kategori = "RAGU",
+                    reaksi = "\u26A0 Jangan terpancing. Tetap tegas menolak ya!",
+                    warna = new Color(0.95f, 0.61f, 0.07f, 1f)
+                },
+                new PilihanKonfrontasi {
+                    label = "(nangis diem-diem, nggak berani berbuat apa-apa)", kategori = "BAHAYA",
+                    reaksi = "\u2716 Rara terlalu takut. Pelaku menang sesaat. Kehilangan 1 nyawa.",
+                    kurangiNyawa = true,
+                    warna = new Color(0.50f, 0.20f, 0.20f, 1f)
+                }
+            }
+        },
+        new RondeKonfrontasi {
+            ucapanBoss = "\"Ini rahasia kita berdua ya. Kalau kamu ngadu, kamu sendiri yang bakal kena masalah!\"",
+            pilihan = new PilihanKonfrontasi[]
+            {
+                new PilihanKonfrontasi {
+                    label = "\"Bohong! AKU BAKAL CERITA ke guru sekarang! \uD83D\uDD0A\"", kategori = "AMAN", bonusPoin = 50,
+                    reaksi = "\u2713 TEPAT! Rahasia jahat HARUS diceritakan. Pelaku panik!",
+                    warna = new Color(0.15f, 0.68f, 0.38f, 1f)
+                },
+                new PilihanKonfrontasi {
+                    label = "\"Aku nggak tau harus ngapain...\" (bingung banget)", kategori = "RAGU",
+                    reaksi = "\u26A0 Ingat: kamu boleh cerita ke orang dewasa yang dipercaya!",
+                    warna = new Color(0.95f, 0.61f, 0.07f, 1f)
+                },
+                new PilihanKonfrontasi {
+                    label = "\"Mungkin... emang salah aku ya...\" (mulai pasrah)", kategori = "BAHAYA",
+                    reaksi = "\u2716 Ini BUKAN salahmu! Jangan pasrah. Kehilangan 1 nyawa.",
+                    kurangiNyawa = true,
+                    warna = new Color(0.50f, 0.20f, 0.20f, 1f)
+                }
+            }
+        }
+    };
     [Tooltip("Ucapan boss saat mendesak Rara memutuskan (muncul bersama pilihan).")]
     [TextArea(1, 3)]
     public string konfrontasiUcapan = "\"Pasrah aja lah! Nggak ada yang bisa nolongin kamu di sini!\"";
@@ -275,7 +384,6 @@ public class Day3Controller : MonoBehaviour
     };
     [Tooltip("Durasi maksimum jendela teriak (detik) untuk opsi 'JANGAN DEKAT!'.")]
     public float voiceTimeoutDetik = 5f;
-
     [Header("Boss — Panic Button (Polisi Datang)")]
     [Tooltip("Label tombol darurat.")]
     public string panicLabel = "\uD83D\uDEA8 PANIC BUTTON";
@@ -304,6 +412,12 @@ public class Day3Controller : MonoBehaviour
     public Color warnaBackdrop = new Color(0.10f, 0.12f, 0.18f, 1f); // suram, hujan
     public int   backdropSortingOrder = -100;
 
+    [Header("Latar Arena (sprite fullscreen, gaya box dialog Day 2)")]
+    [Tooltip("Sprite latar belakang fullscreen untuk arena/box dialog Hari 3 (mis. parkiran SMP saat hujan). " +
+             "Kosong = pakai warna gelap solid.")]
+    public Sprite arenaLatarSprite;
+    public Color  arenaLatarWarna = new Color(0.10f, 0.12f, 0.18f, 1f);
+
     [Header("Boss (tampilan)")]
     public string bossNama = "Si Bayangan Gelap";
     [Tooltip("Sprite potret boss (opsional). Kosong = kotak warna solid.")]
@@ -325,7 +439,7 @@ public class Day3Controller : MonoBehaviour
     public Sprite portraitRara;
 
     [Header("Boss HP Bar")]
-    public string bossBarLabel = "Mental Si Bully";
+    public string bossBarLabel = "Mental Pelaku";
     public Color  bossBarWarnaIsi  = new Color(0.85f, 0.20f, 0.22f, 1f);
     public Color  bossBarWarnaKosong = new Color(0.15f, 0.15f, 0.18f, 1f);
 
@@ -333,39 +447,39 @@ public class Day3Controller : MonoBehaviour
     public Ronde[] rondeList = new Ronde[]
     {
         new Ronde {
-            namaRonde   = "Ronde 1 \u2014 Palak Uang",
-            ucapanBully = "\"Heh, anak baru! Sini sodorin semua uang jajanmu, cepat!\"",
+            namaRonde   = "Ronde 1 \u2014 Bujukan",
+            ucapanBully = "\"Hai dek, sendirian ya? Ayo ikut om sebentar, om beliin jajan kesukaanmu deh~\"",
             pilihan = new PilihanRonde[]
             {
-                new PilihanRonde { label = "\"Nggak. Aku mau lapor guru.\"", kategori = "AMAN", damage = 40f,
-                    reaksi = "\u2713 Tegas! Si Bully kaget kamu berani menolak." },
-                new PilihanRonde { label = "\"Eh... aku nggak bawa uang kok...\"", kategori = "RAGU", damage = 20f,
-                    reaksi = "\u26A0 Kurang tegas. Dia masih coba menekanmu." },
-                new PilihanRonde { label = "Diam & serahkan uang jajan", kategori = "BAHAYA", damage = 0f,
-                    reaksi = "\u2716 Dia makin pede. Kamu kehilangan 1 nyawa." }
+                new PilihanRonde { label = "\"TIDAK! Aku nggak kenal om.\"", kategori = "AMAN", damage = 40f,
+                    reaksi = "\u2713 Tegas! Kata sakti TIDAK. Pelaku kaget kamu berani menolak." },
+                new PilihanRonde { label = "\"Eh... nggak usah deh, om...\"", kategori = "RAGU", damage = 20f,
+                    reaksi = "\u26A0 Kurang tegas. Dia masih coba membujukmu." },
+                new PilihanRonde { label = "Diam & ragu-ragu mau ikut", kategori = "BAHAYA", damage = 0f,
+                    reaksi = "\u2716 Dia makin memaksa. Kamu kehilangan 1 nyawa." }
             }
         },
         new Ronde {
-            namaRonde   = "Ronde 2 \u2014 Ancaman",
-            ucapanBully = "\"Awas ya, kalau berani ngadu, kamu bakal nyesel!\"",
+            namaRonde   = "Ronde 2 \u2014 Rahasia & Ancaman",
+            ucapanBully = "\"Sssst, ini rahasia kita berdua ya. Kalau kamu ngadu, kamu sendiri yang bakal kena masalah!\"",
             pilihan = new PilihanRonde[]
             {
-                new PilihanRonde { label = "\"Mengancam itu salah. Aku tetap lapor.\"", kategori = "AMAN", damage = 40f,
-                    reaksi = "\u2713 Mantap! Nyali Si Bully makin ciut." },
-                new PilihanRonde { label = "\"I-iya deh, aku nggak ngadu...\"", kategori = "RAGU", damage = 20f,
+                new PilihanRonde { label = "\"Aku PERGI dari sini. Nggak ada rahasia sama orang asing.\"", kategori = "AMAN", damage = 40f,
+                    reaksi = "\u2713 Mantap! Kata sakti PERGI. Nyali pelaku makin ciut." },
+                new PilihanRonde { label = "\"I-iya deh, aku nggak bakal cerita...\"", kategori = "RAGU", damage = 20f,
                     reaksi = "\u26A0 Dia merasa kamu bisa ditakut-takuti." },
-                new PilihanRonde { label = "Menangis & lari sembunyi sendirian", kategori = "BAHAYA", damage = 0f,
-                    reaksi = "\u2716 Kamu makin terpojok. Kehilangan 1 nyawa." }
+                new PilihanRonde { label = "Menurut & janji simpan rahasia", kategori = "BAHAYA", damage = 0f,
+                    reaksi = "\u2716 Justru itu jebakannya. Kamu kehilangan 1 nyawa." }
             }
         },
         new Ronde {
             namaRonde   = "Ronde 3 \u2014 Cari Bantuan",
-            ucapanBully = "\"Mau apa kamu? Di sini cuma ada kita berdua!\"",
+            ucapanBully = "\"Mau apa kamu? Di sini cuma ada kita berdua, nggak ada yang nolongin!\"",
             pilihan = new PilihanRonde[]
             {
-                new PilihanRonde { label = "Teriak \"TOLONG!\" & lari ke satpam", kategori = "AMAN", damage = 50f,
-                    reaksi = "\u2713 Hebat! Satpam datang. Si Bully kabur!" },
-                new PilihanRonde { label = "\"Aku... aku tunggu temanku aja deh.\"", kategori = "RAGU", damage = 20f,
+                new PilihanRonde { label = "Teriak \"TOLONG!\" & lari CERITA ke satpam", kategori = "AMAN", damage = 50f,
+                    reaksi = "\u2713 Hebat! Kata sakti CERITA. Satpam datang, pelaku kabur!" },
+                new PilihanRonde { label = "\"Aku... aku tunggu guru aja deh.\"", kategori = "RAGU", damage = 20f,
                     reaksi = "\u26A0 Lumayan, tapi kamu masih ragu cari bantuan." },
                 new PilihanRonde { label = "Ikut saja ke tempat sepi", kategori = "BAHAYA", damage = 0f,
                     reaksi = "\u2716 BAHAYA besar! Kamu kehilangan 1 nyawa." }
@@ -384,11 +498,16 @@ public class Day3Controller : MonoBehaviour
     [Header("Kartu Edukasi Hari 3")]
     public string eduJudul = "\uD83C\uDFC6  Kartu Edukasi \u2014 Hari 3: FINAL";
     public Color  eduWarnaJudul = new Color(1f, 0.85f, 0.30f, 1f);
+    [Tooltip("Sprite latar belakang penuh layar di belakang kartu edukasi (opsional). " +
+             "Kosong = warna gelap solid.")]
+    public Sprite eduLatarSprite;
+    public Color  eduLatarWarna = new Color(0f, 0f, 0f, 0.82f);
     [TextArea(4, 10)]
     public string eduIsi =
         "\u26A0 Apa itu Grooming?\n" +
         "Grooming = orang dewasa yang pura-pura 'baik' buat mendekati anak \u2014 lewat chat, sosmed, atau ketemu langsung. Ini KEJAHATAN. Kamu boleh lapor!\n\n" +
         "\uD83E\uDD81 Cara Melindungi Diri:\n" +
+        "\u2022 Ingat 3 KATA SAKTI: TIDAK! \u2014 PERGI! \u2014 CERITA!\n" +
         "\u2022 Terasa nggak aman? TERIAK keras dan minta tolong!\n" +
         "\u2022 Chat mencurigakan? Blokir + screenshot + cerita ke ortu.\n" +
         "\u2022 Guru dan polisi ADA untuk melindungi kamu!\n\n" +
@@ -398,6 +517,8 @@ public class Day3Controller : MonoBehaviour
 
     [Header("Layar Hasil Akhir (Complete)")]
     public string hasilJudul = "\uD83C\uDFC1  TANTANGAN SELESAI!";
+    [Tooltip("Sprite latar belakang penuh layar di belakang kartu hasil (opsional). Kosong = warna solid gelap.")]
+    public Sprite hasilLatarSprite;
     [Tooltip("Ambang skor untuk pesan penutup (mengikuti CLAUDE.md).")]
     public int ambangLuarBiasa = 800;
     public int ambangBagus     = 500;
@@ -447,7 +568,7 @@ public class Day3Controller : MonoBehaviour
         Instance = this;
         // Auto-cari komponen HalteDialog di scene untuk meminjam look box dialog kayu.
         if (gayaHalteDialog == null)
-            gayaHalteDialog = FindObjectOfType<HalteDialog>(true);
+            gayaHalteDialog = FindFirstObjectByType<HalteDialog>(FindObjectsInactive.Include);
     }
 
     void OnDestroy()
@@ -545,7 +666,9 @@ public class Day3Controller : MonoBehaviour
                     _overlayShown = true;
                 }
                 BuildArena();
-                if (_bossImg != null) _bossImg.enabled = true;
+                // Hanya tampilkan portrait boss bila ADA sprite-nya. Tanpa sprite,
+                // placeholder kotak merah (bossWarnaFallback) tidak usah muncul.
+                if (_bossImg != null) _bossImg.enabled = (bossSprite != null);
                 if (_bossNamaText != null) _bossNamaText.text = bossNama;
                 yield return TampilkanUcapan(narasiPembuka, isNarasi: true);
                 yield return new WaitForSeconds(0.4f);
@@ -801,6 +924,7 @@ public class Day3Controller : MonoBehaviour
 
         chat.namaKontak         = chatNamaKontak;
         chat.statusKontak       = chatStatus;
+        chat.jamTampil          = "13:45";    // jam pulang sekolah anak SMP (Hari 3, hujan)
         chat.hariUntukSkor      = 3;
         chat.notifBerderingKali = 3;          // SFX notif WA berdering 3x
         chat.waktuPilihDetik    = chatTimerDetik;
@@ -855,15 +979,17 @@ public class Day3Controller : MonoBehaviour
     {
         BuildArena();
 
-        // Pengemudi ojol palsu bicara (bukan boss parkir).
+        // Pengemudi ojol palsu bicara (bukan boss parkir). Sembunyikan portrait boss
+        // supaya placeholder merah (bossWarnaFallback) tidak muncul di tengah arena.
+        if (_bossImg != null) _bossImg.enabled = false;
         if (_bossNamaText != null) _bossNamaText.text = ojolNamaSpeaker;
         yield return TampilkanUcapan(ojolNarasi, isNarasi: true);
         yield return new WaitForSeconds(0.3f);
         yield return TampilkanUcapan(ojolUcapan, isNarasi: false);
 
         // Kartu plat: plat PESANAN selalu tampil, plat ANGKOT awalnya tertutup ("?").
-        TextMeshProUGUI platPesananText, platAngkotText;
-        var platPanel = BuatPanelPlat(out platPesananText, out platAngkotText);
+        TextMeshProUGUI platPesananText, platAngkotText, platHeaderText;
+        var platPanel = BuatPanelPlat(out platPesananText, out platAngkotText, out platHeaderText);
 
         // ── Level 1: cek plat dulu, atau langsung naik (fatal). ───────────────
         int pilih1 = -1;
@@ -895,8 +1021,10 @@ public class Day3Controller : MonoBehaviour
         // Buka plat angkot untuk dibandingkan.
         AudioManager.Instance?.Click();
         if (platAngkotText != null) platAngkotText.text = ojolPlatAngkot;
-        if (_reaksiText != null)
-            _reaksiText.text = "Bandingkan! Plat ojol ini COCOK nggak sama pesanan Rara?";
+        // Instruksi perbandingan ditaruh di HEADER kartu plat (bukan _reaksiText) agar
+        // tidak menumpuk dengan panel tombol pilihan yang muncul di bawah.
+        if (platHeaderText != null) platHeaderText.text = "COCOK NGGAK SAMA PESANAN RARA?";
+        if (_reaksiText != null) _reaksiText.text = "";
         yield return new WaitForSeconds(0.6f);
 
         // ── Level 2: cocokkan plat. Plat sengaja BERBEDA → jawaban benar: TIDAK COCOK. ──
@@ -929,6 +1057,7 @@ public class Day3Controller : MonoBehaviour
         // Benar: plat tidak cocok → tolak naik (AMAN + bonus bukti).
         GameState.Instance?.AddChoice(3, "Ojol: cek plat, tidak cocok, tolak naik", "AMAN");
         if (ojolBonusCekPlat > 0) GameState.Instance?.AddScore(ojolBonusCekPlat);
+        GameState.Instance?.TambahBukti(GameState.BUKTI_PLAT_DAY3); // B2 — bukti cek plat Hari 3
         AudioManager.Instance?.PlayKategori("AMAN");
         if (_reaksiText != null)
             _reaksiText.text = "\u2713 PLAT BENAR dicek! Platnya beda = ojol PALSU. Rara nggak naik. Pinter! (+" + ojolBonusCekPlat + " bukti)";
@@ -940,22 +1069,70 @@ public class Day3Controller : MonoBehaviour
     }
 
     /// <summary>Bangun kartu plat (pesanan + angkot) di tengah-atas arena. Plat angkot awalnya "?".</summary>
-    GameObject BuatPanelPlat(out TextMeshProUGUI platPesananText, out TextMeshProUGUI platAngkotText)
+    GameObject BuatPanelPlat(out TextMeshProUGUI platPesananText, out TextMeshProUGUI platAngkotText, out TextMeshProUGUI headerText)
     {
         var panel = new GameObject("PanelPlat");
         panel.transform.SetParent(_canvasGO.transform, false);
         var pRt = panel.AddComponent<RectTransform>();
-        pRt.anchorMin = new Vector2(0.5f, 0.5f); pRt.anchorMax = new Vector2(0.5f, 0.5f);
-        pRt.pivot = new Vector2(0.5f, 0.5f);
-        pRt.sizeDelta = new Vector2(900f, 220f);
-        pRt.anchoredPosition = new Vector2(0f, 80f);
+        // Digantung dari ATAS layar (di bawah navbar) agar TIDAK menutupi panel
+        // pilihan tombol yang berada di tengah-bawah arena (panelTopFrac).
+        pRt.anchorMin = new Vector2(0.5f, 1f); pRt.anchorMax = new Vector2(0.5f, 1f);
+        pRt.pivot = new Vector2(0.5f, 1f);
+        pRt.sizeDelta = new Vector2(960f, 320f);
+        // Diberi jarak lebih ke bawah agar tidak berdempetan dengan indikator hari
+        // (1-2-3) navbar di atas — enak dipandang.
+        pRt.anchoredPosition = new Vector2(0f, -150f);
+
+        // Backdrop gelap membulat + bingkai emas (selaras tema kayu/sunset).
+        var bg = panel.AddComponent<Image>();
+        bg.sprite = GetRoundedSpritePlat();
+        bg.type   = Image.Type.Sliced;
+        bg.color  = new Color(0.10f, 0.07f, 0.05f, 0.96f);
+        bg.raycastTarget = false;
+        var bgOutline = panel.AddComponent<Outline>();
+        bgOutline.effectColor    = new Color(0.95f, 0.72f, 0.18f, 0.90f);
+        bgOutline.effectDistance = new Vector2(2.5f, -2.5f);
+
+        // Header judul tantangan.
+        var header = BuatTeks(panel.transform, "Header", "COCOKKAN PLAT NOMOR", 26,
+            new Color(1f, 0.85f, 0.40f, 1f), FontStyles.Bold);
+        header.alignment = TextAlignmentOptions.Center;
+        header.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
+        var hRt = header.rectTransform;
+        hRt.anchorMin = new Vector2(0f, 1f); hRt.anchorMax = new Vector2(1f, 1f);
+        hRt.pivot     = new Vector2(0.5f, 1f);
+        hRt.offsetMin = new Vector2(16f, -54f); hRt.offsetMax = new Vector2(-16f, -14f);
+        headerText = header;
+
+        // Area kartu (di bawah header).
+        var area = new GameObject("AreaKartu");
+        area.transform.SetParent(panel.transform, false);
+        var aRt = area.AddComponent<RectTransform>();
+        aRt.anchorMin = new Vector2(0f, 0f); aRt.anchorMax = new Vector2(1f, 1f);
+        aRt.offsetMin = new Vector2(18f, 18f); aRt.offsetMax = new Vector2(-18f, -60f);
 
         // Kartu kiri: plat pesanan (acuan).
-        platPesananText = BuatKartuPlat(panel.transform, "Plat Pesanan (dari Ibu)",
-            ojolPlatPesanan, new Color(0.12f, 0.40f, 0.30f, 1f), new Vector2(-0.5f, 0f));
+        platPesananText = BuatKartuPlat(area.transform, "Plat Pesanan (dari Ibu)",
+            ojolPlatPesanan, new Color(0.12f, 0.42f, 0.30f, 1f), new Vector2(-0.5f, 0f));
         // Kartu kanan: plat angkot (awalnya tertutup).
-        platAngkotText = BuatKartuPlat(panel.transform, "Plat Ojol Ini",
-            "?  ?  ?", new Color(0.40f, 0.16f, 0.16f, 1f), new Vector2(0.5f, 0f));
+        platAngkotText = BuatKartuPlat(area.transform, "Plat Ojol Ini",
+            "?  ?  ?", new Color(0.45f, 0.16f, 0.16f, 1f), new Vector2(0.5f, 0f));
+
+        // Badge "VS" emas di tengah antar kartu.
+        var badge = BuatImage(area.transform, "BadgeVS", new Color(0.95f, 0.72f, 0.18f, 1f));
+        badge.sprite = GetRoundedSpritePlat();
+        badge.type   = Image.Type.Sliced;
+        badge.raycastTarget = false;
+        var badRt = badge.rectTransform;
+        badRt.anchorMin = new Vector2(0.5f, 0.5f); badRt.anchorMax = new Vector2(0.5f, 0.5f);
+        badRt.pivot = new Vector2(0.5f, 0.5f);
+        badRt.sizeDelta = new Vector2(58f, 58f);
+        badRt.anchoredPosition = Vector2.zero;
+        var badOutline = badge.gameObject.AddComponent<Outline>();
+        badOutline.effectColor    = new Color(0.20f, 0.12f, 0.05f, 0.90f);
+        badOutline.effectDistance = new Vector2(2f, -2f);
+        var vs = BuatTeks(badge.transform, "VS", "VS", 24, new Color(0.18f, 0.10f, 0.04f, 1f), FontStyles.Bold);
+        vs.alignment = TextAlignmentOptions.Center;
 
         return panel;
     }
@@ -963,49 +1140,90 @@ public class Day3Controller : MonoBehaviour
     TextMeshProUGUI BuatKartuPlat(Transform parent, string judul, string plat, Color warna, Vector2 sisi)
     {
         var card = BuatImage(parent, "Kartu", warna);
+        card.sprite = GetRoundedSpritePlat();
+        card.type   = Image.Type.Sliced;
         card.raycastTarget = false;
         var cRt = card.rectTransform;
         cRt.anchorMin = new Vector2(sisi.x < 0 ? 0f : 0.52f, 0f);
         cRt.anchorMax = new Vector2(sisi.x < 0 ? 0.48f : 1f, 1f);
         cRt.offsetMin = Vector2.zero; cRt.offsetMax = Vector2.zero;
 
-        var jt = BuatTeks(card.transform, "Judul", judul, 22, new Color(1f, 1f, 1f, 0.85f), FontStyles.Bold);
-        jt.alignment = TextAlignmentOptions.Center;
-        var jRt = jt.rectTransform;
-        jRt.anchorMin = new Vector2(0f, 0.6f); jRt.anchorMax = new Vector2(1f, 1f);
-        jRt.offsetMin = new Vector2(8f, 0f); jRt.offsetMax = new Vector2(-8f, -6f);
+        var cardOutline = card.gameObject.AddComponent<Outline>();
+        cardOutline.effectColor    = new Color(1f, 1f, 1f, 0.22f);
+        cardOutline.effectDistance = new Vector2(2f, -2f);
 
-        var pt = BuatTeks(card.transform, "Plat", plat, 44, Color.white, FontStyles.Bold);
+        var jt = BuatTeks(card.transform, "Judul", judul, 20, new Color(1f, 1f, 1f, 0.92f), FontStyles.Bold);
+        jt.alignment = TextAlignmentOptions.Center;
+        jt.enableAutoSizing = true; jt.fontSizeMin = 14; jt.fontSizeMax = 20;
+        jt.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
+        var jRt = jt.rectTransform;
+        jRt.anchorMin = new Vector2(0f, 0.62f); jRt.anchorMax = new Vector2(1f, 1f);
+        jRt.offsetMin = new Vector2(10f, 0f); jRt.offsetMax = new Vector2(-10f, -8f);
+
+        // "Papan plat" gelap membulat tempat nomor ditampilkan.
+        var board = BuatImage(card.transform, "Papan", new Color(0f, 0f, 0f, 0.28f));
+        board.sprite = GetRoundedSpritePlat();
+        board.type   = Image.Type.Sliced;
+        board.raycastTarget = false;
+        var bdRt = board.rectTransform;
+        bdRt.anchorMin = new Vector2(0.06f, 0.10f); bdRt.anchorMax = new Vector2(0.94f, 0.58f);
+        bdRt.offsetMin = Vector2.zero; bdRt.offsetMax = Vector2.zero;
+
+        var pt = BuatTeks(board.transform, "Plat", plat, 42, Color.white, FontStyles.Bold);
         pt.alignment = TextAlignmentOptions.Center;
-        var ptRt = pt.rectTransform;
-        ptRt.anchorMin = new Vector2(0f, 0f); ptRt.anchorMax = new Vector2(1f, 0.6f);
-        ptRt.offsetMin = new Vector2(8f, 8f); ptRt.offsetMax = new Vector2(-8f, 0f);
+        pt.enableAutoSizing = true; pt.fontSizeMin = 24; pt.fontSizeMax = 44;
+        pt.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
+        Stretch(pt.rectTransform, 8f, 4f);
         return pt;
     }
 
     /// <summary>Tampilkan tombol pilihan kustom (label + warna) di panel pilihan.</summary>
     void TampilkanTombolKustom((string label, Color warna)[] opsi, Action<int> onPilih)
     {
+        if (opsi == null || opsi.Length == 0) return;
+        IsiPanelPilihan(opsi.Length, i => opsi[i].label, i => opsi[i].warna, onPilih);
+    }
+
+    /// <summary>Builder bersama tombol pilihan Day 3: pil membulat + bingkai + efek
+    /// hover, ditata rapi sebagai daftar di dalam kartu keputusan (tanpa tumpang
+    /// tindih). Dipakai semua titik keputusan (ronde, konfrontasi, tombol kustom).</summary>
+    void IsiPanelPilihan(int jumlah, Func<int, string> labelOf, Func<int, Color> warnaOf, Action<int> onPilih)
+    {
         if (_pilihanPanel == null) return;
         _pilihanPanel.SetActive(true);
         foreach (Transform child in _pilihanPanel.transform) Destroy(child.gameObject);
-        if (opsi == null || opsi.Length == 0) return;
+        if (jumlah <= 0) return;
 
-        float slotH = 1f / opsi.Length;
-        for (int i = 0; i < opsi.Length; i++)
+        // Tinggi panel ADAPTIF mengikuti jumlah opsi supaya 4 tombol tidak sesak
+        // dan 3 tombol tidak menyisakan ruang kosong berlebih.
+        var panelRt = (RectTransform)_pilihanPanel.transform;
+        const float tinggiPerTombol = 78f;   // tinggi efektif tiap tombol (px)
+        const float paddingPanel    = 56f;   // padding atas+bawah kartu (px)
+        panelRt.sizeDelta = new Vector2(panelRt.sizeDelta.x, jumlah * tinggiPerTombol + paddingPanel);
+
+        const float padTB = 0.08f;   // padding atas-bawah di dalam kartu (fraksi)
+        const float gap   = 0.03f;   // jarak antar tombol (fraksi)
+        float usable = 1f - 2f * padTB;
+        float slotH  = usable / jumlah;
+
+        for (int i = 0; i < jumlah; i++)
         {
-            float yMax = 1f - i * slotH;
-            float yMin = yMax - slotH + 0.03f;
+            float yMax = (1f - padTB) - i * slotH;
+            float yMin = yMax - slotH + gap;
 
             var btnObj = new GameObject("Pilihan_" + i);
             btnObj.transform.SetParent(_pilihanPanel.transform, false);
             var img = btnObj.AddComponent<Image>();
-            img.color = opsi[i].warna;
-            img.sprite = SolidSprite();
-            img.type = Image.Type.Sliced;
+            img.color  = warnaOf(i);
+            img.sprite = GetRoundedSpritePlat();
+            img.type   = Image.Type.Sliced;
             var bRt = btnObj.GetComponent<RectTransform>();
             bRt.anchorMin = new Vector2(0f, yMin); bRt.anchorMax = new Vector2(1f, yMax);
-            bRt.offsetMin = new Vector2(0f, 4f); bRt.offsetMax = new Vector2(0f, -4f);
+            bRt.offsetMin = new Vector2(28f, 0f); bRt.offsetMax = new Vector2(-28f, 0f);
+
+            var ol = btnObj.AddComponent<Outline>();
+            ol.effectColor    = new Color(0f, 0f, 0f, 0.32f);
+            ol.effectDistance = new Vector2(2f, -2f);
 
             var btn = btnObj.AddComponent<Button>();
             int idx = i;
@@ -1016,8 +1234,20 @@ public class Day3Controller : MonoBehaviour
                 onPilih?.Invoke(idx);
             });
 
-            var label = BuatTeks(btnObj.transform, "Label", opsi[i].label, 24, Color.white, FontStyles.Bold);
+            // Efek hover (sedikit membesar) supaya terasa interaktif.
+            var trig  = btnObj.AddComponent<EventTrigger>();
+            var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+            enter.callback.AddListener(_ => btnObj.transform.localScale = Vector3.one * 1.035f);
+            var exit  = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+            exit.callback.AddListener(_ => btnObj.transform.localScale = Vector3.one);
+            trig.triggers.Add(enter); trig.triggers.Add(exit);
+
+            var label = BuatTeks(btnObj.transform, "Label", labelOf(i), 24, Color.white, FontStyles.Bold);
             label.alignment = TextAlignmentOptions.Center;
+            label.textWrappingMode = TMPro.TextWrappingModes.Normal;
+            // Auto-size supaya label panjang (mis. opsi konfrontasi boss) tetap
+            // muat dalam tombol tanpa terpotong.
+            label.enableAutoSizing = true; label.fontSizeMin = 15; label.fontSizeMax = 24;
             Stretch(label.rectTransform, 24f, 6f);
         }
     }
@@ -1027,12 +1257,52 @@ public class Day3Controller : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
     IEnumerator JalankanKonfrontasiBoss()
     {
-        // 1) Grooming 4 tahap: pria bicara satu per satu (auto-advance + jeda baca).
+        // Tampilkan bar "Mental Pelaku" yang menyusut tiap ronde — selaras alur game
+        // referensi (klimaks: mental boss dikuras oleh keberanian suara Rara).
+        if (_bossBarFill == null && _canvasGO != null) BuildBossBar();
+        _bossMental = bossMentalMax;
+        UpdateBossBar();
+
         if (_bossNamaText != null) _bossNamaText.text = bossNama;
-        foreach (var line in groomingLines)
+
+        // 1) Grooming INTERAKTIF (selaras referensi): tiap baris jadi satu ronde
+        //    dengan pilihan AMAN/RAGU/BAHAYA yang menguras Mental pelaku.
+        if (groomingRonde != null && groomingRonde.Length > 0)
         {
-            yield return TampilkanUcapan(line, isNarasi: false);
-            yield return new WaitForSeconds(1.1f);
+            foreach (var ronde in groomingRonde)
+            {
+                if (ronde == null || ronde.pilihan == null || ronde.pilihan.Length == 0) continue;
+                if (_bossNamaText != null) _bossNamaText.text = bossNama;
+                yield return TampilkanUcapan(ronde.ucapanBoss, isNarasi: false);
+
+                PilihanKonfrontasi pilih = null;
+                _menungguPilihan = true;
+                TampilkanPilihanKonfrontasi(ronde.pilihan, p => { pilih = p; _menungguPilihan = false; });
+                while (_menungguPilihan) yield return null;
+
+                ProsesPilihanKonfrontasi(pilih);
+                DrainMentalByKategori(pilih != null ? pilih.kategori : "RAGU");
+                if (_reaksiText != null) _reaksiText.text = pilih != null ? pilih.reaksi : "";
+                yield return new WaitForSeconds(1.6f);
+                if (_reaksiText != null) _reaksiText.text = "";
+
+                // Nyawa habis di tengah grooming → Trauma (Game Over).
+                if (GameState.Instance != null && !GameState.Instance.IsAlive())
+                {
+                    _hasilDay3 = HasilDay3.Trauma;
+                    GotoFase(Phase.EduCard); // EduCard akan skip ke Complete saat Trauma
+                    yield break;
+                }
+            }
+        }
+        else
+        {
+            // Mode lama: baris grooming diketik berurutan tanpa pilihan.
+            foreach (var line in groomingLines)
+            {
+                yield return TampilkanUcapan(line, isNarasi: false);
+                yield return new WaitForSeconds(1.1f);
+            }
         }
 
         // 2) Pilihan pamungkas (Visual Novel). Opsi 'Diam' (Lanjut) → pria mendesak lagi (loop).
@@ -1066,13 +1336,13 @@ public class Day3Controller : MonoBehaviour
 
             // Proses skor & nyawa.
             ProsesPilihanKonfrontasi(dipilih);
+            DrainMentalByKategori(dipilih.kategori); // bar Mental pelaku ikut menyusut
             if (_reaksiText != null) _reaksiText.text = dipilih.reaksi;
             yield return new WaitForSeconds(2.0f);
             if (_reaksiText != null) _reaksiText.text = "";
 
-            // Opsi [4] PANIC BUTTON → animasi polisi/guru datang.
-            if (dipilih.panicButton)
-                yield return AnimasiPolisiDatang();
+            // Opsi [4] PANIC BUTTON — animasi pergerakan polisi/guru DIHAPUS
+            // (diganti sprite gambar fullscreen sebagai latar belakang).
 
             // Nyawa habis → Trauma.
             if (GameState.Instance != null && !GameState.Instance.IsAlive())
@@ -1083,6 +1353,22 @@ public class Day3Controller : MonoBehaviour
 
             // Belum final (mis. 'Diam' tapi masih hidup) → pria mendesak lagi (Lanjut fase 6).
             if (dipilih.hasil == HasilDay3.Lanjut) continue;
+
+            // B2 — Gerbang ending LAPOR SUKSES: hanya terbuka bila SEMUA bukti
+            // Hari 2 & 3 lengkap (screenshot chat + cek plat). Kalau belum lengkap,
+            // keberanian lapor tetap dihargai tapi ending turun ke "Aman".
+            if (dipilih.hasil == HasilDay3.LaporSukses && GameState.Instance != null
+                && !GameState.Instance.SemuaBuktiLengkap())
+            {
+                _hasilDay3 = HasilDay3.Aman;
+                if (_reaksiText != null)
+                    _reaksiText.text = "\u26A0 Kamu berani minta tolong \u2014 itu sudah tepat! Tapi tanpa bukti " +
+                        "lengkap (screenshot chat & cek plat), laporan jadi sulit ditindak. " +
+                        "Lain kali kumpulkan dulu buktinya ya!";
+                yield return new WaitForSeconds(2.8f);
+                if (_reaksiText != null) _reaksiText.text = "";
+                break;
+            }
 
             _hasilDay3 = dipilih.hasil;
             break;
@@ -1172,45 +1458,24 @@ public class Day3Controller : MonoBehaviour
         }
     }
 
+    /// <summary>Kuras Mental pelaku sesuai kategori pilihan (AMAN besar, RAGU kecil, BAHAYA nol).
+    /// Selaras alur referensi: bar mental menyusut tiap ronde keberanian Rara.</summary>
+    void DrainMentalByKategori(string kategori)
+    {
+        float drain = kategori == "AMAN"  ? bossMentalMax * 0.22f
+                    : kategori == "RAGU"  ? bossMentalMax * 0.08f
+                    : kategori == "LAPOR" ? bossMentalMax * 0.30f
+                    : 0f;
+        _bossMental = Mathf.Max(0f, _bossMental - drain);
+        UpdateBossBar();
+    }
+
     /// <summary>Tampilkan 4 pilihan konfrontasi (PilihanKonfrontasi) di panel pilihan.</summary>
     void TampilkanPilihanKonfrontasi(PilihanKonfrontasi[] pilihan, Action<PilihanKonfrontasi> onPilih)
     {
-        if (_pilihanPanel == null) return;
-        _pilihanPanel.SetActive(true);
-
-        foreach (Transform child in _pilihanPanel.transform) Destroy(child.gameObject);
         if (pilihan == null || pilihan.Length == 0) return;
-
-        float slotH = 1f / pilihan.Length;
-        for (int i = 0; i < pilihan.Length; i++)
-        {
-            var p = pilihan[i];
-            float yMax = 1f - i * slotH;
-            float yMin = yMax - slotH + 0.03f;
-
-            var btnObj = new GameObject("Pilihan_" + i);
-            btnObj.transform.SetParent(_pilihanPanel.transform, false);
-            var img = btnObj.AddComponent<Image>();
-            img.color = p.warna;
-            img.sprite = SolidSprite();
-            img.type = Image.Type.Sliced;
-            var bRt = btnObj.GetComponent<RectTransform>();
-            bRt.anchorMin = new Vector2(0f, yMin); bRt.anchorMax = new Vector2(1f, yMax);
-            bRt.offsetMin = new Vector2(0f, 4f); bRt.offsetMax = new Vector2(0f, -4f);
-
-            var btn = btnObj.AddComponent<Button>();
-            var captured = p;
-            btn.onClick.AddListener(() =>
-            {
-                AudioManager.Instance?.Click();
-                _pilihanPanel.SetActive(false);
-                onPilih?.Invoke(captured);
-            });
-
-            var label = BuatTeks(btnObj.transform, "Label", p.label, 24, Color.white, FontStyles.Bold);
-            label.alignment = TextAlignmentOptions.Center;
-            Stretch(label.rectTransform, 24f, 6f);
-        }
+        IsiPanelPilihan(pilihan.Length, i => pilihan[i].label, i => pilihan[i].warna,
+            idx => onPilih?.Invoke(pilihan[idx]));
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -1218,8 +1483,12 @@ public class Day3Controller : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
     IEnumerator PromptTeriak(Action<bool> onResult)
     {
-        // Overlay instruksi + meter. Terisi saat teriak ke mic (VoiceMeter Loud)
-        // ATAU tahan SPASI / klik (fallback tanpa mikrofon).
+        // ── B3 (GDD Boss Fight): Pemain wajib MEMPERTAHANKAN suara KERAS (Zona Merah)
+        //    secara KONSISTEN selama ~voiceTimeoutDetik (5 dtk) untuk MENGURAS
+        //    "Mental Si Bully", SEMBARI menekan PANIC BUTTON memanggil bantuan.
+        //    Tanpa mic: fallback TAHAN SPASI / KLIK. Bar regenerasi kalau berhenti
+        //    bersuara, jadi pemain harus konsisten. Tidak ada timeout gagal (selalu
+        //    bisa diselesaikan) supaya alur tidak macet.
         var go = new GameObject("Day3_PromptTeriak");
         var canvas = go.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
@@ -1227,57 +1496,127 @@ public class Day3Controller : MonoBehaviour
         AddScaler(go);
         go.AddComponent<GraphicRaycaster>();
 
-        var dim = BuatImage(go.transform, "Dim", new Color(0f, 0f, 0f, 0.55f));
+        // Latar belakang penuh layar (gaya box dialog Day 2) — pakai sprite arena bila
+        // diisi, kalau tidak pakai warna gelap suram (hujan). Menutupi arena di belakang.
+        var bg = BuatImage(go.transform, "BG", arenaLatarSprite != null ? Color.white : new Color(0.06f, 0.05f, 0.10f, 1f));
+        if (arenaLatarSprite != null) bg.sprite = arenaLatarSprite;
+        bg.raycastTarget = true;
+        Stretch(bg.rectTransform);
+        // Lapisan gelap tipis supaya teks kontras & fokus ke tengah.
+        var dim = BuatImage(go.transform, "Dim", new Color(0f, 0f, 0f, 0.45f));
         Stretch(dim.rectTransform);
 
+        // Kartu keputusan membulat (mengelompokkan instruksi + label + Mental Bar)
+        // supaya rapi dan tidak menumpuk samar dengan latar/boss.
+        var kartu = BuatImage(go.transform, "KartuTeriak", new Color(0.10f, 0.07f, 0.05f, 0.92f));
+        kartu.sprite = GetRoundedSpritePlat();
+        kartu.type   = Image.Type.Sliced;
+        kartu.raycastTarget = true;
+        var kRt = kartu.rectTransform;
+        kRt.anchorMin = new Vector2(0.13f, 0.40f); kRt.anchorMax = new Vector2(0.87f, 0.88f);
+        kRt.offsetMin = Vector2.zero; kRt.offsetMax = Vector2.zero;
+        var kartuOutline = kartu.gameObject.AddComponent<Outline>();
+        kartuOutline.effectColor    = new Color(0.95f, 0.72f, 0.18f, 0.85f);
+        kartuOutline.effectDistance = new Vector2(2.5f, -2.5f);
+
         var instruksi = BuatTeks(go.transform, "Instruksi",
-            "\uD83D\uDDE3 TERIAK SEKUAT TENAGA:\n\"JANGAN DEKAT!\"\n<size=70%>(teriak ke mic, atau TAHAN SPASI / KLIK)</size>",
-            40, Color.white, FontStyles.Bold);
+            "\uD83D\uDDE3 TERIAK TERUS \u2014 JANGAN BERHENTI!\n\"JANGAN DEKAT-DEKAT!!\"\n" +
+            "<size=65%>(teriak ke mic, atau TAHAN SPASI / KLIK) sambil tekan tombol DARURAT</size>",
+            38, Color.white, FontStyles.Bold);
         instruksi.alignment = TextAlignmentOptions.Center;
         var iRt = instruksi.rectTransform;
-        iRt.anchorMin = new Vector2(0.1f, 0.55f); iRt.anchorMax = new Vector2(0.9f, 0.78f);
+        iRt.anchorMin = new Vector2(0.16f, 0.64f); iRt.anchorMax = new Vector2(0.84f, 0.85f);
         iRt.offsetMin = Vector2.zero; iRt.offsetMax = Vector2.zero;
 
-        // Meter bar
-        var barBg = BuatImage(go.transform, "MeterBg", new Color(0.15f, 0.15f, 0.18f, 1f));
-        barBg.sprite = SolidSprite(); barBg.type = Image.Type.Sliced;
+        // Label "Mental Si Bully" di atas bar.
+        var barLabel = BuatTeks(go.transform, "MentalLabel", bossBarLabel, 26, new Color(1f, 0.85f, 0.40f, 1f), FontStyles.Bold);
+        barLabel.alignment = TextAlignmentOptions.Center;
+        var blRt = barLabel.rectTransform;
+        blRt.anchorMin = new Vector2(0.2f, 0.555f); blRt.anchorMax = new Vector2(0.8f, 0.61f);
+        blRt.offsetMin = Vector2.zero; blRt.offsetMax = Vector2.zero;
+
+        // Mental Bar — mulai PENUH lalu TERKURAS saat suara konsisten keras.
+        var barBg = BuatImage(go.transform, "MentalBg", bossBarWarnaKosong);
+        barBg.sprite = GetRoundedSpritePlat(); barBg.type = Image.Type.Sliced;
         var bgRt = barBg.rectTransform;
-        bgRt.anchorMin = new Vector2(0.2f, 0.42f); bgRt.anchorMax = new Vector2(0.8f, 0.50f);
+        bgRt.anchorMin = new Vector2(0.2f, 0.48f); bgRt.anchorMax = new Vector2(0.8f, 0.545f);
         bgRt.offsetMin = Vector2.zero; bgRt.offsetMax = Vector2.zero;
+        var barOutline = barBg.gameObject.AddComponent<Outline>();
+        barOutline.effectColor    = new Color(0f, 0f, 0f, 0.35f);
+        barOutline.effectDistance = new Vector2(2f, -2f);
 
         var fillGO = new GameObject("Fill");
         fillGO.transform.SetParent(barBg.transform, false);
         var fill = fillGO.AddComponent<Image>();
-        fill.color = new Color(0.91f, 0.25f, 0.20f, 1f);
-        fill.sprite = SolidSprite();
+        fill.color = bossBarWarnaIsi;
+        fill.sprite = GetRoundedSpritePlat();
         fill.type = Image.Type.Filled;
         fill.fillMethod = Image.FillMethod.Horizontal;
         fill.fillOrigin = (int)Image.OriginHorizontal.Left;
-        fill.fillAmount = 0f;
-        Stretch(fill.rectTransform, 3f, 3f);
+        fill.fillAmount = 1f;                 // mental PENUH di awal
+        Stretch(fill.rectTransform, 4f, 4f);
 
-        float progress = 0f;
-        float waktu = 0f;
+        // Panic Button — harus ditekan untuk memanggil bantuan (paralel dgn teriak).
+        bool panicDitekan = false;
+        var panicGO = new GameObject("PanicButton");
+        panicGO.transform.SetParent(go.transform, false);
+        var panicImg = panicGO.AddComponent<Image>();
+        panicImg.color = new Color(0.85f, 0.16f, 0.16f, 1f);
+        panicImg.sprite = GetRoundedSpritePlat(); panicImg.type = Image.Type.Sliced;
+        var pRt = panicGO.GetComponent<RectTransform>();
+        pRt.anchorMin = new Vector2(0.32f, 0.24f); pRt.anchorMax = new Vector2(0.68f, 0.345f);
+        pRt.offsetMin = Vector2.zero; pRt.offsetMax = Vector2.zero;
+        var panicOutline = panicGO.AddComponent<Outline>();
+        panicOutline.effectColor    = new Color(0f, 0f, 0f, 0.35f);
+        panicOutline.effectDistance = new Vector2(2.5f, -2.5f);
+        var panicBtn = panicGO.AddComponent<Button>();
+        var panicTxt = BuatTeks(panicGO.transform, "Label", panicLabel, 28, Color.white, FontStyles.Bold);
+        panicTxt.alignment = TextAlignmentOptions.Center;
+        Stretch(panicTxt.rectTransform, 12f, 4f);
+        // Efek hover supaya tombol terasa interaktif.
+        var panicTrig = panicGO.AddComponent<EventTrigger>();
+        var panicEnter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+        panicEnter.callback.AddListener(_ => { if (!panicDitekan) panicGO.transform.localScale = Vector3.one * 1.04f; });
+        var panicExit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+        panicExit.callback.AddListener(_ => panicGO.transform.localScale = Vector3.one);
+        panicTrig.triggers.Add(panicEnter);
+        panicTrig.triggers.Add(panicExit);
+        panicBtn.onClick.AddListener(() =>
+        {
+            if (panicDitekan) return;
+            panicDitekan = true;
+            panicGO.transform.localScale = Vector3.one;
+            panicImg.color = new Color(0.18f, 0.62f, 0.30f, 1f);
+            panicTxt.text = "\u2713 Bantuan dipanggil!";
+            AudioManager.Instance?.Click();
+        });
+
+        float durasiKuras = Mathf.Max(1f, voiceTimeoutDetik);  // detik suara keras konsisten → mental 0
+        float mental = 1f;                                     // 1 = penuh, 0 = kalah
         bool sukses = false;
         var vm = VoiceMeter.Instance;
 
-        while (waktu < voiceTimeoutDetik)
+        while (true)
         {
-            waktu += Time.deltaTime;
-
             bool teriakMic    = vm != null && vm.IsLoud();
             bool fallbackHold = Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0)
                                 || (vm != null && vm.fallbackButtonHeld);
+            bool keras = teriakMic || fallbackHold;
 
-            if (teriakMic || fallbackHold)
-                progress += Time.deltaTime / 0.6f;   // ~0.6s tahan/teriak → penuh
+            if (keras)
+                mental -= Time.deltaTime / durasiKuras;             // kuras saat konsisten keras
             else
-                progress -= Time.deltaTime / 1.2f;    // turun perlahan kalau berhenti
+                mental += Time.deltaTime / (durasiKuras * 1.4f);    // regen kalau berhenti
 
-            progress = Mathf.Clamp01(progress);
-            fill.fillAmount = progress;
+            mental = Mathf.Clamp01(mental);
+            fill.fillAmount = mental;
 
-            if (progress >= 1f) { sukses = true; break; }
+            // Saat mental habis → arahkan pemain menekan tombol darurat.
+            if (mental <= 0f && !panicDitekan)
+                instruksi.text = "\uD83D\uDEA8 Dia mulai mundur! Sekarang TEKAN TOMBOL DARURAT!";
+
+            // Sukses HANYA jika Mental Si Bully terkuras DAN bantuan sudah dipanggil.
+            if (mental <= 0f && panicDitekan) { sukses = true; break; }
             yield return null;
         }
 
@@ -1468,6 +1807,16 @@ public class Day3Controller : MonoBehaviour
         AddScaler(_canvasGO);
         _canvasGO.AddComponent<GraphicRaycaster>();
 
+        // Latar belakang fullscreen (gaya box dialog Day 2) — anak pertama supaya
+        // berada di belakang boss & box, dan menutupi scene di belakang arena.
+        var arenaBg = BuatImage(_canvasGO.transform, "ArenaBG",
+            arenaLatarSprite != null ? Color.white : arenaLatarWarna);
+        if (arenaLatarSprite != null) arenaBg.sprite = arenaLatarSprite;
+        arenaBg.raycastTarget = true;   // blok klik tembus ke scene di belakang
+        var abgRt = arenaBg.rectTransform;
+        abgRt.anchorMin = Vector2.zero; abgRt.anchorMax = Vector2.one;
+        abgRt.offsetMin = Vector2.zero; abgRt.offsetMax = Vector2.zero;
+
         // Boss portrait (tengah atas)
         var bossGO = new GameObject("Boss");
         bossGO.transform.SetParent(_canvasGO.transform, false);
@@ -1482,13 +1831,9 @@ public class Day3Controller : MonoBehaviour
         brt.sizeDelta = new Vector2(360f, 420f);
         brt.anchoredPosition = new Vector2(0f, 150f);
 
-        // Nama boss
-        _bossNamaText = BuatTeks(_canvasGO.transform, "BossNama", bossNama, 30, warnaBahaya, FontStyles.Bold);
-        _bossNamaText.alignment = TextAlignmentOptions.Center;
-        var nrt = _bossNamaText.rectTransform;
-        nrt.anchorMin = new Vector2(0.5f, 1f); nrt.anchorMax = new Vector2(0.5f, 1f);
-        nrt.pivot = new Vector2(0.5f, 1f); nrt.sizeDelta = new Vector2(700f, 50f);
-        nrt.anchoredPosition = new Vector2(0f, -24f);
+        // Nama boss (kotak merah "Si Bully") DIHAPUS dari tampilan — diganti sprite
+        // gambar fullscreen sebagai latar belakang. _bossNamaText sengaja dibiarkan null;
+        // semua pemakaiannya sudah null-guard sehingga aman.
 
         // Boss HP Bar (hanya pada mode boss fight; Visual Novel tanpa bar mental)
         if (!modeVisualNovel) BuildBossBar();
@@ -1595,14 +1940,24 @@ public class Day3Controller : MonoBehaviour
         rrt.pivot = new Vector2(0.5f, 0f); rrt.sizeDelta = new Vector2(1500f, 70f);
         rrt.anchoredPosition = new Vector2(0f, 200f);
 
-        // Panel pilihan — di ATAS panel dialog (gaya Halte: tombol muncul di atas box)
+        // Panel pilihan — kartu keputusan di ATAS panel dialog (gaya Halte).
+        // Diberi latar membulat gelap + bingkai emas supaya tombol terkelompok
+        // rapi sebagai satu "kartu" dan tidak menumpuk samar dengan boss/latar.
         _pilihanPanel = new GameObject("PilihanPanel");
         _pilihanPanel.transform.SetParent(_canvasGO.transform, false);
         var prt = _pilihanPanel.AddComponent<RectTransform>();
         prt.anchorMin = new Vector2(0.5f, panelTopFrac); prt.anchorMax = new Vector2(0.5f, panelTopFrac);
         prt.pivot = new Vector2(0.5f, 0f);
-        prt.sizeDelta = new Vector2(1500f, 280f);
-        prt.anchoredPosition = new Vector2(0f, 16f);
+        prt.sizeDelta = new Vector2(1120f, 300f);
+        prt.anchoredPosition = new Vector2(0f, 20f);
+        var pilihanBg = _pilihanPanel.AddComponent<Image>();
+        pilihanBg.sprite = GetRoundedSpritePlat();
+        pilihanBg.type   = Image.Type.Sliced;
+        pilihanBg.color  = new Color(0.08f, 0.06f, 0.04f, 0.88f);
+        pilihanBg.raycastTarget = true; // halangi klik tembus ke kotak dialog di belakang
+        var pilihanOutline = _pilihanPanel.AddComponent<Outline>();
+        pilihanOutline.effectColor    = new Color(0.95f, 0.72f, 0.18f, 0.85f);
+        pilihanOutline.effectDistance = new Vector2(2.5f, -2.5f);
         _pilihanPanel.SetActive(false);
 
         UpdateBossBar();
@@ -1736,43 +2091,9 @@ public class Day3Controller : MonoBehaviour
 
     void TampilkanPilihan(PilihanRonde[] pilihan, Action<PilihanRonde> onPilih)
     {
-        if (_pilihanPanel == null) return;
-        _pilihanPanel.SetActive(true);
-
-        foreach (Transform child in _pilihanPanel.transform) Destroy(child.gameObject);
-
         if (pilihan == null || pilihan.Length == 0) return;
-
-        float slotH = 1f / pilihan.Length;
-        for (int i = 0; i < pilihan.Length; i++)
-        {
-            var p = pilihan[i];
-            float yMax = 1f - i * slotH;
-            float yMin = yMax - slotH + 0.03f;
-
-            var btnObj = new GameObject("Pilihan_" + i);
-            btnObj.transform.SetParent(_pilihanPanel.transform, false);
-            var img = btnObj.AddComponent<Image>();
-            img.color = WarnaKategori(p.kategori);
-            img.sprite = SolidSprite();
-            img.type = Image.Type.Sliced;
-            var bRt = btnObj.GetComponent<RectTransform>();
-            bRt.anchorMin = new Vector2(0f, yMin); bRt.anchorMax = new Vector2(1f, yMax);
-            bRt.offsetMin = new Vector2(0f, 4f); bRt.offsetMax = new Vector2(0f, -4f);
-
-            var btn = btnObj.AddComponent<Button>();
-            var captured = p;
-            btn.onClick.AddListener(() =>
-            {
-                AudioManager.Instance?.Click();
-                _pilihanPanel.SetActive(false);
-                onPilih?.Invoke(captured);
-            });
-
-            var label = BuatTeks(btnObj.transform, "Label", p.label, 24, Color.white, FontStyles.Bold);
-            label.alignment = TextAlignmentOptions.Center;
-            Stretch(label.rectTransform, 24f, 6f);
-        }
+        IsiPanelPilihan(pilihan.Length, i => pilihan[i].label, i => WarnaKategori(pilihan[i].kategori),
+            idx => onPilih?.Invoke(pilihan[idx]));
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -1789,15 +2110,20 @@ public class Day3Controller : MonoBehaviour
         AddScaler(go);
         go.AddComponent<GraphicRaycaster>();
 
-        var overlay = BuatImage(go.transform, "Overlay", new Color(0f, 0f, 0f, 0.82f));
+        var overlay = BuatImage(go.transform, "Overlay", eduLatarSprite != null ? Color.white : eduLatarWarna);
+        if (eduLatarSprite != null) { overlay.sprite = eduLatarSprite; overlay.type = Image.Type.Sliced; }
+        overlay.raycastTarget = true;
         Stretch(overlay.rectTransform);
 
         var panel = BuatImage(go.transform, "Panel", new Color(0.05f, 0.10f, 0.08f, 0.98f));
-        panel.sprite = SolidSprite(); panel.type = Image.Type.Sliced;
+        panel.sprite = GetRoundedSpritePlat(); panel.type = Image.Type.Sliced;
         var pRt = panel.rectTransform;
         pRt.anchorMin = new Vector2(0.5f, 0.5f); pRt.anchorMax = new Vector2(0.5f, 0.5f);
         pRt.pivot = new Vector2(0.5f, 0.5f);
         pRt.sizeDelta = new Vector2(1200f, 760f);
+        var panelOutline = panel.gameObject.AddComponent<Outline>();
+        panelOutline.effectColor    = new Color(0.95f, 0.72f, 0.18f, 0.90f);
+        panelOutline.effectDistance = new Vector2(3f, -3f);
 
         var judul = BuatTeks(panel.transform, "Judul", eduJudul, 34, eduWarnaJudul, FontStyles.Bold);
         judul.alignment = TextAlignmentOptions.Center;
@@ -1840,71 +2166,158 @@ public class Day3Controller : MonoBehaviour
         var go = new GameObject("Day3_Hasil");
         var canvas = go.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = sortingOrder + 80;
+        // Layar hasil harus menutupi SEMUA elemen lain (HUD, kotak dialog VN,
+        // voice meter) supaya tidak ada yang bocor di belakang.
+        canvas.sortingOrder = 32000;
         AddScaler(go);
         go.AddComponent<GraphicRaycaster>();
 
-        var bg = BuatImage(go.transform, "BG", new Color(0.04f, 0.06f, 0.12f, 0.98f));
+        var bg = BuatImage(go.transform, "BG", hasilLatarSprite != null ? Color.white : new Color(0.04f, 0.06f, 0.12f, 1f));
+        if (hasilLatarSprite != null) { bg.sprite = hasilLatarSprite; bg.type = Image.Type.Sliced; }
         Stretch(bg.rectTransform);
 
         bool trauma = _hasilDay3 == HasilDay3.Trauma;
+        bool laporSukses = _hasilDay3 == HasilDay3.LaporSukses;
 
-        // Judul
-        var judul = BuatTeks(go.transform, "Judul", trauma ? endingTraumaJudul : hasilJudul,
-            48, trauma ? warnaBahaya : warnaTeksJudul, FontStyles.Bold);
+        // ── Kartu utama (rounded + bingkai emas) menampung seluruh konten. ──
+        var card = BuatImage(go.transform, "KartuHasil", new Color(0.10f, 0.08f, 0.06f, 0.97f));
+        card.sprite = GetRoundedSpritePlat();
+        card.type   = Image.Type.Sliced;
+        card.raycastTarget = false;
+        var cardRt = card.rectTransform;
+        cardRt.anchorMin = new Vector2(0.16f, 0.085f);
+        cardRt.anchorMax = new Vector2(0.84f, 0.965f);
+        cardRt.offsetMin = Vector2.zero; cardRt.offsetMax = Vector2.zero;
+        var cardOutline = card.gameObject.AddComponent<Outline>();
+        cardOutline.effectColor    = new Color(0.95f, 0.72f, 0.18f, 0.95f);
+        cardOutline.effectDistance = new Vector2(3f, -3f);
+        var cardT = card.transform;
+
+        // Judul — ending terbaik (LAPOR SUKSES) punya gelar khusus.
+        string judulTeks = trauma ? endingTraumaJudul
+                         : laporSukses ? "\uD83C\uDFC6  ENDING TERBAIK \u2014 PELAPOR HEBAT!"
+                         : hasilJudul;
+        var judul = BuatTeks(cardT, "Judul", judulTeks,
+            46, trauma ? warnaBahaya : warnaTeksJudul, FontStyles.Bold);
         judul.alignment = TextAlignmentOptions.Center;
+        judul.enableAutoSizing = true; judul.fontSizeMin = 30; judul.fontSizeMax = 48;
+        judul.textWrappingMode = TextWrappingModes.NoWrap;
         var jRt = judul.rectTransform;
-        jRt.anchorMin = new Vector2(0.1f, 0.80f); jRt.anchorMax = new Vector2(0.9f, 0.92f);
+        jRt.anchorMin = new Vector2(0.04f, 0.90f); jRt.anchorMax = new Vector2(0.96f, 0.985f);
         jRt.offsetMin = Vector2.zero; jRt.offsetMax = Vector2.zero;
 
         int skor = gs != null ? gs.score : 0;
         string grade = gs != null ? gs.Grade() : "";
 
-        var skorText = BuatTeks(go.transform, "Skor",
-            "Total Skor: <b>" + skor + "</b>\n" + grade,
-            34, Color.white, FontStyles.Normal);
-        skorText.alignment = TextAlignmentOptions.Center;
-        var sRt = skorText.rectTransform;
-        sRt.anchorMin = new Vector2(0.1f, 0.62f); sRt.anchorMax = new Vector2(0.9f, 0.80f);
-        sRt.offsetMin = Vector2.zero; sRt.offsetMax = Vector2.zero;
+        // Pil skor menonjol di bawah judul.
+        var skorPil = BuatImage(cardT, "SkorPil", new Color(0.16f, 0.12f, 0.06f, 0.95f));
+        skorPil.sprite = GetRoundedSpritePlat();
+        skorPil.type   = Image.Type.Sliced;
+        skorPil.raycastTarget = false;
+        var spRt = skorPil.rectTransform;
+        spRt.anchorMin = new Vector2(0.22f, 0.795f); spRt.anchorMax = new Vector2(0.78f, 0.89f);
+        spRt.offsetMin = Vector2.zero; spRt.offsetMax = Vector2.zero;
+        var spOutline = skorPil.gameObject.AddComponent<Outline>();
+        spOutline.effectColor    = new Color(0.95f, 0.72f, 0.18f, 0.6f);
+        spOutline.effectDistance = new Vector2(2f, -2f);
 
-        // Ringkasan pilihan
-        var ringkasanText = BuatTeks(go.transform, "Ringkasan", RingkasPilihan(gs),
-            22, new Color(1f, 1f, 0.9f, 1f), FontStyles.Normal);
-        ringkasanText.alignment = TextAlignmentOptions.Top;
-        var rRt = ringkasanText.rectTransform;
-        rRt.anchorMin = new Vector2(0.15f, 0.30f); rRt.anchorMax = new Vector2(0.85f, 0.62f);
-        rRt.offsetMin = Vector2.zero; rRt.offsetMax = Vector2.zero;
+        var skorText = BuatTeks(skorPil.transform, "Skor",
+            "TOTAL SKOR: <b>" + skor + "</b>   \u2022   <color=#FFD24A>" + grade + "</color>",
+            30, Color.white, FontStyles.Normal);
+        skorText.alignment = TextAlignmentOptions.Center;
+        skorText.enableAutoSizing = true; skorText.fontSizeMin = 16; skorText.fontSizeMax = 30;
+        skorText.textWrappingMode = TextWrappingModes.NoWrap;
+        Stretch(skorText.rectTransform, 16f, 4f);
+
+        // Ringkasan dibagi menjadi 3 SEKSI berpanel terpisah agar rapih dan
+        // mudah dibedakan: (1) Keputusan, (2) Bukti, (3) 3 Kata Sakti.
+        int jBukti = gs != null ? gs.JumlahBukti : 0;
+        BuatSeksiHasil(cardT, "SeksiKeputusan", "RINGKASAN KEPUTUSAN",
+            TeksKeputusan(gs), warnaTeksJudul, 0.560f, 0.780f);
+        BuatSeksiHasil(cardT, "SeksiBukti", "BUKTI TERKUMPUL (" + jBukti + "/4)",
+            TeksBukti(gs), new Color(0.55f, 0.85f, 1f, 1f), 0.405f, 0.545f);
+        BuatSeksiHasil(cardT, "SeksiKataSakti", "3 KATA SAKTI",
+            TeksKataSakti(gs), new Color(0.95f, 0.72f, 0.18f, 1f), 0.300f, 0.390f);
 
         // Pesan penutup
         string pesan = trauma ? endingTraumaNarasi
+                     : laporSukses ? "Kamu kumpulkan SEMUA bukti dan BERANI melapor. Inilah pahlawan sejati yang menjaga diri sendiri!"
                      : skor >= ambangLuarBiasa ? pesanLuarBiasa
                      : skor >= ambangBagus     ? pesanBagus
                      : pesanKurang;
-        var pesanText = BuatTeks(go.transform, "Pesan", pesan, 26, trauma ? warnaBahaya : warnaTeksJudul, FontStyles.Italic);
+        var pesanText = BuatTeks(cardT, "Pesan", pesan, 24, trauma ? warnaBahaya : warnaTeksJudul, FontStyles.Italic);
         pesanText.alignment = TextAlignmentOptions.Center;
+        pesanText.textWrappingMode = TextWrappingModes.Normal;
         var pRt = pesanText.rectTransform;
-        pRt.anchorMin = new Vector2(0.1f, 0.20f); pRt.anchorMax = new Vector2(0.9f, 0.30f);
+        pRt.anchorMin = new Vector2(0.06f, 0.225f); pRt.anchorMax = new Vector2(0.94f, 0.295f);
         pRt.offsetMin = Vector2.zero; pRt.offsetMax = Vector2.zero;
 
-        // Tombol Main Lagi
-        var btnMain = BuatTombol(go.transform, "\uD83D\uDD04  MAIN LAGI", warnaAman, MainLagi);
-        var bmRt = (RectTransform)btnMain.transform;
-        bmRt.anchorMin = new Vector2(0.5f, 0f); bmRt.anchorMax = new Vector2(0.5f, 0f);
-        bmRt.pivot = new Vector2(1f, 0f); bmRt.sizeDelta = new Vector2(320f, 72f);
-        bmRt.anchoredPosition = new Vector2(-20f, 80f);
+        // Footer nomor darurat — pengingat edukasi yang selalu tampil.
+        var footer = BuatTeks(cardT, "Darurat",
+            "\u260E Simpan nomor ini: <b>Polisi 110</b>  |  <b>Hotline Anak 129</b>  |  <b>KPAI 021-31901556</b>",
+            18, new Color(0.85f, 0.92f, 1f, 0.9f), FontStyles.Normal);
+        footer.alignment = TextAlignmentOptions.Center;
+        footer.textWrappingMode = TextWrappingModes.Normal;
+        var fRt = footer.rectTransform;
+        fRt.anchorMin = new Vector2(0.06f, 0.155f); fRt.anchorMax = new Vector2(0.94f, 0.21f);
+        fRt.offsetMin = Vector2.zero; fRt.offsetMax = Vector2.zero;
 
-        // Tombol Keluar
-        var btnKeluar = BuatTombol(go.transform, "\u274C  KELUAR", warnaNetral, Keluar);
+        // Tombol Main Lagi (rounded + hover) di dalam kartu.
+        var btnMain = BuatTombol(cardT, "\uD83D\uDD04  MAIN LAGI", warnaAman, MainLagi);
+        HiasTombolHasil(btnMain);
+        var bmRt = (RectTransform)btnMain.transform;
+        bmRt.anchorMin = new Vector2(0.5f, 0.035f); bmRt.anchorMax = new Vector2(0.5f, 0.035f);
+        bmRt.pivot = new Vector2(1f, 0f); bmRt.sizeDelta = new Vector2(300f, 70f);
+        bmRt.anchoredPosition = new Vector2(-16f, 0f);
+
+        // Tombol Keluar (rounded + hover) di dalam kartu.
+        var btnKeluar = BuatTombol(cardT, "\u274C  KELUAR", warnaNetral, Keluar);
+        HiasTombolHasil(btnKeluar);
         var bkRt = (RectTransform)btnKeluar.transform;
-        bkRt.anchorMin = new Vector2(0.5f, 0f); bkRt.anchorMax = new Vector2(0.5f, 0f);
-        bkRt.pivot = new Vector2(0f, 0f); bkRt.sizeDelta = new Vector2(320f, 72f);
-        bkRt.anchoredPosition = new Vector2(20f, 80f);
+        bkRt.anchorMin = new Vector2(0.5f, 0.035f); bkRt.anchorMax = new Vector2(0.5f, 0.035f);
+        bkRt.pivot = new Vector2(0f, 0f); bkRt.sizeDelta = new Vector2(300f, 70f);
+        bkRt.anchoredPosition = new Vector2(16f, 0f);
 
         _fase = Phase.Complete;
     }
 
-    string RingkasPilihan(GameState gs)
+    // ── Bangun satu SEKSI hasil: panel rounded + header + isi, agar tiap
+    //    kelompok informasi terlihat jelas terpisah (tidak menyatu). ──
+    void BuatSeksiHasil(Transform parent, string nama, string header, string isi,
+                        Color warnaHeader, float yMin, float yMax)
+    {
+        var panel = BuatImage(parent, nama, new Color(0.16f, 0.12f, 0.06f, 0.5f));
+        panel.sprite = GetRoundedSpritePlat();
+        panel.type   = Image.Type.Sliced;
+        panel.raycastTarget = false;
+        var pRt = panel.rectTransform;
+        pRt.anchorMin = new Vector2(0.06f, yMin); pRt.anchorMax = new Vector2(0.94f, yMax);
+        pRt.offsetMin = Vector2.zero; pRt.offsetMax = Vector2.zero;
+        var outline = panel.gameObject.AddComponent<Outline>();
+        outline.effectColor    = new Color(0.95f, 0.72f, 0.18f, 0.35f);
+        outline.effectDistance = new Vector2(2f, -2f);
+
+        // Header seksi — pita atas.
+        var hd = BuatTeks(panel.transform, "Header", header, 20, warnaHeader, FontStyles.Bold);
+        hd.alignment = TextAlignmentOptions.Center;
+        hd.enableAutoSizing = true; hd.fontSizeMin = 14; hd.fontSizeMax = 22;
+        hd.textWrappingMode = TextWrappingModes.NoWrap;
+        var hRt = hd.rectTransform;
+        hRt.anchorMin = new Vector2(0.02f, 0.62f); hRt.anchorMax = new Vector2(0.98f, 0.99f);
+        hRt.offsetMin = Vector2.zero; hRt.offsetMax = Vector2.zero;
+
+        // Isi seksi.
+        var body = BuatTeks(panel.transform, "Isi", isi, 19, new Color(1f, 1f, 0.92f, 1f), FontStyles.Normal);
+        body.alignment = TextAlignmentOptions.Center;
+        body.enableAutoSizing = true; body.fontSizeMin = 13; body.fontSizeMax = 20;
+        body.textWrappingMode = TextWrappingModes.Normal;
+        var bRt = body.rectTransform;
+        bRt.anchorMin = new Vector2(0.03f, 0.03f); bRt.anchorMax = new Vector2(0.97f, 0.60f);
+        bRt.offsetMin = Vector2.zero; bRt.offsetMax = Vector2.zero;
+    }
+
+    // Isi seksi "RINGKASAN KEPUTUSAN": jumlah AMAN/RAGU/BAHAYA + daftar red flag.
+    string TeksKeputusan(GameState gs)
     {
         if (gs == null || gs.choices == null || gs.choices.Count == 0)
             return "Belum ada pilihan tercatat.";
@@ -1922,21 +2335,47 @@ public class Day3Controller : MonoBehaviour
         }
 
         var sb = new System.Text.StringBuilder();
-        sb.AppendLine("Ringkasan Keputusan:");
-        sb.AppendLine("<color=#26AD61>AMAN: " + aman + "</color>   " +
-                      "<color=#F29D12>RAGU: " + ragu + "</color>   " +
+        sb.AppendLine("<color=#26AD61>AMAN: " + aman + "</color>    " +
+                      "<color=#F29D12>RAGU: " + ragu + "</color>    " +
                       "<color=#E84D3D>BAHAYA: " + bahaya + "</color>");
         if (redFlags.Count > 0)
         {
-            sb.AppendLine("\n<color=#E84D3D>Red Flag (perlu diperbaiki):</color>");
-            int n = Mathf.Min(redFlags.Count, 4);
-            for (int i = 0; i < n; i++) sb.AppendLine(redFlags[i]);
+            sb.Append("<color=#E84D3D>Red flag:</color> ");
+            int n = Mathf.Min(redFlags.Count, 3);
+            for (int i = 0; i < n; i++)
+            {
+                sb.Append(redFlags[i]);
+                if (i < n - 1) sb.Append("   ");
+            }
         }
         else
         {
-            sb.AppendLine("\n<color=#26AD61>Tidak ada keputusan berbahaya. Hebat!</color>");
+            sb.Append("<color=#26AD61>Tidak ada keputusan berbahaya. Hebat!</color>");
         }
         return sb.ToString();
+    }
+
+    // Isi seksi "BUKTI TERKUMPUL": checklist bukti Hari 2 & Hari 3.
+    string TeksBukti(GameState gs)
+    {
+        if (gs == null) return "-";
+        string Cek(bool ada) => ada ? "<color=#26AD61>\u2713</color>" : "<color=#E84D3D>\u2717</color>";
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine(Cek(gs.PunyaBukti(GameState.BUKTI_CHAT_DAY2)) + " Screenshot chat (Hari 2)    " +
+                      Cek(gs.PunyaBukti(GameState.BUKTI_PLAT_DAY2)) + " Cek plat angkot (Hari 2)");
+        sb.Append(Cek(gs.PunyaBukti(GameState.BUKTI_CHAT_DAY3)) + " Screenshot chat (Hari 3)    " +
+                  Cek(gs.PunyaBukti(GameState.BUKTI_PLAT_DAY3)) + " Cek plat ojol (Hari 3)");
+        return sb.ToString();
+    }
+
+    // Isi seksi "3 KATA SAKTI": checklist TIDAK -> PERGI -> CERITA.
+    string TeksKataSakti(GameState gs)
+    {
+        if (gs == null) return "-";
+        string Cek(bool ada) => ada ? "<color=#26AD61>\u2713</color>" : "<color=#E84D3D>\u2717</color>";
+        return Cek(gs.usedTidak) + " TIDAK      " +
+               Cek(gs.usedPergi) + " PERGI      " +
+               Cek(gs.usedCerita) + " CERITA";
     }
 
     void MainLagi()
@@ -2052,6 +2491,32 @@ public class Day3Controller : MonoBehaviour
         rt.offsetMax = new Vector2(-padH, -padV);
     }
 
+    /// <summary>Percantik tombol layar hasil: sudut membulat, bingkai emas, dan efek
+    /// hover (membesar saat kursor masuk) supaya terasa interaktif.</summary>
+    void HiasTombolHasil(GameObject tombol)
+    {
+        if (tombol == null) return;
+        var img = tombol.GetComponent<Image>();
+        if (img != null)
+        {
+            img.sprite = GetRoundedSpritePlat();
+            img.type   = Image.Type.Sliced;
+        }
+        var outline = tombol.GetComponent<Outline>();
+        if (outline == null) outline = tombol.AddComponent<Outline>();
+        outline.effectColor    = new Color(0.95f, 0.72f, 0.18f, 0.9f);
+        outline.effectDistance = new Vector2(2.5f, -2.5f);
+
+        var trig = tombol.GetComponent<EventTrigger>();
+        if (trig == null) trig = tombol.AddComponent<EventTrigger>();
+        var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+        enter.callback.AddListener(_ => tombol.transform.localScale = Vector3.one * 1.07f);
+        var exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+        exit.callback.AddListener(_ => tombol.transform.localScale = Vector3.one);
+        trig.triggers.Add(enter);
+        trig.triggers.Add(exit);
+    }
+
     // Sprite putih 1x1 (untuk Image type Sliced/Filled supaya bisa diwarnai).
     private static Sprite _solid;
     Sprite SolidSprite()
@@ -2060,6 +2525,29 @@ public class Day3Controller : MonoBehaviour
         var tex = Texture2D.whiteTexture;
         _solid = Sprite.Create(tex, new Rect(0, 0, tex.width, tex.height), new Vector2(0.5f, 0.5f));
         return _solid;
+    }
+
+    // Sprite kotak membulat (9-slice) untuk kartu/panel plat — selaras tema UI lain.
+    private static Sprite _roundedPlat;
+    Sprite GetRoundedSpritePlat()
+    {
+        if (_roundedPlat != null) return _roundedPlat;
+        int size = 64; int radius = 14;
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp; tex.filterMode = FilterMode.Bilinear;
+        Color32 w = new Color32(255, 255, 255, 255), c = new Color32(255, 255, 255, 0);
+        for (int y = 0; y < size; y++) for (int x = 0; x < size; x++)
+        {
+            bool inside = true;
+            if      (x < radius && y < radius)                 { int dx = radius - x, dy = radius - y; inside = dx * dx + dy * dy <= radius * radius; }
+            else if (x >= size - radius && y < radius)          { int dx = x - (size - 1 - radius), dy = radius - y; inside = dx * dx + dy * dy <= radius * radius; }
+            else if (x < radius && y >= size - radius)          { int dx = radius - x, dy = y - (size - 1 - radius); inside = dx * dx + dy * dy <= radius * radius; }
+            else if (x >= size - radius && y >= size - radius)  { int dx = x - (size - 1 - radius), dy = y - (size - 1 - radius); inside = dx * dx + dy * dy <= radius * radius; }
+            tex.SetPixel(x, y, inside ? (Color)w : (Color)c);
+        }
+        tex.Apply();
+        _roundedPlat = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(radius, radius, radius, radius));
+        return _roundedPlat;
     }
 
     void PastikanEventSystem()

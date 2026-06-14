@@ -143,6 +143,20 @@ public class Day2Controller : MonoBehaviour
     public Color warnaLabelFase = new Color(1f, 0.85f, 0.25f, 0.85f);
     public int   ukuranLabelFase = 22;
 
+    [Header("Transisi Fade Antar Fase")]
+    [Tooltip("Beri efek fade hitam halus saat berpindah fase Day 2.")]
+    public bool gunakanFadeTransisi = true;
+    [Tooltip("Durasi fade-in (gelap → terang) mengungkap fase baru, detik.")]
+    public float fadeDurasiMasuk = 0.32f;
+    [Tooltip("Warna layar transisi (default hitam).")]
+    public Color fadeWarna = new Color(0f, 0f, 0f, 1f);
+
+    [Header("Konsistensi Visual Antar Fase")]
+    [Tooltip("Pita gelap sinematik di atas & bawah layar (frame seragam tiap fase).")]
+    public bool tampilkanFrameSinematik = true;
+    [Tooltip("Bungkus label fase dengan pill (latar gelap + outline emas) agar seragam.")]
+    public bool labelFasePill = true;
+
     [Header("Alat Bantu Edukasi Day 2")]
     [Tooltip("Tampilkan Meteran Bahaya melayang yang naik/turun sesuai pilihan.")]
     public bool tampilkanMeteranBahaya = true;
@@ -264,6 +278,8 @@ public class Day2Controller : MonoBehaviour
     private Image      _floorImg;      // strip lantai gelap (bisa disembunyikan saat ada sprite)
     private TextMeshProUGUI _labelFase;
     private GameObject _introPanel;
+    private CanvasGroup _fadeGroup;     // overlay fade hitam antar fase
+    private GameObject  _fadeGO;
 
     /// <summary>
     /// Sembunyikan/munculkan backdrop procedural runtime.
@@ -387,6 +403,23 @@ public class Day2Controller : MonoBehaviour
         UpdateLabelFase(next);
         onPhaseChanged?.Invoke();
 
+        // Tombol "?" Glossary: sembunyikan di fase berlayar-penuh supaya tidak
+        // menumpuk/mengganggu elemen UI lain; tampilkan lagi di fase dialog biasa.
+        AturGlossaryUntukFase(next);
+
+        // Transisi fade: layar gelap sejenak lalu memudar mengungkap fase baru,
+        // supaya perpindahan antar halaman terasa halus (bukan potong mendadak).
+        if (gunakanFadeTransisi && next != Phase.Done)
+        {
+            EnsureFadeOverlay();
+            if (_fadeGroup != null)
+            {
+                _fadeGroup.alpha = 1f;
+                yield return null; // 1 frame: biar UI fase lama hilang & backdrop baru terpasang
+                yield return FadeOverlayKe(0f, fadeDurasiMasuk);
+            }
+        }
+
         Debug.Log($"[Day2Controller] \u2192 Fase: {next}");
 
         switch (next)
@@ -475,6 +508,27 @@ public class Day2Controller : MonoBehaviour
     {
         DangerGauge.Hide();
         KataSaktiGlossary.Hide();
+    }
+
+    // Fase berlayar-penuh (mini-game / kartu / chat) yang elemennya bisa
+    // tertumpuk tombol "?" Glossary di pojok kanan-atas. Saat masuk fase ini,
+    // tombol "?" disembunyikan; di fase lain ditampilkan lagi (jika diaktifkan).
+    void AturGlossaryUntukFase(Phase fase)
+    {
+        if (!tampilkanGlossaryKataSakti) return;
+
+        bool ganggu =
+            fase == Phase.Angkot  ||   // pemilihan kursi (UI penuh)
+            fase == Phase.Sentuh  ||
+            fase == Phase.Quiz    ||   // drag-drop zona tubuh
+            fase == Phase.ChatSim ||   // layar HP WhatsApp
+            fase == Phase.Lapor   ||   // tombol teriak + hasil
+            fase == Phase.EduCard ||
+            fase == Phase.Summary ||
+            fase == Phase.Done;
+
+        if (ganggu) KataSaktiGlossary.Hide();
+        else        KataSaktiGlossary.EnsureButton();
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -774,8 +828,41 @@ public class Day2Controller : MonoBehaviour
         frt.anchorMax = new Vector2(1f, 0.18f);
         frt.offsetMin = Vector2.zero; frt.offsetMax = Vector2.zero;
 
+        // Frame sinematik (#6): pita gelap atas & bawah agar SEMUA fase punya
+        // bingkai visual seragam (konsistensi antar halaman).
+        if (tampilkanFrameSinematik)
+        {
+            BuatPitaSinematik("PitaAtas",  new Vector2(0f, 0.93f), new Vector2(1f, 1f),    true);
+            BuatPitaSinematik("PitaBawah", new Vector2(0f, 0f),    new Vector2(1f, 0.06f), false);
+        }
+
         // Terapkan kondisi awal sesuai fase pertama (Intro)
         ApplyBackdropSprite(Phase.Intro, instan: true);
+    }
+
+    // Pita gelap sinematik (gradient sederhana via 2 layer) di tepi atas/bawah.
+    void BuatPitaSinematik(string nama, Vector2 anchorMin, Vector2 anchorMax, bool atas)
+    {
+        var go = new GameObject(nama);
+        go.transform.SetParent(_backdropGO.transform, false);
+        var img = go.AddComponent<Image>();
+        img.color = new Color(0f, 0f, 0f, 0.55f);
+        img.raycastTarget = false;
+        var rt = go.GetComponent<RectTransform>();
+        rt.anchorMin = anchorMin; rt.anchorMax = anchorMax;
+        rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
+
+        // Garis aksen emas tipis di sisi dalam pita (sentuhan tema kayu/sunset).
+        var line = new GameObject("Aksen");
+        line.transform.SetParent(go.transform, false);
+        var lImg = line.AddComponent<Image>();
+        lImg.color = new Color(0.95f, 0.72f, 0.18f, 0.35f);
+        lImg.raycastTarget = false;
+        var lrt = line.GetComponent<RectTransform>();
+        if (atas) { lrt.anchorMin = new Vector2(0f, 0f); lrt.anchorMax = new Vector2(1f, 0f); lrt.pivot = new Vector2(0.5f, 1f); }
+        else      { lrt.anchorMin = new Vector2(0f, 1f); lrt.anchorMax = new Vector2(1f, 1f); lrt.pivot = new Vector2(0.5f, 0f); }
+        lrt.sizeDelta = new Vector2(0f, 2.5f);
+        lrt.anchoredPosition = Vector2.zero;
     }
 
     // Pilih sprite latar untuk fase tertentu (null kalau fase tidak punya sprite).
@@ -863,6 +950,31 @@ public class Day2Controller : MonoBehaviour
         rt.sizeDelta = new Vector2(520f, 40f);
         rt.anchoredPosition = new Vector2(30f, -25f);
         _labelFase = tmp;
+
+        // Pill di belakang label (#6): latar gelap + outline emas agar chip lokasi
+        // tampil seragam di tiap fase. Diselipkan sebagai sibling di belakang teks.
+        if (labelFasePill)
+        {
+            var pill = new GameObject("LabelPill");
+            pill.transform.SetParent(canvasGO.transform, false);
+            pill.transform.SetSiblingIndex(labelGO.transform.GetSiblingIndex()); // di belakang teks
+            var pImg = pill.AddComponent<Image>();
+            pImg.color = new Color(0.10f, 0.07f, 0.04f, 0.82f);
+            pImg.raycastTarget = false;
+            var pol = pill.AddComponent<Outline>();
+            pol.effectColor    = new Color(0.95f, 0.72f, 0.18f, 0.75f);
+            pol.effectDistance = new Vector2(2f, -2f);
+            var prt = pill.GetComponent<RectTransform>();
+            prt.anchorMin = new Vector2(0f, 1f);
+            prt.anchorMax = new Vector2(0f, 1f);
+            prt.pivot     = new Vector2(0f, 1f);
+            prt.sizeDelta = new Vector2(420f, 44f);
+            prt.anchoredPosition = new Vector2(22f, -23f);
+
+            // Beri padding teks di dalam pill.
+            tmp.alignment = TextAlignmentOptions.MidlineLeft;
+            rt.anchoredPosition = new Vector2(40f, -24f);
+        }
     }
 
     void UpdateBackdrop(Phase p)
@@ -898,6 +1010,49 @@ public class Day2Controller : MonoBehaviour
             yield return null;
         }
         _backdropImg.color = target;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // FADE TRANSISI ANTAR FASE (#5) — overlay hitam fullscreen di atas semua UI
+    // ══════════════════════════════════════════════════════════════════════
+    void EnsureFadeOverlay()
+    {
+        if (_fadeGO != null) return;
+
+        _fadeGO = new GameObject("Day2_FadeOverlay");
+        _fadeGO.transform.SetParent(transform, false);
+        var canvas = _fadeGO.AddComponent<Canvas>();
+        canvas.renderMode  = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 5000; // di atas semua UI fase Day 2
+        var scaler = _fadeGO.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+
+        var img = _fadeGO.AddComponent<Image>();
+        img.color = fadeWarna;
+        img.raycastTarget = false; // jangan blokir input — hanya visual
+        var rt = img.rectTransform;
+        rt.anchorMin = Vector2.zero; rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
+
+        _fadeGroup = _fadeGO.AddComponent<CanvasGroup>();
+        _fadeGroup.alpha = 0f;
+        _fadeGroup.blocksRaycasts = false;
+        _fadeGroup.interactable   = false;
+    }
+
+    IEnumerator FadeOverlayKe(float target, float durasi)
+    {
+        if (_fadeGroup == null) yield break;
+        float from = _fadeGroup.alpha;
+        float t = 0f;
+        while (t < durasi)
+        {
+            t += Time.deltaTime;
+            _fadeGroup.alpha = Mathf.Lerp(from, target, durasi <= 0f ? 1f : t / durasi);
+            yield return null;
+        }
+        _fadeGroup.alpha = target;
     }
 
     void UpdateLabelFase(Phase p)

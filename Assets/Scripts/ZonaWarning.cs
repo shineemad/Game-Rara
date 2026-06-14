@@ -119,7 +119,9 @@ public class ZonaWarning : MonoBehaviour
         lRT.anchorMax = new Vector2(0.5f, 1f);
         lRT.pivot     = new Vector2(0.5f, 1f);
         lRT.sizeDelta = new Vector2(620f, 60f);
-        lRT.anchoredPosition = new Vector2(0f, -140f); // di bawah HUD top
+        // Diturunkan ke -210 agar TIDAK menutupi bar progres "Menuju Sekolah"
+        // (root bar: anchoredPosition y=-108, tinggi 70 → tepi bawah ~-178).
+        lRT.anchoredPosition = new Vector2(0f, -210f);
 
         if (tampilkanLatarLabel)
         {

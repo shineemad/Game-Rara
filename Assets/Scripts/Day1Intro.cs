@@ -773,7 +773,29 @@ public class Day1Intro : MonoBehaviour
 
     IEnumerator TampilkanNarasi()
     {
-        if (narasiPembuka == null || narasiPembuka.Length == 0)
+        yield return StartCoroutine(JalankanNarasi(narasiPembuka));
+    }
+
+    /// <summary>
+    /// API publik: tampilkan narasi kustom memakai box dialog Day 1 Intro
+    /// (tata letak/layout SAMA dengan intro). onSelesai dipanggil setelah pemain
+    /// menutup seluruh baris. Dipakai mis. oleh Day1Controller untuk narasi jalan
+    /// (Jalan Ramai / Gang Sepi) agar box-nya seragam dengan intro.
+    /// </summary>
+    public void TampilkanNarasiKustom(BarisNarasi[] daftar, System.Action onSelesai = null)
+    {
+        StartCoroutine(JalankanNarasiKustom(daftar, onSelesai));
+    }
+
+    IEnumerator JalankanNarasiKustom(BarisNarasi[] daftar, System.Action onSelesai)
+    {
+        yield return StartCoroutine(JalankanNarasi(daftar));
+        onSelesai?.Invoke();
+    }
+
+    IEnumerator JalankanNarasi(BarisNarasi[] daftar)
+    {
+        if (daftar == null || daftar.Length == 0)
             yield break;
 
         // Buat canvas narasi
@@ -883,7 +905,7 @@ public class Day1Intro : MonoBehaviour
         _tmpHint  = tmpHint;
 
         // ── Tampilkan setiap baris ─────────────────────────────────────────
-        foreach (var baris in narasiPembuka)
+        foreach (var baris in daftar)
         {
             // Guard: lewati baris yang teks-nya kosong/null (mencegah dialog
             // menggantung di body kosong karena entri Inspector belum diisi).

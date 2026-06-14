@@ -156,6 +156,8 @@ public class HUDManager : MonoBehaviour
     private TextMeshProUGUI _gaugeLevelLabel;    // teks level di kiri bar
     private Image[]         _gaugeZones;         // [0]=hijau [1]=kuning [2]=merah background
     private RectTransform   _gaugeFillBgRT;      // parent bar (untuk child fill)
+    private GameObject      _gaugePanelGO;       // panel "📢 SUARA" — hanya tampil Hari 1
+    private GameObject      _buktiToast;         // toast melayang "📸 Bukti tersimpan!"
 
     // Batas zona sebagai fraksi 0–1 dari threshold Loud
     // Zona hijau: 0 – thresholdMedium, kuning: thresholdMedium – thresholdLoud, merah: sisanya
@@ -168,9 +170,17 @@ public class HUDManager : MonoBehaviour
     private TextMeshProUGUI  _introSub;
     private Coroutine        _introCoroutine;
 
+    // ── Panel Bukti (Hari 2–3) ─────────────────────────────────────────
+    private GameObject       _buktiPanel;
+    private TextMeshProUGUI  _buktiText;
+    private int              _lastBuktiCount = -1;
+
     // Sprite bersama — dibuat sekali saat runtime
     private static Sprite _sCircle;
     private static Sprite _sRoundRect;
+
+    // Canvas navbar (untuk disembunyikan/ditampilkan oleh layar tertentu, mis. ChatSim).
+    private GameObject       _navbarCanvasGO;
 
     // Referensi singleton runtime — agar Day1Controller bisa mengaksesnya
     public static HUDManager Instance { get; private set; }
@@ -236,6 +246,13 @@ public class HUDManager : MonoBehaviour
             Refresh();
         }
 
+        // Panel bukti: refresh saat jumlah bukti bertambah
+        if (gs.JumlahBukti != _lastBuktiCount)
+        {
+            _lastBuktiCount = gs.JumlahBukti;
+            UpdateBukti(gs.day);
+        }
+
         // Live edit: terapkan perubahan Inspector ke navbar secara real-time
         if (liveEditNavbar) ApplyNavbarCustomization();
     }
@@ -253,6 +270,142 @@ public class HUDManager : MonoBehaviour
         UpdateLocation(GameState.Instance.day);
         UpdateDay(GameState.Instance.day);
         UpdateDayProgress(GameState.Instance.day);
+        UpdateBukti(GameState.Instance.day);
+        UpdateVoiceMeter(GameState.Instance.day);
+    }
+
+    /// Sembunyikan / tampilkan navbar HUD (skor, hati, bukti, progres hari).
+    /// Dipakai layar yang ingin tampil penuh tanpa navbar, mis. ChatSim WhatsApp.
+    public void SetNavbarVisible(bool tampil)
+    {
+        if (_navbarCanvasGO != null) _navbarCanvasGO.SetActive(tampil);
+    }
+
+    /// Voice Meter "📢 SUARA" hanya relevan di Hari 1 (jalan kaki + teriak).
+    /// Hari 2 & 3 tidak memakai gauge ini, jadi disembunyikan.
+    public void UpdateVoiceMeter(int day)
+    {
+        if (_gaugePanelGO == null) return;
+        _gaugePanelGO.SetActive(day == 1);
+    }
+
+    /// Perbarui panel bukti (checklist screenshot & plat). Hanya tampil Hari 2–3.
+    public void UpdateBukti(int day)
+    {
+        if (_buktiPanel == null) return;
+        var gs = GameState.Instance;
+        if (gs == null || day < 2) { _buktiPanel.SetActive(false); return; }
+
+        _buktiPanel.SetActive(true);
+
+        string Cek(bool ada, string nama) =>
+            ada ? $"<color=#26AD61>✓{nama}</color>" : $"<color=#9A9A9A>✗{nama}</color>";
+
+        // Hari 2 hanya bukti H2; Hari 3 tampilkan semua
+        string isi;
+        if (day == 2)
+        {
+            isi = Cek(gs.PunyaBukti(GameState.BUKTI_CHAT_DAY2), "Chat") + "   " +
+                  Cek(gs.PunyaBukti(GameState.BUKTI_PLAT_DAY2), "Plat");
+        }
+        else
+        {
+            isi = Cek(gs.PunyaBukti(GameState.BUKTI_CHAT_DAY2), "C2") + " " +
+                  Cek(gs.PunyaBukti(GameState.BUKTI_PLAT_DAY2), "P2") + " " +
+                  Cek(gs.PunyaBukti(GameState.BUKTI_CHAT_DAY3), "C3") + " " +
+                  Cek(gs.PunyaBukti(GameState.BUKTI_PLAT_DAY3), "P3");
+        }
+
+        _buktiText.text = $"<color=#F2C44D>🛡 Bukti {gs.JumlahBukti}/4</color>   {isi}";
+    }
+
+    // ── Toast "📸 Bukti tersimpan!" — umpan balik saat bukti baru dikumpulkan ──
+    /// Tampilkan notifikasi melayang singkat ketika pemain mendapat bukti baru
+    /// (screenshot chat / cek plat). Dipanggil dari GameState.TambahBukti.
+    public void ShowBuktiToast(string buktiId)
+    {
+        if (!isActiveAndEnabled) return;
+        StartCoroutine(BuktiToastAnim(NamaBukti(buktiId)));
+    }
+
+    string NamaBukti(string id)
+    {
+        switch (id)
+        {
+            case GameState.BUKTI_CHAT_DAY2:
+            case GameState.BUKTI_CHAT_DAY3: return "Screenshot Chat";
+            case GameState.BUKTI_PLAT_DAY2:
+            case GameState.BUKTI_PLAT_DAY3: return "Plat Nomor";
+            default:                        return "Bukti";
+        }
+    }
+
+    IEnumerator BuktiToastAnim(string nama)
+    {
+        if (_buktiToast != null) Destroy(_buktiToast);
+        if (_sRoundRect == null) _sRoundRect = GenRoundedRect(128, 64, 16);
+
+        var canvasGO = new GameObject("BuktiToastCanvas");
+        _buktiToast = canvasGO;
+        var canvas = canvasGO.AddComponent<Canvas>();
+        canvas.renderMode  = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 1015;
+        var scaler = canvasGO.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        scaler.matchWidthOrHeight  = 0.5f;
+
+        var pill = new GameObject("Pill");
+        pill.transform.SetParent(canvasGO.transform, false);
+        var pillImg = pill.AddComponent<Image>();
+        pillImg.sprite = _sRoundRect; pillImg.type = Image.Type.Sliced;
+        pillImg.color  = new Color(0.10f, 0.08f, 0.05f, 0.97f);
+        var pRT = pill.GetComponent<RectTransform>();
+        pRT.anchorMin = new Vector2(0.5f, 1f); pRT.anchorMax = new Vector2(0.5f, 1f);
+        pRT.pivot     = new Vector2(0.5f, 1f);
+        pRT.sizeDelta = new Vector2(640f, 84f);
+        pRT.anchoredPosition = new Vector2(0f, -118f);
+        var ol = pill.AddComponent<Outline>();
+        ol.effectColor    = new Color(0.96f, 0.74f, 0.18f, 1f);
+        ol.effectDistance = new Vector2(2.5f, -2.5f);
+
+        var txt = Tmp(pill, "Teks", $"📸  Bukti tersimpan: {nama}!", 26,
+            new Color(1f, 0.95f, 0.8f, 1f));
+        txt.fontStyle = FontStyles.Bold;
+        txt.alignment = TextAlignmentOptions.Center;
+        txt.textWrappingMode = TMPro.TextWrappingModes.Normal;
+        var tRT = txt.rectTransform;
+        tRT.anchorMin = Vector2.zero; tRT.anchorMax = Vector2.one;
+        tRT.offsetMin = new Vector2(20f, 6f); tRT.offsetMax = new Vector2(-20f, -6f);
+
+        if (AudioManager.Instance != null && AudioManager.Instance.sfxCorrect != null)
+            AudioManager.Instance.sfxSource?.PlayOneShot(AudioManager.Instance.sfxCorrect);
+
+        // pop in
+        float t = 0f;
+        while (t < 0.22f)
+        {
+            t += Time.unscaledDeltaTime;
+            float p = Mathf.Clamp01(t / 0.22f);
+            float ease = 1f - Mathf.Pow(1f - p, 3f);
+            pRT.localScale = Vector3.one * Mathf.LerpUnclamped(0.7f, 1f, ease);
+            yield return null;
+        }
+        pRT.localScale = Vector3.one;
+
+        yield return new WaitForSecondsRealtime(1.8f);
+
+        // fade out
+        var cg = canvasGO.AddComponent<CanvasGroup>();
+        t = 0f;
+        while (t < 0.4f)
+        {
+            t += Time.unscaledDeltaTime;
+            cg.alpha = 1f - Mathf.Clamp01(t / 0.4f);
+            yield return null;
+        }
+        if (_buktiToast == canvasGO) _buktiToast = null;
+        Destroy(canvasGO);
     }
 
     public void UpdateHearts(int current, int max)
@@ -379,6 +532,20 @@ public class HUDManager : MonoBehaviour
         {
             Debug.Log($"[HUDManager] EnterDay: hari {hariSebelum} → {dayNumber} (set GameState.day)");
             gs.day = dayNumber;
+
+            // B6 — Checkpoint per hari. Begitu Rara berhasil MAJU ke hari baru,
+            // hari itu jadi checkpoint dan nyawanya dipulihkan penuh. Tujuannya
+            // supaya hari yang berat (mis. kehabisan 2 hati di Hari 1) tidak
+            // menyeret kegagalan ke hari berikutnya — mengurangi frustrasi sesuai
+            // niat GDD soal checkpoint, tanpa mengubah alur linear satu-scene.
+            if (dayNumber > hariSebelum)
+            {
+                if (dayNumber >= 1) gs.checkpointD1 = true;
+                if (dayNumber >= 2) gs.checkpointD2 = true;
+                if (dayNumber >= 3) gs.checkpointD3 = true;
+                gs.lives = gs.maxLives;
+                Debug.Log($"[HUDManager] Checkpoint Hari {dayNumber}: nyawa dipulihkan penuh ({gs.lives}/{gs.maxLives}).");
+            }
         }
         else
         {
@@ -768,9 +935,14 @@ public class HUDManager : MonoBehaviour
         // Canvas navbar
         var cGO = new GameObject("HUDCanvas_Navbar");
         DontDestroyOnLoad(cGO);
+        _navbarCanvasGO = cGO;
         var cv = cGO.AddComponent<Canvas>();
         cv.renderMode   = RenderMode.ScreenSpaceOverlay;
-        cv.sortingOrder = 900;
+        // 940 = di ATAS latar gameplay arena Day 3 (ArenaBG sortingOrder 930) supaya
+        // navbar informasi tetap terlihat di strip atas saat adegan gameplay (ojol/boss),
+        // tetapi tetap di BAWAH overlay intro-judul (990), kartu edukasi (970) & layar hasil,
+        // sehingga navbar otomatis tersembunyi selama intro tiap hari lalu muncul setelahnya.
+        cv.sortingOrder = 940;
         var sc = cGO.AddComponent<CanvasScaler>();
         sc.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
         sc.referenceResolution = new Vector2(1920f, 1080f);
@@ -780,25 +952,28 @@ public class HUDManager : MonoBehaviour
         // ── KIRI: Skor + Hati ─────────────────────────────────────────────
         var left = Panel(cGO, "NavLeft", panelBgColor,
             new Vector2(0f, 1f), new Vector2(0f, 1f),
-            new Vector2(14f, -12f), new Vector2(340f, 66f));
+            new Vector2(14f, -12f), new Vector2(360f, 66f));
 
-        // Teks skor
+        // Teks skor — auto-size supaya angka besar (>1000) tidak meluber ke hati
         _rScore = Tmp(left, "Score", "Skor: 0", 26, Color.white);
         _rScore.alignment = TextAlignmentOptions.MidlineLeft;
         _rScore.fontStyle = FontStyles.Bold;
+        _rScore.enableAutoSizing = true;
+        _rScore.fontSizeMin = 16f;
+        _rScore.fontSizeMax = 26f;
         var scoreRT = _rScore.rectTransform;
         scoreRT.anchorMin = new Vector2(0f,    0.08f);
-        scoreRT.anchorMax = new Vector2(0.50f, 0.92f);
+        scoreRT.anchorMax = new Vector2(0.54f, 0.92f);
         scoreRT.offsetMin = new Vector2(14f, 0f);
         scoreRT.offsetMax = Vector2.zero;
 
-        // Tiga hati
+        // Tiga hati — digeser ke kanan area skor agar tidak bertumpuk
         _rHearts = new Image[3];
         for (int i = 0; i < 3; i++)
         {
-            float x0 = 0.54f + i * 0.155f;
+            float x0 = 0.585f + i * 0.135f;
             var hRT  = Rect(left, "Heart" + i,
-                new Vector2(x0, 0.15f), new Vector2(x0 + 0.14f, 0.85f));
+                new Vector2(x0, 0.15f), new Vector2(x0 + 0.12f, 0.85f));
             var hImg = hRT.gameObject.AddComponent<Image>();
             hImg.sprite         = heartFullSprite != null ? heartFullSprite : _sCircle;
             hImg.color          = heartFullSprite != null ? Color.white
@@ -877,6 +1052,7 @@ public class HUDManager : MonoBehaviour
         var right = Panel(cGO, "NavRight", panelBgColor,
             new Vector2(1f, 1f), new Vector2(1f, 1f),
             new Vector2(-14f, -12f), new Vector2(340f, 66f));
+        _gaugePanelGO = right.gameObject;   // disimpan agar bisa disembunyikan di Hari 2 & 3
 
         // Label "📢 SUARA" di kiri panel
         var gaugeLabel = Tmp(right, "GaugeLabel", "📢 SUARA", 16,
@@ -949,6 +1125,21 @@ public class HUDManager : MonoBehaviour
         var markerImg = markerGO.AddComponent<Image>();
         markerImg.color = new Color(0.92f, 0.15f, 0.15f, 1f);
 
+        // ── PANEL BUKTI (muncul Hari 2–3) ─────────────────────────────────
+        // Checklist bukti (screenshot & plat) agar pemain paham kenapa
+        // ending pelapor terbuka/terkunci. Disembunyikan saat Hari 1.
+        _buktiPanel = Panel(cGO, "NavBukti", panelBgColor,
+            new Vector2(0f, 1f), new Vector2(0f, 1f),
+            new Vector2(14f, -84f), new Vector2(340f, 40f));
+        _buktiText = Tmp(_buktiPanel, "BuktiText", "", 16, Color.white);
+        _buktiText.alignment = TextAlignmentOptions.MidlineLeft;
+        _buktiText.fontStyle = FontStyles.Bold;
+        var btRT = _buktiText.rectTransform;
+        btRT.anchorMin = new Vector2(0f, 0f);
+        btRT.anchorMax = new Vector2(1f, 1f);
+        btRT.offsetMin = new Vector2(12f, 0f);
+        btRT.offsetMax = new Vector2(-10f, 0f);
+        _buktiPanel.SetActive(false);
     }
 
     // ══════════════════════════════════════════════════════════════════════

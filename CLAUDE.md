@@ -304,6 +304,79 @@ Tampilkan:
 
 ---
 
+## 16. Analisis Kesenjangan GDD vs Implementasi (Status per 2026-06-13)
+
+> Perbandingan antara **GDD "3 Hari Pulang Sekolah Aman"** dengan kode yang sudah dibuat.
+> Tujuan: jadi acuan apa yang masih perlu dilengkapi agar game sesuai desain.
+
+### A. Sudah Sesuai GDD (tidak perlu diubah)
+
+- **Voice Meter zona suara → kecepatan** (kontinu) di Hari 1 sudah ada via
+  `Day1Controller.HandleShout` → `AplikasiEfekSuara`: Loud=x1.6, Medium=x0.55, Normal=x1.0.
+- **Life system 3 Hati**, skor `AMAN=100 / RAGU=50 / QUIZ=200 / LAPOR=500` (`GameState`).
+- **Sistem dialog 3 pilihan AMAN/RAGU/BAHAYA** + auto-pause (`NpcDialog`, `DialogManager`).
+- **Hari 1**: Paman Baik, Motor Nyasar (Pemotor), Gang Gelap (PathChoice) — lengkap.
+- **Hari 2**: Halte grooming (`HalteDialog`), kuis zona tubuh drag-drop 15 detik dengan
+  Tangan/Pipi/Bahu=AMAN, Perut/Paha/Privat=BAHAYA, achievement "Penjaga Batas Tubuh" 6/6
+  (`ZonaTubuhQuiz`), ChatSim WhatsApp + Screenshot/Blokir/Lapor KPAI (`ChatSimWhatsApp`).
+- **Hari 3**: Chat Agresif, Ojol Palsu + cek plat nomor, Boss "Si Bayangan Gelap",
+  Panic Button (`Day3Controller`).
+
+### B. KEKURANGAN / Menyimpang dari GDD (perlu dilengkapi)
+
+1. **Arsitektur SATU scene, bukan multi-scene.**
+   - GDD/Bagian 2-7 dokumen ini mengasumsikan scene terpisah (MainMenu, Prolog, Day1, Day2,
+     Day3, Result) + `SceneLoader` fade. **Realitas: hanya `Assets/Scenes/Gameplay.unity`**;
+     transisi hari lewat `DayTransitionManager` (toggle objek), ending di dalam `Day3Controller`.
+   - ⚠️ Belum ada **Result/Ending scene** & **MainMenu scene** terpisah.
+
+2. **Ending "LAPOR SUKSES" belum digerbang oleh koleksi bukti.**
+   - GDD: ending tertinggi terbuka HANYA jika pemain mengumpulkan **semua screenshot bukti
+     Hari 2 & 3** + mengeksekusi semua pelaporan darurat.
+   - Realitas: `HasilDay3.LaporSukses` dipicu sekadar memilih Panic Button di boss.
+     `GameState` cuma punya `screenshotTaken` (satu bool), **belum ada inventory bukti per-hari**.
+   - TODO: tambah penghitung bukti (mis. `buktiTerkumpul`/`buktiTotal`) + syarat ending.
+
+3. **Mekanik Boss Fight menyimpang.**
+   - GDD: pertahankan Voice Meter Zona Merah (>80 dB) **konsisten 5 detik** untuk menguras
+     **Mental Bar** pelaku, **sambil** menekan Panic Button.
+   - Realitas: boss = ronde pilihan verbal AMAN/RAGU/BAHAYA + opsi jendela teriak; `bossMentalMax`
+     ada tapi **bukan** drain berbasis "tahan suara 5 detik". Panic Button = salah satu pilihan, bukan paralel.
+
+4. **Speed Boost suara keras: detail beda.**
+   - GDD: **+50% selama 3 detik** (ber-timer) saat teriak, lalu habis.
+   - Realitas: **x1.6 (+60%) kontinu** selama suara keras, tanpa timer 3 detik.
+   - **Run_Away NPC** hanya saat encounter (`HandleNPCApproach`), belum jadi state global NPC roaming.
+
+5. **Tombol "Blokir" di Halte (Hari 2) belum ada.**
+   - GDD: di halte, catcalling + minta sosmed → suara menolak **+ klik tombol 'Blokir'**.
+   - Realitas: halte hanya pilihan dialog menolak; mekanik 'Blokir' baru ada di `ChatSimWhatsApp`.
+
+6. **Respawn ke checkpoint belum jalan.**
+   - GDD: kontak fisik → −1 Hati **+ respawn di checkpoint tantangan terdekat**.
+   - Realitas: `checkpointD1/D2/D3` (bool) ada di `GameState` tapi **belum dipakai** untuk respawn;
+     Hati habis → `GameOverScreen` (restart), bukan kembali ke checkpoint.
+
+7. **Satuan dB tidak ditampilkan literal.**
+   - GDD: ambang 50–60 / 60–80 / >80 dB. Realitas: `VoiceMeter` pakai level ternormalisasi
+     - `thresholdLoud`; HUD bar suara tidak menampilkan angka dB. (Kosmetik, prioritas rendah.)
+
+8. **Panjang level & durasi belum dikalibrasi ke GDD.**
+   - GDD: Hari 1 ≈ 800px / 5 mnt, Hari 2 ≈ 1200px / 7 mnt, Hari 3 ≈ 1600px / 10 mnt.
+   - Realitas: pakai world-units berbeda skala (Hari 1: trigger x=5..50); durasi belum diukur.
+
+### C. Prioritas Saran (bila ingin menutup gap)
+
+1. Inventory bukti + gerbang ending LAPOR SUKSES (poin B2) — paling berdampak ke alur ending.
+2. Mekanik boss "tahan suara 5 detik kuras Mental Bar" (poin B3) — inti pengalaman Hari 3.
+3. Respawn checkpoint (poin B6) — mengurangi frustrasi, sesuai niat GDD.
+4. Tombol Blokir di halte + Speed Boost ber-timer (poin B4, B5) — penyempurnaan mekanik.
+
+> ⚠️ Catatan: daftar ini hanya ANALISIS. Jangan implementasi otomatis — kerjakan hanya item
+> yang diminta user secara eksplisit (lihat Bagian 19 aturan perubahan kode di versi instruksi).
+
+---
+
 ## 16. Struktur Folder Assets
 
 ```

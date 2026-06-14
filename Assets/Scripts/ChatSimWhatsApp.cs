@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 
 /// <summary>
@@ -49,6 +50,10 @@ public class ChatSimWhatsApp : MonoBehaviour
     public string statusKontak = "online";
     public Color  warnaHeader = new Color(0.05f, 0.32f, 0.27f, 1f);
     public Color  warnaTeksHeader = Color.white;
+
+    [Header("Jam Stempel Bubble")]
+    [Tooltip("Jam yang ditampilkan di tiap bubble (format HH:mm). Kosong = pakai jam sistem. Hari 3 (pulang sekolah SMP) diisi mis. 13:45.")]
+    public string jamTampil = "";
 
     [Header("Background Chat")]
     public Color warnaChatBg = new Color(0.05f, 0.12f, 0.12f, 1f);
@@ -142,6 +147,7 @@ public class ChatSimWhatsApp : MonoBehaviour
     private TextMeshProUGUI _timerText;
     private GameObject _tombolPanel;
     private GameObject _reaksiPanel;
+    private RectTransform _timerFillRt;
     private bool       _aksiDipilih;
     private bool       _screenshotDiambil;
     private float      _sisaWaktu;
@@ -151,6 +157,8 @@ public class ChatSimWhatsApp : MonoBehaviour
     public void Mulai(Action onSelesai)
     {
         _onSelesai = onSelesai;
+        // Sembunyikan navbar HUD agar layar chat tampil penuh tanpa tertimpa navbar.
+        HUDManager.Instance?.SetNavbarVisible(false);
         BuildScene();
         StartCoroutine(JalankanChat());
     }
@@ -396,11 +404,69 @@ public class ChatSimWhatsApp : MonoBehaviour
                            new Color(1f, 1f, 1f, 0.45f), FontStyles.Normal);
         jam.alignment = TextAlignmentOptions.BottomRight;
 
+        // Animasi masuk: fade + skala kecil -> normal supaya terasa hidup.
+        var cg = row.AddComponent<CanvasGroup>();
+        cg.alpha = 0f;
+        StartCoroutine(AnimasiMasukBubble(go.transform, cg));
+
         return go;
     }
 
-    // Jam HH:mm utk stempel waktu bubble.
-    string WaktuSekarang() => System.DateTime.Now.ToString("HH:mm");
+    /// <summary>Animasi gelembung chat: fade-in + skala 0.85 -> 1 (ease-out).</summary>
+    IEnumerator AnimasiMasukBubble(Transform target, CanvasGroup cg)
+    {
+        if (target == null) yield break;
+        float durasi = 0.22f, t = 0f;
+        AudioManager.Instance?.PlayChatMasuk();
+        while (t < durasi && target != null)
+        {
+            t += Time.deltaTime;
+            float p = Mathf.Clamp01(t / durasi);
+            float ease = 1f - (1f - p) * (1f - p); // ease-out quad
+            if (cg != null) cg.alpha = ease;
+            target.localScale = Vector3.one * Mathf.Lerp(0.85f, 1f, ease);
+            yield return null;
+        }
+        if (cg != null) cg.alpha = 1f;
+        if (target != null) target.localScale = Vector3.one;
+    }
+
+    // Jam HH:mm utk stempel waktu bubble. Kalau jamTampil diisi, pakai itu (mis. jam pulang SMP);
+    // kalau kosong, pakai jam sistem.
+    string WaktuSekarang() =>
+        string.IsNullOrEmpty(jamTampil) ? System.DateTime.Now.ToString("HH:mm") : jamTampil;
+
+    /// <summary>Pasang efek hover (membesar saat kursor masuk, kembali saat keluar).</summary>
+    void PasangHover(GameObject go, float skala)
+    {
+        if (go == null) return;
+        var trig = go.GetComponent<EventTrigger>();
+        if (trig == null) trig = go.AddComponent<EventTrigger>();
+        var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+        enter.callback.AddListener(_ => { if (go != null) go.transform.localScale = Vector3.one * skala; });
+        var exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+        exit.callback.AddListener(_ => { if (go != null) go.transform.localScale = Vector3.one; });
+        trig.triggers.Add(enter);
+        trig.triggers.Add(exit);
+    }
+
+    /// <summary>Animasi pop: skala 0.8 -> 1.06 -> 1 (overshoot) untuk panel reaksi.</summary>
+    IEnumerator AnimasiPop(RectTransform rt)
+    {
+        if (rt == null) yield break;
+        float durasi = 0.26f, t = 0f;
+        while (t < durasi && rt != null)
+        {
+            t += Time.deltaTime;
+            float p = Mathf.Clamp01(t / durasi);
+            // Overshoot sederhana.
+            float s = p < 0.7f ? Mathf.Lerp(0.8f, 1.06f, p / 0.7f)
+                               : Mathf.Lerp(1.06f, 1f, (p - 0.7f) / 0.3f);
+            rt.localScale = Vector3.one * s;
+            yield return null;
+        }
+        if (rt != null) rt.localScale = Vector3.one;
+    }
 
     // ══════════════════════════════════════════════════════════════════════
     void BuildTombolAksi()
@@ -427,8 +493,33 @@ public class ChatSimWhatsApp : MonoBehaviour
         var trt = _timerText.rectTransform;
         trt.anchorMin = new Vector2(0f, 1f); trt.anchorMax = new Vector2(1f, 1f);
         trt.pivot = new Vector2(0.5f, 1f);
-        trt.offsetMin = new Vector2(12f, -48f);
+        trt.offsetMin = new Vector2(12f, -44f);
         trt.offsetMax = new Vector2(-12f, -10f);
+
+        // Bar waktu visual (menyusut) tepat di bawah teks timer.
+        var barBgGO = new GameObject("TimerBar");
+        barBgGO.transform.SetParent(_tombolPanel.transform, false);
+        var barBgImg = barBgGO.AddComponent<Image>();
+        barBgImg.sprite = GetRoundedSprite();
+        barBgImg.type   = Image.Type.Sliced;
+        barBgImg.color  = new Color(1f, 1f, 1f, 0.12f);
+        barBgImg.raycastTarget = false;
+        var barBgRT = barBgGO.GetComponent<RectTransform>();
+        barBgRT.anchorMin = new Vector2(0f, 1f); barBgRT.anchorMax = new Vector2(1f, 1f);
+        barBgRT.pivot = new Vector2(0.5f, 1f);
+        barBgRT.offsetMin = new Vector2(16f, -58f);
+        barBgRT.offsetMax = new Vector2(-16f, -48f);
+
+        var fillGO = new GameObject("Fill");
+        fillGO.transform.SetParent(barBgGO.transform, false);
+        var fillImg = fillGO.AddComponent<Image>();
+        fillImg.sprite = GetRoundedSprite();
+        fillImg.type   = Image.Type.Sliced;
+        fillImg.color  = warnaTimer;
+        fillImg.raycastTarget = false;
+        _timerFillRt = fillGO.GetComponent<RectTransform>();
+        _timerFillRt.anchorMin = new Vector2(0f, 0f); _timerFillRt.anchorMax = new Vector2(1f, 1f);
+        _timerFillRt.offsetMin = Vector2.zero; _timerFillRt.offsetMax = Vector2.zero;
 
         // Grid tombol di bawah timer
         var gridGO = new GameObject("Grid");
@@ -436,7 +527,7 @@ public class ChatSimWhatsApp : MonoBehaviour
         var gRT = gridGO.AddComponent<RectTransform>();
         gRT.anchorMin = new Vector2(0f, 0f); gRT.anchorMax = new Vector2(1f, 1f);
         gRT.offsetMin = new Vector2(14f, 14f);
-        gRT.offsetMax = new Vector2(-14f, -52f);
+        gRT.offsetMax = new Vector2(-14f, -64f);
 
         var grid = gridGO.AddComponent<GridLayoutGroup>();
         grid.cellSize = new Vector2(330f, 60f);
@@ -456,7 +547,12 @@ public class ChatSimWhatsApp : MonoBehaviour
                 _screenshotDiambil = true;
                 AudioManager.Instance?.Click();
                 var gs = GameState.Instance;
-                if (gs != null) { gs.score += screenshotBonus; gs.screenshotTaken = true; }
+                if (gs != null)
+                {
+                    gs.score += screenshotBonus; gs.screenshotTaken = true;
+                    // B2 — catat bukti screenshot sesuai hari (2 = chat halte/angkot, 3 = chat ojol).
+                    gs.TambahBukti(hariUntukSkor == 3 ? GameState.BUKTI_CHAT_DAY3 : GameState.BUKTI_CHAT_DAY2);
+                }
                 if (!string.IsNullOrEmpty(screenshotAchievement))
                     GameState.Instance?.EarnAchievement(screenshotAchievement);
                 Debug.Log($"[ChatSim] Screenshot diambil. +{screenshotBonus} poin.");
@@ -491,6 +587,9 @@ public class ChatSimWhatsApp : MonoBehaviour
         btn.colors = colors;
         if (onClick != null) btn.onClick.AddListener(() => onClick.Invoke());
 
+        // Efek hover: tombol membesar saat kursor masuk (terasa interaktif).
+        PasangHover(go, 1.05f);
+
         var t = BuatTeks(go.transform, "Label", teks, 16, Color.white, FontStyles.Bold);
         t.alignment = TextAlignmentOptions.Center;
         t.enableAutoSizing = true;
@@ -511,7 +610,24 @@ public class ChatSimWhatsApp : MonoBehaviour
             _sisaWaktu -= Time.deltaTime;
             int s = Mathf.CeilToInt(_sisaWaktu);
             _timerText.text = $"\u23F1 {s} detik untuk memutuskan!";
-            _timerText.color = s <= 3 ? new Color(0.91f, 0.30f, 0.24f, 1f) : warnaTimer;
+            bool kritis = s <= 3;
+            var warnaKini = kritis ? new Color(0.91f, 0.30f, 0.24f, 1f) : warnaTimer;
+            _timerText.color = warnaKini;
+
+            // Bar menyusut mengikuti sisa waktu + ikut berubah merah saat kritis.
+            if (_timerFillRt != null)
+            {
+                float frac = waktuPilihDetik > 0f ? Mathf.Clamp01(_sisaWaktu / waktuPilihDetik) : 0f;
+                _timerFillRt.anchorMax = new Vector2(frac, 1f);
+                _timerFillRt.offsetMin = Vector2.zero; _timerFillRt.offsetMax = Vector2.zero;
+                var fillImg = _timerFillRt.GetComponent<Image>();
+                if (fillImg != null)
+                {
+                    // Saat kritis, bar berdenyut halus.
+                    float pulse = kritis ? 0.7f + 0.3f * Mathf.Abs(Mathf.Sin(Time.time * 6f)) : 1f;
+                    fillImg.color = new Color(warnaKini.r, warnaKini.g, warnaKini.b, pulse);
+                }
+            }
             yield return null;
         }
         if (!_aksiDipilih && aksiSaatTimeout >= 0 && aksiSaatTimeout < aksiList.Length)
@@ -582,6 +698,9 @@ public class ChatSimWhatsApp : MonoBehaviour
         rt.sizeDelta = new Vector2(1000f, 220f);
         rt.anchoredPosition = new Vector2(0f, 30f);
 
+        // Animasi pop saat panel reaksi muncul.
+        StartCoroutine(AnimasiPop(rt));
+
         var teks = BuatTeks(_reaksiPanel.transform, "Reaksi", a.reaksi, 22, new Color(1f,1f,0.92f,1f), FontStyles.Normal);
         teks.alignment = TextAlignmentOptions.Center;
         var trt = teks.rectTransform;
@@ -607,9 +726,12 @@ public class ChatSimWhatsApp : MonoBehaviour
         btn.onClick.AddListener(() =>
         {
             AudioManager.Instance?.Click();
+            // Tampilkan kembali navbar HUD sebelum keluar dari layar chat.
+            HUDManager.Instance?.SetNavbarVisible(true);
             if (_canvasGO != null) Destroy(_canvasGO);
             _onSelesai?.Invoke();
         });
+        PasangHover(btnGO, 1.06f);
 
         var lab = BuatTeks(btnGO.transform, "Label", tombolLanjutTeks, 20, Color.white, FontStyles.Bold);
         lab.alignment = TextAlignmentOptions.Center;

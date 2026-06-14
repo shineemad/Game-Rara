@@ -278,6 +278,16 @@ public class Day1SummaryScreen : MonoBehaviour
         scaler.matchWidthOrHeight  = 0.5f;
         _canvasGO.AddComponent<GraphicRaycaster>();
 
+        // ── BG HITAM (selalu ada) ────────────────────────────────────────
+        // Lapisan hitam pekat paling belakang supaya scene gameplay tidak menembus kartu.
+        var bgHitam = new GameObject("BG_Hitam");
+        bgHitam.transform.SetParent(_canvasGO.transform, false);
+        var bgHitamImg = bgHitam.AddComponent<Image>();
+        bgHitamImg.color = Color.black; bgHitamImg.raycastTarget = true;
+        var bgHitamRT = bgHitam.GetComponent<RectTransform>();
+        bgHitamRT.anchorMin = Vector2.zero; bgHitamRT.anchorMax = Vector2.one;
+        bgHitamRT.offsetMin = Vector2.zero; bgHitamRT.offsetMax = Vector2.zero;
+
         // ── OVERLAY ──────────────────────────────────────────────────────
         if (tampilkanOverlay)
         {
@@ -577,7 +587,7 @@ public class Day1SummaryScreen : MonoBehaviour
         outl.effectDistance = new Vector2(3f, -3f);
 
         var jud = BuatTeks(_pilihankuPanel.transform, "Judul",
-            "\uD83D\uDCDC  Pilihanku — Hari 1", 26, warnaJudul, FontStyles.Bold);
+            "Pilihanku \u2014 Hari 1", 26, warnaJudul, FontStyles.Bold);
         var jrt = jud.rectTransform;
         jrt.anchorMin = new Vector2(0f, 1f);
         jrt.anchorMax = new Vector2(1f, 1f);
@@ -630,7 +640,7 @@ public class Day1SummaryScreen : MonoBehaviour
 
         var cBtn = closeGO.AddComponent<Button>();
         cBtn.targetGraphic = cImg;
-        var cT = BuatTeks(closeGO.transform, "Label", "\u2715  Tutup",
+        var cT = BuatTeks(closeGO.transform, "Label", "Tutup",
                           18, Color.white, FontStyles.Bold);
         var crt2 = cT.rectTransform;
         crt2.anchorMin = Vector2.zero; crt2.anchorMax = Vector2.one;
@@ -693,7 +703,7 @@ public class Day1SummaryScreen : MonoBehaviour
             {
                 Destroy(im);
                 var emoji = BuatTeks(hg.transform, "Emoji",
-                    (i < curLives) ? "\u2764" : "\uD83D\uDC94",
+                    (i < curLives) ? "\u2022" : "\u2022",
                     (int)hatiUkuran.y, (i < curLives) ? new Color(1f, 0.25f, 0.25f, 1f) : new Color(0.5f, 0.5f, 0.5f, 1f),
                     FontStyles.Bold);
                 emoji.alignment = TextAlignmentOptions.Center;

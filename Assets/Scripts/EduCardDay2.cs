@@ -173,6 +173,17 @@ public class EduCardDay2 : MonoBehaviour
         sc.matchWidthOrHeight = 0.5f;
         _canvasGO.AddComponent<GraphicRaycaster>();
 
+        // Latar HITAM penuh — selalu ada sebagai child paling belakang, agar scene
+        // gameplay di belakang (navbar, rambu, sunset) tidak pernah terlihat menembus kartu.
+        var bgHitam = new GameObject("BG_Hitam");
+        bgHitam.transform.SetParent(_canvasGO.transform, false);
+        var bgImg = bgHitam.AddComponent<Image>();
+        bgImg.color = Color.black;
+        bgImg.raycastTarget = true;
+        var bgRT = bgHitam.GetComponent<RectTransform>();
+        bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;
+        bgRT.offsetMin = Vector2.zero; bgRT.offsetMax = Vector2.zero;
+
         if (tampilkanOverlay)
         {
             var ov = new GameObject("Overlay");

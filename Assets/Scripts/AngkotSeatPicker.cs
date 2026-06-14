@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 using TMPro;
 
 /// <summary>
@@ -208,6 +209,7 @@ public class AngkotSeatPicker : MonoBehaviour
     {
         _onSelesai = onSelesai;
         KategoriKursiDipilih = ""; // reset jembatan supaya tidak terbawa dari sesi sebelumnya
+        HUDManager.Instance?.SetNavbarVisible(false); // sembunyikan navbar di layar pilih tempat duduk
         BuildScene();
     }
 
@@ -248,6 +250,26 @@ public class AngkotSeatPicker : MonoBehaviour
             var fsRt = fs.GetComponent<RectTransform>();
             fsRt.anchorMin = Vector2.zero; fsRt.anchorMax = Vector2.one;
             fsRt.offsetMin = Vector2.zero; fsRt.offsetMax = Vector2.zero;
+        }
+
+        // Backdrop judul — pita gelap semi-transparan supaya teks instruksi
+        // tetap terbaca di atas latar interior angkot yang ramai.
+        {
+            var jbg = new GameObject("JudulBackdrop");
+            jbg.transform.SetParent(_canvasGO.transform, false);
+            var jbgImg = jbg.AddComponent<Image>();
+            jbgImg.sprite = GetRoundedSprite();
+            jbgImg.type   = Image.Type.Sliced;
+            jbgImg.color  = new Color(0.06f, 0.05f, 0.08f, 0.78f);
+            jbgImg.raycastTarget = false;
+            var jbgOutl = jbg.AddComponent<Outline>();
+            jbgOutl.effectColor    = new Color(1f, 0.85f, 0.3f, 0.55f);
+            jbgOutl.effectDistance = new Vector2(2f, -2f);
+            var jbgRt = jbg.GetComponent<RectTransform>();
+            jbgRt.anchorMin = new Vector2(0f, 1f); jbgRt.anchorMax = new Vector2(1f, 1f);
+            jbgRt.pivot     = new Vector2(0.5f, 1f);
+            jbgRt.offsetMin = new Vector2(judulMarginSamping - 12f, -(judulTinggi + 36f));
+            jbgRt.offsetMax = new Vector2(-(judulMarginSamping - 12f), -16f);
         }
 
         // Judul
@@ -316,8 +338,8 @@ public class AngkotSeatPicker : MonoBehaviour
         hrt.offsetMax = new Vector2(-40f, 55f);
         _hintText.gameObject.SetActive(false);
 
-        // Plat toggle row (hidden until choice made)
-        if (tampilkanCekPlat) BuildPlatRow();
+        // Baris "Catat plat nomor angkot" DIHAPUS dari tampilan (sesuai permintaan).
+        // BuildPlatRow tidak dipanggil lagi; checkbox cek plat Day 2 tidak ditampilkan.
     }
 
     void BuildInteriorProcedural()
@@ -375,13 +397,16 @@ public class AngkotSeatPicker : MonoBehaviour
     {
         var go = new GameObject("Kursi_" + k.label);
         go.transform.SetParent(_kursiPanel.transform, false);
+
+        // Panel dasar: gelap & pekat supaya teks terbaca jelas di atas latar
+        // interior angkot yang ramai. Garis tepi mengikuti warna kategori.
         var img = go.AddComponent<Image>();
         img.sprite = GetRoundedSprite();
-        img.color  = k.warna;
+        img.color  = new Color(0.10f, 0.09f, 0.07f, 0.95f);
         img.type   = Image.Type.Sliced;
         var outl = go.AddComponent<Outline>();
-        outl.effectColor    = new Color(1f, 1f, 1f, 0.35f);
-        outl.effectDistance = new Vector2(2f, -2f);
+        outl.effectColor    = k.warna;
+        outl.effectDistance = new Vector2(3f, -3f);
         var rt = go.GetComponent<RectTransform>();
         rt.anchorMin = new Vector2(0.5f, 0.5f); rt.anchorMax = new Vector2(0.5f, 0.5f);
         rt.pivot = new Vector2(0.5f, 0.5f);
@@ -391,26 +416,88 @@ public class AngkotSeatPicker : MonoBehaviour
         var btn = go.AddComponent<Button>();
         btn.targetGraphic = img;
         var colors = btn.colors;
-        colors.highlightedColor = new Color(Mathf.Min(1f, k.warna.r * 1.15f), Mathf.Min(1f, k.warna.g * 1.15f), Mathf.Min(1f, k.warna.b * 1.15f), k.warna.a);
-        colors.pressedColor     = new Color(k.warna.r * 0.85f, k.warna.g * 0.85f, k.warna.b * 0.85f, k.warna.a);
+        colors.highlightedColor = new Color(0.18f, 0.15f, 0.11f, 0.98f);
+        colors.pressedColor     = new Color(0.06f, 0.05f, 0.04f, 0.98f);
         btn.colors = colors;
         btn.onClick.AddListener(() => OnPilihKursi(k));
 
-        // Label
-        var lab = BuatTeks(go.transform, "Label", k.label, 22, Color.white, FontStyles.Bold);
+        // ── Header band kategori (warna kategori, di bagian atas kartu) ──
+        var head = new GameObject("Header");
+        head.transform.SetParent(go.transform, false);
+        var headImg = head.AddComponent<Image>();
+        headImg.sprite = GetRoundedSprite();
+        headImg.type   = Image.Type.Sliced;
+        headImg.color  = k.warna;
+        headImg.raycastTarget = false;
+        var hbRt = head.GetComponent<RectTransform>();
+        hbRt.anchorMin = new Vector2(0f, 1f); hbRt.anchorMax = new Vector2(1f, 1f);
+        hbRt.pivot     = new Vector2(0.5f, 1f);
+        hbRt.offsetMin = new Vector2(7f, -56f);
+        hbRt.offsetMax = new Vector2(-7f, -7f);
+
+        var katTxt = BuatTeks(head.transform, "Kategori", BadgeKategori(k.kategori), 20, Color.white, FontStyles.Bold);
+        katTxt.alignment = TextAlignmentOptions.Center;
+        katTxt.enableAutoSizing = true; katTxt.fontSizeMin = 13f; katTxt.fontSizeMax = 20f;
+        var ktRt = katTxt.rectTransform;
+        ktRt.anchorMin = Vector2.zero; ktRt.anchorMax = Vector2.one;
+        ktRt.offsetMin = new Vector2(8f, 4f); ktRt.offsetMax = new Vector2(-8f, -4f);
+
+        // ── Label kursi (nama posisi tempat duduk) ──
+        var lab = BuatTeks(go.transform, "Label", k.label, 20, Color.white, FontStyles.Bold);
         lab.alignment = TextAlignmentOptions.Center;
+        lab.enableAutoSizing = true; lab.fontSizeMin = 14f; lab.fontSizeMax = 20f;
         var lrt = lab.rectTransform;
         lrt.anchorMin = new Vector2(0f, 0.5f); lrt.anchorMax = new Vector2(1f, 1f);
-        lrt.offsetMin = new Vector2(8f, 8f);
-        lrt.offsetMax = new Vector2(-8f, -8f);
+        lrt.offsetMin = new Vector2(10f, 8f);
+        lrt.offsetMax = new Vector2(-10f, -62f);
 
-        // Deskripsi
-        var desc = BuatTeks(go.transform, "Desc", k.deskripsi, 16, new Color(1f,1f,1f,0.92f), FontStyles.Normal);
-        desc.alignment = TextAlignmentOptions.Center;
+        // ── Deskripsi singkat ──
+        var desc = BuatTeks(go.transform, "Desc", k.deskripsi, 15, new Color(1f, 1f, 1f, 0.9f), FontStyles.Normal);
+        desc.alignment = TextAlignmentOptions.Top;
         var drt = desc.rectTransform;
         drt.anchorMin = new Vector2(0f, 0f); drt.anchorMax = new Vector2(1f, 0.5f);
-        drt.offsetMin = new Vector2(12f, 8f);
-        drt.offsetMax = new Vector2(-12f, -4f);
+        drt.offsetMin = new Vector2(12f, 30f);
+        drt.offsetMax = new Vector2(-12f, 2f);
+
+        // ── Hint interaktif di bawah kartu ──
+        var hint = BuatTeks(go.transform, "Hint", "TEKAN UNTUK PILIH", 13, new Color(1f, 0.95f, 0.7f, 0.75f), FontStyles.Italic);
+        hint.alignment = TextAlignmentOptions.Center;
+        var hntRt = hint.rectTransform;
+        hntRt.anchorMin = new Vector2(0f, 0f); hntRt.anchorMax = new Vector2(1f, 0f);
+        hntRt.pivot     = new Vector2(0.5f, 0f);
+        hntRt.offsetMin = new Vector2(8f, 7f);
+        hntRt.offsetMax = new Vector2(-8f, 28f);
+
+        // ── Umpan balik interaktif: kartu sedikit membesar saat disorot/disentuh ──
+        PasangHoverKursi(go);
+    }
+
+    // Label badge kategori yang ramah edukasi (warna + kata penjelas).
+    string BadgeKategori(string kategori)
+    {
+        switch (kategori)
+        {
+            case "AMAN":   return "PILIHAN AMAN";
+            case "RAGU":   return "KURANG AMAN";
+            case "BAHAYA": return "BERBAHAYA";
+            default:       return kategori;
+        }
+    }
+
+    // Pasang efek hover (membesar sedikit) pada kartu kursi untuk kesan interaktif.
+    void PasangHoverKursi(GameObject kartu)
+    {
+        var trig = kartu.AddComponent<EventTrigger>();
+        Vector3 normal  = Vector3.one;
+        Vector3 disorot = Vector3.one * 1.06f;
+
+        var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+        enter.callback.AddListener(_ => { if (kartu != null) kartu.transform.localScale = disorot; });
+        trig.triggers.Add(enter);
+
+        var exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+        exit.callback.AddListener(_ => { if (kartu != null) kartu.transform.localScale = normal; });
+        trig.triggers.Add(exit);
     }
 
     void OnPilihKursi(Kursi k)
@@ -439,6 +526,16 @@ public class AngkotSeatPicker : MonoBehaviour
             {
                 gs.lives = Mathf.Max(0, gs.lives - 1);
                 Debug.Log($"[AngkotSeatPicker] Pilih BAHAYA \u2192 nyawa -1 (sisa {gs.lives})");
+            }
+            else if (k.kategori == "AMAN" && tampilkanCekPlat && !gs.platChecked)
+            {
+                // Pengganti baris "Catat plat nomor" yang dihapus: bukti cek plat
+                // Hari 2 + bonus poin kini otomatis diraih saat memilih kursi AMAN
+                // (Rara duduk dekat supir = paling waspada, sempat mencatat plat).
+                gs.platChecked = true;
+                gs.score += bonusPlat;
+                gs.TambahBukti(GameState.BUKTI_PLAT_DAY2);
+                Debug.Log($"[AngkotSeatPicker] Kursi AMAN \u2192 bukti plat Day2 + {bonusPlat} poin");
             }
         }
 
@@ -634,7 +731,7 @@ public class AngkotSeatPicker : MonoBehaviour
             if (gs != null)
             {
                 gs.platChecked = _platDicek;
-                if (_platDicek) gs.score += bonusPlat;
+                if (_platDicek) { gs.score += bonusPlat; gs.TambahBukti(GameState.BUKTI_PLAT_DAY2); }
                 else gs.score = Mathf.Max(0, gs.score - bonusPlat);
             }
         });
@@ -662,6 +759,7 @@ public class AngkotSeatPicker : MonoBehaviour
         btn.onClick.AddListener(() =>
         {
             AudioManager.Instance?.Click();
+            HUDManager.Instance?.SetNavbarVisible(true); // tampilkan kembali navbar saat keluar
             if (_canvasGO != null) Destroy(_canvasGO);
             _onSelesai?.Invoke();
         });

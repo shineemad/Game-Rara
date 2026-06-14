@@ -82,6 +82,8 @@ public class DialogManager : MonoBehaviour
         public string category;     // "AMAN" | "RAGU" | "BAHAYA"
         public float  damage;       // untuk boss fight: pengurangan mental boss
         public bool   isPanic;      // memicu Panic Button
+        [TextArea(1, 3)]
+        public string penjelasan = ""; // alasan edukatif (opsional); kosong = generik per kategori
         [NonSerialized]
         public Action onSelect;     // callback saat dipilih (set via kode)
     }
@@ -251,10 +253,142 @@ public class DialogManager : MonoBehaviour
             }
         }
 
+        // Feedback edukatif "Kenapa?" — hanya di Hari 2 (game edukasi).
+        if (GameState.Instance != null && GameState.Instance.day == 2)
+            TampilkanPenjelasanPilihan(c);
+
         choicePanel.SetActive(false);
         lineIndex++;
         ShowLine(lineIndex);
     }
+
+    // ── Toast edukatif "💡 Kenapa?" setelah memilih (Hari 2) ───────────────
+    private GameObject _eduToast;
+    private static Sprite _eduRounded;
+    void TampilkanPenjelasanPilihan(Choice c)
+    {
+        if (dialogPanel == null) return;
+        Transform host = dialogPanel.transform.parent != null
+            ? dialogPanel.transform.parent : dialogPanel.transform;
+
+        string isi = !string.IsNullOrWhiteSpace(c.penjelasan)
+            ? c.penjelasan
+            : PenjelasanGenerik(c.category);
+        if (string.IsNullOrWhiteSpace(isi)) return;
+
+        if (_eduToast != null) Destroy(_eduToast);
+
+        Color aksen =
+            c.category == "AMAN"   ? new Color(0.18f, 0.68f, 0.38f, 1f) :
+            c.category == "RAGU"   ? new Color(0.95f, 0.62f, 0.07f, 1f) :
+            c.category == "BAHAYA" ? new Color(0.91f, 0.30f, 0.24f, 1f) :
+                                     new Color(0.20f, 0.60f, 0.86f, 1f);
+
+        var toast = new GameObject("EduToast");
+        toast.transform.SetParent(host, false);
+        var img = toast.AddComponent<Image>();
+        img.sprite = GetEduRounded();
+        img.type   = Image.Type.Sliced;
+        img.color  = new Color(0.10f, 0.08f, 0.06f, 0.97f);
+        img.raycastTarget = false;
+        var outl = toast.AddComponent<Outline>();
+        outl.effectColor    = aksen;
+        outl.effectDistance = new Vector2(2.5f, -2.5f);
+        var rt = toast.GetComponent<RectTransform>();
+        rt.anchorMin = new Vector2(0.5f, 1f); rt.anchorMax = new Vector2(0.5f, 1f);
+        rt.pivot = new Vector2(0.5f, 1f);
+        rt.sizeDelta = new Vector2(820f, 120f);
+        rt.anchoredPosition = new Vector2(0f, -36f);
+
+        var tmp = new GameObject("Teks").AddComponent<TextMeshProUGUI>();
+        tmp.transform.SetParent(toast.transform, false);
+        if (TMP_Settings.defaultFontAsset != null) tmp.font = TMP_Settings.defaultFontAsset;
+        string judul = c.category == "AMAN" ? "\uD83D\uDCA1 KENAPA AMAN?"
+                     : c.category == "RAGU" ? "\uD83D\uDCA1 PERLU LEBIH TEGAS"
+                     : c.category == "BAHAYA" ? "\u26A0 KENAPA BERBAHAYA?"
+                     : "\uD83D\uDCA1 CATATAN";
+        tmp.text = $"<b><color=#FFD24A>{judul}</color></b>\n<size=88%>{isi}</size>";
+        tmp.fontSize = 22;
+        tmp.color = new Color(1f, 1f, 0.95f, 1f);
+        tmp.alignment = TextAlignmentOptions.Center;
+        tmp.enableAutoSizing = true; tmp.fontSizeMin = 15; tmp.fontSizeMax = 23;
+        tmp.textWrappingMode = TextWrappingModes.Normal;
+        tmp.raycastTarget = false;
+        var trt = tmp.rectTransform;
+        trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
+        trt.offsetMin = new Vector2(24f, 12f); trt.offsetMax = new Vector2(-24f, -12f);
+
+        _eduToast = toast;
+        StartCoroutine(EduToastAnim(toast, rt));
+    }
+
+    string PenjelasanGenerik(string kategori)
+    {
+        switch (kategori)
+        {
+            case "AMAN":
+                return "Kamu menjaga jarak dan tetap waspada terhadap orang asing. Itu langkah yang tepat!";
+            case "RAGU":
+                return "Belum sepenuhnya aman \u2014 masih ada risiko. Lebih baik bersikap tegas: bilang TIDAK lalu menjauh.";
+            case "BAHAYA":
+                return "Pilihan ini bisa membahayakanmu. Ingat 3 kata sakti: TIDAK \u2192 PERGI \u2192 CERITA pada orang dewasa.";
+            default:
+                return "";
+        }
+    }
+
+    IEnumerator EduToastAnim(GameObject toast, RectTransform rt)
+    {
+        if (toast == null) yield break;
+        float t = 0f;
+        while (t < 0.2f && toast != null)
+        {
+            t += Time.deltaTime;
+            float p = Mathf.Clamp01(t / 0.2f);
+            float s = p < 0.7f ? Mathf.Lerp(0.85f, 1.05f, p / 0.7f)
+                               : Mathf.Lerp(1.05f, 1f, (p - 0.7f) / 0.3f);
+            if (rt != null) rt.localScale = Vector3.one * s;
+            yield return null;
+        }
+        if (rt != null) rt.localScale = Vector3.one;
+        yield return new WaitForSeconds(3f);
+        var img  = toast != null ? toast.GetComponent<Image>() : null;
+        var ol   = toast != null ? toast.GetComponent<Outline>() : null;
+        var tmps = toast != null ? toast.GetComponentsInChildren<TextMeshProUGUI>() : null;
+        float f = 0f;
+        while (f < 0.45f && toast != null)
+        {
+            f += Time.deltaTime;
+            float a = 1f - Mathf.Clamp01(f / 0.45f);
+            if (img != null) { var col = img.color; col.a = 0.97f * a; img.color = col; }
+            if (ol  != null) { var col = ol.effectColor; col.a = a; ol.effectColor = col; }
+            if (tmps != null) foreach (var x in tmps) { if (x == null) continue; var col = x.color; col.a = a; x.color = col; }
+            yield return null;
+        }
+        if (toast != null) { if (_eduToast == toast) _eduToast = null; Destroy(toast); }
+    }
+
+    static Sprite GetEduRounded()
+    {
+        if (_eduRounded != null) return _eduRounded;
+        int size = 64, radius = 14;
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp; tex.filterMode = FilterMode.Bilinear;
+        Color32 w = new Color32(255, 255, 255, 255), cc = new Color32(255, 255, 255, 0);
+        for (int y = 0; y < size; y++) for (int x = 0; x < size; x++)
+        {
+            bool inside = true;
+            if      (x < radius && y < radius)                 { int dx = radius - x, dy = radius - y; inside = dx*dx + dy*dy <= radius*radius; }
+            else if (x >= size-radius && y < radius)           { int dx = x-(size-1-radius), dy = radius - y; inside = dx*dx + dy*dy <= radius*radius; }
+            else if (x < radius && y >= size-radius)           { int dx = radius - x, dy = y-(size-1-radius); inside = dx*dx + dy*dy <= radius*radius; }
+            else if (x >= size-radius && y >= size-radius)     { int dx = x-(size-1-radius), dy = y-(size-1-radius); inside = dx*dx + dy*dy <= radius*radius; }
+            tex.SetPixel(x, y, inside ? (Color)w : (Color)cc);
+        }
+        tex.Apply();
+        _eduRounded = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(radius, radius, radius, radius));
+        return _eduRounded;
+    }
+
 
     void EndDialog()
     {

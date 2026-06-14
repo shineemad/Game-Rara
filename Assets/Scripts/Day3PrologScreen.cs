@@ -50,36 +50,39 @@ public class Day3PrologScreen : MonoBehaviour
     }
 
     [Header("Slide (CUSTOMIZABLE) — DEFAULT: tema boss fight Hari 3")]
-    [Tooltip("3 slide default Hari 3 (parkiran SMP, musim hujan, hadapi Si Bully). Edit teks/sprite sesuka hati.")]
+    [Tooltip("3 slide default Hari 3 (parkiran SMP, musim hujan, hadapi Si Bayangan Gelap). Edit teks/sprite sesuka hati.")]
     public PrologSlide[] slides = new PrologSlide[]
     {
-        // Slide 1 — pengenalan situasi (hujan, parkiran sepi)
+        // Slide 1 — pengenalan situasi (hujan, parkiran sepi, ojol palsu menghadang)
         new PrologSlide
         {
             backgroundColor = new Color(0.12f, 0.14f, 0.20f, 1f),   // biru-kelabu (hujan)
-            title = "Hari 3: Pulang Sekolah Saat Hujan",
-            text  = "Hujan turun di parkiran SMP.\n" +
-                    "Rara berjalan sendirian menuju gerbang.\n\n" +
-                    "Tiba-tiba seorang kakak kelas berbadan besar menghadang langkahnya.",
+            title = "Hari 3: Hujan di Parkiran Sekolah",
+            text  = "Hujan deras mengguyur kota.\n" +
+                    "Rara berjalan menuju parkiran SMP Harapan.\n\n" +
+                    "Tiba-tiba, seseorang menghadang jalannya.\n" +
+                    "\"Hei, mau kubawa pulang pakai ojol?\"",
         },
-        // Slide 2 — konflik / ancaman
+        // Slide 2 — konflik / ancaman: grooming via chat
         new PrologSlide
         {
             backgroundColor = new Color(0.18f, 0.10f, 0.12f, 1f),   // merah gelap (tegang)
-            title = "Si Pengganggu",
-            text  = "Kakak kelas itu mulai memalak dan mengancam Rara.\n\n" +
-                    "\"Jangan berani ngadu, ya!\" katanya menakut-nakuti.\n" +
-                    "Rara harus tetap tenang dan berani menjaga dirinya.",
+            title = "Ancaman Grooming",
+            text  = "Sebelumnya, ada orang asing yang terus\n" +
+                    "mengirim pesan ke HP Rara — memintanya\n" +
+                    "merahasiakan obrolan mereka dan meminta foto.\n\n" +
+                    "Ini adalah GROOMING!",
         },
-        // Slide 3 — bekal / kunci menghadapi perundungan
+        // Slide 3 — bekal / kunci menghadapi Si Bayangan Gelap
         new PrologSlide
         {
             backgroundColor = new Color(0.10f, 0.16f, 0.14f, 1f),   // hijau gelap (panduan)
-            title = "Yang Perlu Rara Tahu",
-            text  = "\u25CF Tetap tenang & berani berkata \"TIDAK\" dengan tegas.\n" +
-                    "\u25CF Jangan menyerahkan barang karena takut.\n" +
-                    "\u25CF Ancaman \"jangan ngadu\" justru tanda kamu HARUS lapor.\n" +
-                    "\u25CF Cari tempat ramai & orang dewasa terpercaya (guru, satpam).",
+            title = "Hadapi Si Bayangan Gelap",
+            text  = "\"Si Bayangan Gelap\" adalah orang berbahaya\n" +
+                    "yang menyamar sebagai orang baik.\n\n" +
+                    "Satu-satunya cara mengalahkannya:\n" +
+                    "BERSUARA KERAS dan tekan PANIC BUTTON!\n" +
+                    "Minta bantuan orang dewasa terdekat!",
         },
     };
 

@@ -664,10 +664,49 @@ public class NpcDialog : MonoBehaviour
         choicesPanel = new GameObject("ChoicesPanel");
         choicesPanel.transform.SetParent(canvas.transform, false);
         var cpRT = choicesPanel.AddComponent<RectTransform>();
-        cpRT.anchorMin = new Vector2(0.01f, 0.36f);
-        cpRT.anchorMax = new Vector2(0.62f, 0.90f);
+        // Band pilihan DIPOSISIKAN di atas box dialog (atas box ~0.40) dan di
+        // bawah navbar HUD (~0.90) supaya tidak saling menumpuk seperti sebelumnya.
+        // Lebar band (0.625) dipusatkan horizontal agar keseluruhan respon berada di tengah layar.
+        cpRT.anchorMin = new Vector2(0.1875f, 0.45f);
+        cpRT.anchorMax = new Vector2(0.8125f, 0.87f);
         cpRT.offsetMin = Vector2.zero;
         cpRT.offsetMax = Vector2.zero;
+
+        // ── Backdrop membulat (mengelompokkan pilihan jadi satu "kotak") ──────
+        // Tema kayu/emas konsisten dengan UI Hari 1 lain (bar progres, kartu edu).
+        var backdropGO = new GameObject("Backdrop");
+        backdropGO.transform.SetParent(choicesPanel.transform, false);
+        var backdropRT = backdropGO.AddComponent<RectTransform>();
+        backdropRT.anchorMin = Vector2.zero;
+        backdropRT.anchorMax = Vector2.one;
+        backdropRT.offsetMin = new Vector2(-14f, -14f);
+        backdropRT.offsetMax = new Vector2( 14f,  14f);
+        var backdropImg = backdropGO.AddComponent<Image>();
+        backdropImg.sprite        = GetRoundedSpriteNpc();
+        backdropImg.type          = Image.Type.Sliced;
+        backdropImg.color         = new Color(0.12f, 0.07f, 0.03f, 0.92f);
+        backdropImg.raycastTarget = false;
+        var backdropOutline = backdropGO.AddComponent<Outline>();
+        backdropOutline.effectColor    = new Color(0.95f, 0.72f, 0.18f, 0.90f);
+        backdropOutline.effectDistance = new Vector2(3f, -3f);
+
+        // ── Judul kecil band pilihan ─────────────────────────────────────────
+        var headerGO = new GameObject("Header");
+        headerGO.transform.SetParent(choicesPanel.transform, false);
+        var headerRT = headerGO.AddComponent<RectTransform>();
+        headerRT.anchorMin = new Vector2(0f, 1f);
+        headerRT.anchorMax = new Vector2(1f, 1f);
+        headerRT.pivot     = new Vector2(0.5f, 0f);
+        headerRT.sizeDelta = new Vector2(0f, 26f);
+        headerRT.anchoredPosition = new Vector2(0f, 4f);
+        var headerTmp = headerGO.AddComponent<TextMeshProUGUI>();
+        ApplyFont(headerTmp);
+        headerTmp.text          = "Pilih responsmu:";
+        headerTmp.fontSize      = textFontSize - 6;
+        headerTmp.color         = new Color(1f, 0.82f, 0.30f, 1f);
+        headerTmp.fontStyle     = FontStyles.Bold;
+        headerTmp.alignment     = TextAlignmentOptions.Center;
+        headerTmp.raycastTarget = false;
 
         float slotH = 1f / choices.Length;
         _choiceButtons   = new Button[choices.Length];
@@ -678,18 +717,25 @@ public class NpcDialog : MonoBehaviour
         {
             var   c    = choices[i];
             float yMax = 1f - i * slotH;
-            float yMin = yMax - slotH + 0.015f;
+            float yMin = yMax - slotH;
 
             var btnGO = new GameObject("Btn_" + c.category);
             btnGO.transform.SetParent(choicesPanel.transform, false);
             var btnRT = btnGO.AddComponent<RectTransform>();
             btnRT.anchorMin = new Vector2(0f, yMin);
             btnRT.anchorMax = new Vector2(1f, yMax);
-            btnRT.offsetMin = new Vector2(0f,  4f);
-            btnRT.offsetMax = new Vector2(0f, -4f);
+            btnRT.offsetMin = new Vector2(4f,  5f);
+            btnRT.offsetMax = new Vector2(-4f, -5f);
 
             var img = btnGO.AddComponent<Image>();
-            img.color = CategoryToColor(c.category);
+            img.sprite = GetRoundedSpriteNpc();
+            img.type   = Image.Type.Sliced;
+            img.color  = CategoryToColor(c.category);
+
+            // Bingkai tipis putih transparan agar tombol terbaca di atas backdrop gelap.
+            var btnOutline = btnGO.AddComponent<Outline>();
+            btnOutline.effectColor    = new Color(1f, 1f, 1f, 0.28f);
+            btnOutline.effectDistance = new Vector2(2f, -2f);
 
             var btn = btnGO.AddComponent<Button>();
             var bc  = btn.colors;
@@ -709,9 +755,11 @@ public class NpcDialog : MonoBehaviour
             badgeRT.anchorMax = new Vector2(0f, 0.5f);
             badgeRT.pivot     = new Vector2(0f, 0.5f);
             badgeRT.sizeDelta = new Vector2(34f, 34f);
-            badgeRT.anchoredPosition = new Vector2(12f, 0f);
+            badgeRT.anchoredPosition = new Vector2(14f, 0f);
             var badgeImg = badgeGO.AddComponent<Image>();
-            badgeImg.color = new Color(1f, 1f, 1f, 0.28f);
+            badgeImg.sprite        = GetRoundedSpriteNpc();
+            badgeImg.type          = Image.Type.Sliced;
+            badgeImg.color         = new Color(1f, 1f, 1f, 0.30f);
             badgeImg.raycastTarget = false;
 
             var badgeTxtGO = new GameObject("BadgeNum");
@@ -724,7 +772,7 @@ public class NpcDialog : MonoBehaviour
             var badgeTmp = badgeTxtGO.AddComponent<TextMeshProUGUI>();
             ApplyFont(badgeTmp);
             badgeTmp.text          = (i + 1).ToString();
-            badgeTmp.fontSize      = textFontSize - 2;
+            badgeTmp.fontSize      = textFontSize - 4;
             badgeTmp.color         = Color.white;
             badgeTmp.fontStyle     = FontStyles.Bold;
             badgeTmp.alignment     = TextAlignmentOptions.Center;
@@ -735,16 +783,19 @@ public class NpcDialog : MonoBehaviour
             var lblRT = lblGO.AddComponent<RectTransform>();
             lblRT.anchorMin = Vector2.zero;
             lblRT.anchorMax = Vector2.one;
-            lblRT.offsetMin = new Vector2(56f,  4f);
+            lblRT.offsetMin = new Vector2(58f,  4f);
             lblRT.offsetMax = new Vector2(-14f, -4f);
             var tmp = lblGO.AddComponent<TextMeshProUGUI>();
             ApplyFont(tmp);
             tmp.text               = c.label;
-            tmp.fontSize           = textFontSize - 2;
+            tmp.fontSize           = textFontSize - 4;
             tmp.color              = Color.white;
             tmp.fontStyle          = FontStyles.Bold;
             tmp.alignment          = TextAlignmentOptions.MidlineLeft;
             tmp.textWrappingMode = TMPro.TextWrappingModes.Normal;
+            tmp.enableAutoSizing   = true;
+            tmp.fontSizeMin        = textFontSize - 12;
+            tmp.fontSizeMax        = textFontSize - 4;
             tmp.raycastTarget      = false;
 
             var localC = c;
@@ -763,12 +814,12 @@ public class NpcDialog : MonoBehaviour
                 hintRTb.anchorMin = new Vector2(1f, 0.5f);
                 hintRTb.anchorMax = new Vector2(1f, 0.5f);
                 hintRTb.pivot     = new Vector2(1f, 0.5f);
-                hintRTb.sizeDelta = new Vector2(120f, 30f);
+                hintRTb.sizeDelta = new Vector2(110f, 28f);
                 hintRTb.anchoredPosition = new Vector2(-10f, 0f);
                 var hintTmpB = hintGO.AddComponent<TextMeshProUGUI>();
                 ApplyFont(hintTmpB);
                 hintTmpB.text          = "atau TERIAK";
-                hintTmpB.fontSize      = textFontSize - 8;
+                hintTmpB.fontSize      = textFontSize - 10;
                 hintTmpB.color         = new Color(1f, 1f, 1f, 0.9f);
                 hintTmpB.fontStyle     = FontStyles.Italic | FontStyles.Bold;
                 hintTmpB.alignment     = TextAlignmentOptions.MidlineRight;
@@ -776,6 +827,35 @@ public class NpcDialog : MonoBehaviour
             }
         }
     }
+
+    // Sprite kotak membulat (9-slice) untuk backdrop & tombol pilihan. Di-cache.
+    static Sprite _sRoundedNpc;
+    static Sprite GetRoundedSpriteNpc()
+    {
+        if (_sRoundedNpc != null) return _sRoundedNpc;
+
+        const int size = 48, radius = 14;
+        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+        tex.wrapMode   = TextureWrapMode.Clamp;
+        tex.filterMode = FilterMode.Bilinear;
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float dx = Mathf.Max(radius - x, x - (size - 1 - radius), 0f);
+                float dy = Mathf.Max(radius - y, y - (size - 1 - radius), 0f);
+                float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                float a = Mathf.Clamp01(radius - dist + 0.5f);
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+            }
+        }
+        tex.Apply();
+        _sRoundedNpc = Sprite.Create(tex, new Rect(0, 0, size, size),
+            new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect,
+            new Vector4(radius, radius, radius, radius));
+        return _sRoundedNpc;
+    }
+
 
     static Color CategoryToColor(string cat)
     {

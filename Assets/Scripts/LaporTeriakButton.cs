@@ -204,6 +204,7 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
     public void Mulai(Action onSelesai)
     {
         _onSelesai = onSelesai;
+        HUDManager.Instance?.SetNavbarVisible(false); // sembunyikan navbar selama layar minta tolong/teriak
         // Mainkan narasi pembuka VN dulu (pria geser mendekat) baru layar teriak.
         if (tampilkanNarasiPembuka) StartCoroutine(JalankanNarasiLaluScene());
         else MulaiScene();
@@ -434,6 +435,20 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
             es.AddComponent<EventSystem>();
             es.AddComponent<StandaloneInputModule>();
         }
+
+        // ── Latar penuh layar ──
+        // Menutup latar belakang Day 1/Day 2 supaya tidak tembus pandang di balik kartu.
+        // Pakai sprite latar (mis. interior angkot) bila diisi; jika kosong, gunakan
+        // dim gelap PENUH (opaque) sebagai penutup.
+        var bgGO = new GameObject("BG");
+        bgGO.transform.SetParent(_canvasGO.transform, false);
+        var fsBgImg = bgGO.AddComponent<Image>();
+        fsBgImg.raycastTarget = true; // halangi klik tembus ke scene di belakang
+        if (vnLatarSprite != null) { fsBgImg.sprite = vnLatarSprite; fsBgImg.color = Color.white; }
+        else                       fsBgImg.color = new Color(0.05f, 0.03f, 0.05f, 1f);
+        var fsBgRT = bgGO.GetComponent<RectTransform>();
+        fsBgRT.anchorMin = Vector2.zero; fsBgRT.anchorMax = Vector2.one;
+        fsBgRT.offsetMin = Vector2.zero; fsBgRT.offsetMax = Vector2.zero;
 
         // Card panel
         var card = new GameObject("Card");
@@ -771,64 +786,169 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         kBtn.targetGraphic = kImg;
         kBtn.onClick.AddListener(LanjutkanDariHasil);
 
-        // Hapus tombol & bar, ganti dengan reaksi + lanjut
+        // Bersihkan SEMUA elemen adegan teriak pada Card supaya layar hasil tidak
+        // menumpuk dengan judul/deskripsi/timer/tombol lama (penyebab tampilan berantakan).
         var card = _canvasGO.transform.Find("Card");
         if (card != null)
         {
-            var btnT = card.Find("TombolTeriak"); if (btnT != null) Destroy(btnT.gameObject);
-            var bar  = card.Find("BarBG");        if (bar  != null) Destroy(bar.gameObject);
-            var diam = card.Find("TombolDiam");   if (diam != null) Destroy(diam.gameObject);
+            foreach (string n in new[] { "TombolTeriak", "BarBG", "TombolDiam",
+                                         "TombolTeriakVN", "Judul", "Desc", "Timer" })
+            {
+                var t = card.Find(n);
+                if (t != null) Destroy(t.gameObject);
+            }
         }
         if (_timerText != null) _timerText.text = "";
 
-        var panel = new GameObject("HasilPanel");
-        panel.transform.SetParent(_canvasGO.transform, false);
-        var img = panel.AddComponent<Image>();
-        img.sprite = GetRoundedSprite();
-        img.color  = new Color(0.05f, 0.08f, 0.10f, 0.95f);
-        img.type   = Image.Type.Sliced;
-        var outl = panel.AddComponent<Outline>();
-        outl.effectColor    = _berhasil ? new Color(0.45f, 1f, 0.65f, 1f) : new Color(1f, 0.55f, 0.55f, 1f);
-        outl.effectDistance = new Vector2(3f, -3f);
-        var rt = panel.GetComponent<RectTransform>();
-        rt.anchorMin = new Vector2(0.5f, 0.5f); rt.anchorMax = new Vector2(0.5f, 0.5f);
-        rt.pivot = new Vector2(0.5f, 0.5f);
-        rt.sizeDelta = new Vector2(900f, 380f);
+        // Pakai Card kayu/merah yang sudah ada sebagai BINGKAI hasil yang rapi.
+        Transform host = card != null ? card : _canvasGO.transform;
+        bool sukses = _berhasil;
+        Color aksen = sukses ? new Color(0.18f, 0.78f, 0.45f, 1f)
+                             : new Color(0.91f, 0.40f, 0.36f, 1f);
+
+        // Perbarui outline Card mengikuti hasil (hijau = berhasil, merah = belum).
+        if (card != null)
+        {
+            var cardOutl = card.GetComponent<Outline>();
+            if (cardOutl != null) cardOutl.effectColor = aksen;
+        }
+
+        // ── Header badge (pill) di bagian atas card ──────────────────────
+        var header = new GameObject("HasilHeader");
+        header.transform.SetParent(host, false);
+        var hImg = header.AddComponent<Image>();
+        hImg.sprite = GetRoundedSprite();
+        hImg.color  = aksen;
+        hImg.type   = Image.Type.Sliced;
+        hImg.raycastTarget = false;
+        var hOutl = header.AddComponent<Outline>();
+        hOutl.effectColor    = new Color(1f, 1f, 1f, 0.85f);
+        hOutl.effectDistance = new Vector2(2f, -2f);
+        var hRT = header.GetComponent<RectTransform>();
+        hRT.anchorMin = new Vector2(0.5f, 1f); hRT.anchorMax = new Vector2(0.5f, 1f);
+        hRT.pivot = new Vector2(0.5f, 1f);
+        hRT.sizeDelta = new Vector2(640f, 84f);
+        hRT.anchoredPosition = new Vector2(0f, -34f);
+        var hLab = BuatTeks(header.transform, "Label",
+            sukses ? "BERHASIL — RARA AMAN!" : "BELUM BERHASIL", 34, Color.white, FontStyles.Bold);
+        hLab.alignment = TextAlignmentOptions.Center;
+        hLab.enableAutoSizing = true; hLab.fontSizeMin = 22; hLab.fontSizeMax = 34;
+        hLab.textWrappingMode = TextWrappingModes.NoWrap;
+        var hLrt = hLab.rectTransform;
+        hLrt.anchorMin = Vector2.zero; hLrt.anchorMax = Vector2.one;
+        hLrt.offsetMin = new Vector2(20f, 0f); hLrt.offsetMax = new Vector2(-20f, 0f);
+        StartCoroutine(AnimasiPop(hRT));
+
+        // ── Panel isi (backing gelap) supaya teks reaksi mudah dibaca ────
+        var isi = new GameObject("HasilIsi");
+        isi.transform.SetParent(host, false);
+        var iImg = isi.AddComponent<Image>();
+        iImg.sprite = GetRoundedSprite();
+        iImg.color  = new Color(0f, 0f, 0f, 0.30f);
+        iImg.type   = Image.Type.Sliced;
+        iImg.raycastTarget = false;
+        var iRT = isi.GetComponent<RectTransform>();
+        iRT.anchorMin = new Vector2(0.5f, 0.5f); iRT.anchorMax = new Vector2(0.5f, 0.5f);
+        iRT.pivot = new Vector2(0.5f, 0.5f);
+        iRT.sizeDelta = new Vector2(980f, sukses ? 330f : 360f);
+        iRT.anchoredPosition = new Vector2(0f, sukses ? 36f : 18f);
 
         string rBerhasil = tampilkanNarasiPengejaran ? pengejaranReaksiBerhasil : reaksiBerhasil;
         string rGagal    = tampilkanNarasiPengejaran ? pengejaranReaksiGagal    : reaksiGagal;
-        var teks = BuatTeks(panel.transform, "Teks",
-            _berhasil ? rBerhasil + (bonusBerhasil > 0 ? $"\n\n<color=#FFD24A>+{bonusBerhasil} poin</color>" : "")
-                       : rGagal,
-            24, new Color(1f,1f,0.92f,1f), FontStyles.Normal);
+        var teks = BuatTeks(isi.transform, "Teks", sukses ? rBerhasil : rGagal,
+            24, new Color(1f, 1f, 0.92f, 1f), FontStyles.Normal);
         teks.alignment = TextAlignmentOptions.Center;
+        teks.enableAutoSizing = true; teks.fontSizeMin = 18; teks.fontSizeMax = 25;
         var trt = teks.rectTransform;
         trt.anchorMin = new Vector2(0f, 0f); trt.anchorMax = new Vector2(1f, 1f);
-        trt.offsetMin = new Vector2(40f, 100f);
-        trt.offsetMax = new Vector2(-40f, -40f);
+        trt.offsetMin = new Vector2(38f, 30f); trt.offsetMax = new Vector2(-38f, -30f);
 
-        // Tombol lanjut
+        // ── Badge poin emas (hanya saat berhasil & ada bonus) ────────────
+        if (sukses && bonusBerhasil > 0)
+        {
+            var poin = new GameObject("PoinBadge");
+            poin.transform.SetParent(host, false);
+            var pImg = poin.AddComponent<Image>();
+            pImg.sprite = GetRoundedSprite();
+            pImg.color  = new Color(0.96f, 0.74f, 0.18f, 1f);
+            pImg.type   = Image.Type.Sliced;
+            pImg.raycastTarget = false;
+            var pOutl = poin.AddComponent<Outline>();
+            pOutl.effectColor    = new Color(0.35f, 0.22f, 0.02f, 1f);
+            pOutl.effectDistance = new Vector2(2f, -2f);
+            var pRT = poin.GetComponent<RectTransform>();
+            pRT.anchorMin = new Vector2(0.5f, 0f); pRT.anchorMax = new Vector2(0.5f, 0f);
+            pRT.pivot = new Vector2(0.5f, 0f);
+            pRT.sizeDelta = new Vector2(330f, 70f);
+            pRT.anchoredPosition = new Vector2(0f, 138f);
+            var pLab = BuatTeks(poin.transform, "Label", $"+{bonusBerhasil} POIN",
+                30, new Color(0.28f, 0.16f, 0f, 1f), FontStyles.Bold);
+            pLab.alignment = TextAlignmentOptions.Center;
+            var pLrt = pLab.rectTransform;
+            pLrt.anchorMin = Vector2.zero; pLrt.anchorMax = Vector2.one;
+            pLrt.offsetMin = Vector2.zero; pLrt.offsetMax = Vector2.zero;
+            StartCoroutine(AnimasiPop(pRT));
+        }
+
+        // ── Tombol Lanjut (interaktif: hover membesar) ───────────────────
         var btnGO = new GameObject("LanjutBtn");
-        btnGO.transform.SetParent(panel.transform, false);
+        btnGO.transform.SetParent(host, false);
         var bImg = btnGO.AddComponent<Image>();
         bImg.sprite = GetRoundedSprite();
         bImg.color  = warnaLanjut;
         bImg.type   = Image.Type.Sliced;
+        var bOutl = btnGO.AddComponent<Outline>();
+        bOutl.effectColor    = new Color(1f, 1f, 1f, 0.55f);
+        bOutl.effectDistance = new Vector2(2f, -2f);
         var bRT = btnGO.GetComponent<RectTransform>();
         bRT.anchorMin = new Vector2(0.5f, 0f); bRT.anchorMax = new Vector2(0.5f, 0f);
         bRT.pivot = new Vector2(0.5f, 0f);
-        bRT.sizeDelta = new Vector2(380f, 60f);
-        bRT.anchoredPosition = new Vector2(0f, 25f);
+        bRT.sizeDelta = new Vector2(460f, 72f);
+        bRT.anchoredPosition = new Vector2(0f, 46f);
 
         var btn = btnGO.AddComponent<Button>();
         btn.targetGraphic = bImg;
         btn.onClick.AddListener(LanjutkanDariHasil);
+        PasangHover(btnGO, 1.06f);
 
-        var lab = BuatTeks(btnGO.transform, "Label", tombolLanjutTeks, 22, Color.white, FontStyles.Bold);
+        var lab = BuatTeks(btnGO.transform, "Label", tombolLanjutTeks, 24, Color.white, FontStyles.Bold);
         lab.alignment = TextAlignmentOptions.Center;
+        lab.enableAutoSizing = true; lab.fontSizeMin = 16; lab.fontSizeMax = 24;
+        lab.textWrappingMode = TextWrappingModes.NoWrap;
         var lrt = lab.rectTransform;
         lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one;
-        lrt.offsetMin = Vector2.zero; lrt.offsetMax = Vector2.zero;
+        lrt.offsetMin = new Vector2(16f, 0f); lrt.offsetMax = new Vector2(-16f, 0f);
+    }
+
+    /// <summary>Pasang efek hover sederhana (membesar saat kursor masuk, normal saat keluar).</summary>
+    void PasangHover(GameObject go, float skala)
+    {
+        if (go == null) return;
+        var trig = go.GetComponent<EventTrigger>();
+        if (trig == null) trig = go.AddComponent<EventTrigger>();
+        var enter = new EventTrigger.Entry { eventID = EventTriggerType.PointerEnter };
+        enter.callback.AddListener(_ => { if (go != null) go.transform.localScale = Vector3.one * skala; });
+        var exit = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+        exit.callback.AddListener(_ => { if (go != null) go.transform.localScale = Vector3.one; });
+        trig.triggers.Add(enter);
+        trig.triggers.Add(exit);
+    }
+
+    /// <summary>Animasi pop: skala 0.8 -> 1.08 -> 1 (overshoot halus).</summary>
+    IEnumerator AnimasiPop(RectTransform rt)
+    {
+        if (rt == null) yield break;
+        float durasi = 0.28f, t = 0f;
+        while (t < durasi && rt != null)
+        {
+            t += Time.deltaTime;
+            float p = Mathf.Clamp01(t / durasi);
+            float s = p < 0.7f ? Mathf.Lerp(0.8f, 1.08f, p / 0.7f)
+                               : Mathf.Lerp(1.08f, 1f, (p - 0.7f) / 0.3f);
+            rt.localScale = Vector3.one * s;
+            yield return null;
+        }
+        if (rt != null) rt.localScale = Vector3.one;
     }
 
     // Aksi lanjut dari layar hasil — bisa dipicu tombol ATAU fallback keyboard/klik.
@@ -840,6 +960,7 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         AudioManager.Instance?.Click();
         var aksi = _aksiLanjut;
         _aksiLanjut = null;
+        HUDManager.Instance?.SetNavbarVisible(true); // tampilkan kembali navbar saat keluar
         if (_canvasGO != null) Destroy(_canvasGO);
         aksi?.Invoke();
     }

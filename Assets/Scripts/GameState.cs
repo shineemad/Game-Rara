@@ -36,6 +36,16 @@ public class GameState : MonoBehaviour
     public List<ChoiceRecord> choices      = new List<ChoiceRecord>();
     public List<string>       achievements = new List<string>();
 
+    // ── Inventory Bukti (B2) ───────────────────────────────────────────────
+    // Kumpulan bukti yang dikumpulkan pemain di Hari 2 & 3. Ending tertinggi
+    // (LAPOR SUKSES di Hari 3) hanya terbuka bila SEMUA bukti ini lengkap.
+    public const string BUKTI_CHAT_DAY2 = "chat_day2"; // screenshot chat WhatsApp Hari 2
+    public const string BUKTI_PLAT_DAY2 = "plat_day2"; // cek plat angkot Hari 2
+    public const string BUKTI_CHAT_DAY3 = "chat_day3"; // screenshot chat ojol Hari 3
+    public const string BUKTI_PLAT_DAY3 = "plat_day3"; // cek plat ojol Hari 3
+    private readonly HashSet<string> _bukti = new HashSet<string>();
+    public int JumlahBukti => _bukti.Count;
+
     // ── Meteran Bahaya (0..1) ──────────────────────────────────────────────
     // Naik tiap pilihan RAGU/BAHAYA, turun tiap AMAN. Dipakai DangerGauge
     // sebagai umpan balik berkelanjutan seberapa terkendali situasi Rara.
@@ -105,6 +115,31 @@ public class GameState : MonoBehaviour
         if (lives <= 0 && day != 3 && !GameOverScreen.IsShowing)
             GameOverScreen.Show();
     }
+
+    // ══════════════════════════════════════════════════════════════════════
+    /// Catat satu bukti (HashSet otomatis cegah duplikat).
+    public void TambahBukti(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return;
+        if (_bukti.Add(id))
+        {
+            Debug.Log($"[GameState] Bukti dikumpulkan: {id} | total bukti={_bukti.Count}");
+            // Umpan balik visual: toast "📸 Bukti tersimpan!" + perbarui counter HUD.
+            if (HUDManager.Instance != null)
+            {
+                HUDManager.Instance.ShowBuktiToast(id);
+                HUDManager.Instance.UpdateBukti(day);
+            }
+        }
+    }
+
+    /// Apakah bukti tertentu sudah dimiliki?
+    public bool PunyaBukti(string id) => _bukti.Contains(id);
+
+    /// Gerbang ending LAPOR SUKSES: butuh SEMUA bukti Hari 2 & 3.
+    public bool SemuaBuktiLengkap() =>
+        PunyaBukti(BUKTI_CHAT_DAY2) && PunyaBukti(BUKTI_PLAT_DAY2) &&
+        PunyaBukti(BUKTI_CHAT_DAY3) && PunyaBukti(BUKTI_PLAT_DAY3);
 
     // ══════════════════════════════════════════════════════════════════════
     /// Tambah pilihan dan hitung skor.
@@ -256,6 +291,7 @@ public class GameState : MonoBehaviour
         checkpointD3 = false;
         choices.Clear();
         achievements.Clear();
+        _bukti.Clear();
         dangerLevel = 0f;
         usedTidak   = false;
         usedPergi   = false;
