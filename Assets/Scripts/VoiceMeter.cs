@@ -302,10 +302,10 @@ public class VoiceMeter : MonoBehaviour
     {
         switch (Level)
         {
-            case VoiceLevel.Normal: return "Suara Normal";
-            case VoiceLevel.Medium: return "Suara Sedang";
+            case VoiceLevel.Normal: return "TENANG";
+            case VoiceLevel.Medium: return "SEDANG";
             case VoiceLevel.Loud:   return "TERIAK!";
-            default:                return "Diam";
+            default:                return "DIAM";
         }
     }
 

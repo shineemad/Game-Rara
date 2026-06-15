@@ -77,6 +77,18 @@ public class EduCardDay2 : MonoBehaviour
         }
     };
 
+    [Header("Ilustrasi (opsional)")]
+    [Tooltip("Sprite ilustrasi besar di bawah judul. Kosong = tidak tampil.")]
+    public Sprite ilustrasiSprite;
+    [Tooltip("Tinggi area ilustrasi (px). Lebar mengikuti lebar kartu.")]
+    public float ilustrasiTinggi = 140f;
+
+    [Header("Accordion")]
+    [Tooltip("Tiap tip jadi accordion: klik heading untuk buka/tutup isi (hemat ruang).")]
+    public bool accordion = true;
+    [Tooltip("Indeks tip yang terbuka di awal (-1 = semua tertutup, 0 = tip pertama).")]
+    public int accordionTerbukaAwal = 0;
+
     [Header("Footer (Hotline)")]
     [TextArea(2, 4)]
     public string footerText = "\u260E Hotline:\nPolisi 110  |  Hotline Anak 129  |  KPAI 021-31901556";
@@ -249,6 +261,24 @@ public class EduCardDay2 : MonoBehaviour
         tRT.offsetMax = new Vector2(-30f, -25f);
         titleTMP.alignment = TextAlignmentOptions.Center;
 
+        // Ilustrasi (opsional) di bawah judul.
+        float scrollTopOffset = -104f;
+        if (ilustrasiSprite != null)
+        {
+            var illGO = new GameObject("Ilustrasi");
+            illGO.transform.SetParent(card.transform, false);
+            var illRT = illGO.AddComponent<RectTransform>();
+            illRT.anchorMin = new Vector2(0f, 1f); illRT.anchorMax = new Vector2(1f, 1f);
+            illRT.pivot     = new Vector2(0.5f, 1f);
+            illRT.offsetMin = new Vector2(40f, -104f - ilustrasiTinggi);
+            illRT.offsetMax = new Vector2(-40f, -104f);
+            var illImg = illGO.AddComponent<Image>();
+            illImg.sprite         = ilustrasiSprite;
+            illImg.preserveAspect = true;
+            illImg.raycastTarget  = false;
+            scrollTopOffset = -104f - ilustrasiTinggi - 12f;
+        }
+
         // Tips list — area SCROLLABLE supaya 5 tips padat tidak saling tumpang-tindih.
         // Struktur: ScrollView(ScrollRect) → Viewport(RectMask2D) → Content(VLG+Fitter).
         var scrollGO = new GameObject("TipsScroll");
@@ -256,7 +286,7 @@ public class EduCardDay2 : MonoBehaviour
         var scrollRT = scrollGO.AddComponent<RectTransform>();
         scrollRT.anchorMin = new Vector2(0f, 0f); scrollRT.anchorMax = new Vector2(1f, 1f);
         scrollRT.offsetMin = new Vector2(36f, 168f);   // di atas footer + tombol
-        scrollRT.offsetMax = new Vector2(-36f, -104f);  // di bawah judul
+        scrollRT.offsetMax = new Vector2(-36f, scrollTopOffset);  // di bawah judul / ilustrasi
         var scrollRect = scrollGO.AddComponent<ScrollRect>();
         scrollRect.horizontal = false;
         scrollRect.vertical   = true;
@@ -289,7 +319,7 @@ public class EduCardDay2 : MonoBehaviour
         listFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         scrollRect.content = listRT;
 
-        if (tipsList != null) foreach (var tip in tipsList) BuatTipEntry(listGO.transform, tip);
+        if (tipsList != null) for (int i = 0; i < tipsList.Length; i++) BuatTipEntry(listGO.transform, tipsList[i], i);
 
         // Garis pemisah tipis di atas footer (pemanis & pemisah area baca).
         var divider = new GameObject("Divider");
@@ -345,7 +375,7 @@ public class EduCardDay2 : MonoBehaviour
         StartCoroutine(PopIn(cardRT));
     }
 
-    void BuatTipEntry(Transform parent, TipsEntry tip)
+    void BuatTipEntry(Transform parent, TipsEntry tip, int index)
     {
         if (tip == null) return;
         var entry = new GameObject("TipEntry");
@@ -380,15 +410,51 @@ public class EduCardDay2 : MonoBehaviour
         var txtLE = txtCol.AddComponent<LayoutElement>();
         txtLE.flexibleWidth = 1f;
 
-        var h = BuatTeks(txtCol.transform, "Heading", tip.heading, 23, tip.warnaHeading, FontStyles.Bold);
+        // Baris heading (klik untuk buka/tutup bila accordion)
+        var headRow = new GameObject("HeaderRow");
+        headRow.transform.SetParent(txtCol.transform, false);
+        headRow.AddComponent<RectTransform>();
+        var headHLG = headRow.AddComponent<HorizontalLayoutGroup>();
+        headHLG.childAlignment = TextAnchor.UpperLeft;
+        headHLG.childControlWidth = true; headHLG.childControlHeight = true;
+        headHLG.childForceExpandWidth = false; headHLG.childForceExpandHeight = false;
+        headHLG.spacing = 8f;
+
+        var h = BuatTeks(headRow.transform, "Heading", tip.heading, 23, tip.warnaHeading, FontStyles.Bold);
         h.alignment = TextAlignmentOptions.TopLeft;
         var hLE = h.gameObject.AddComponent<LayoutElement>();
-        hLE.minHeight = 28f;
+        hLE.minHeight = 28f; hLE.flexibleWidth = 1f;
+
         var b = BuatTeks(txtCol.transform, "Isi", tip.isi, 19, tip.warnaIsi, FontStyles.Normal);
         b.alignment = TextAlignmentOptions.TopLeft;
         b.lineSpacing = 8f;
         var bLE = b.gameObject.AddComponent<LayoutElement>();
         bLE.minHeight = 24f;
+
+        if (accordion)
+        {
+            bool terbuka = (index == accordionTerbukaAwal);
+            var chev = BuatTeks(headRow.transform, "Chevron", terbuka ? "\u25BC" : "\u25B6", 18, tip.warnaHeading, FontStyles.Bold);
+            chev.alignment = TextAlignmentOptions.MidlineRight;
+            var chLE = chev.gameObject.AddComponent<LayoutElement>();
+            chLE.preferredWidth = 28f; chLE.flexibleWidth = 0f;
+
+            b.gameObject.SetActive(terbuka);
+
+            var headBtnImg = headRow.AddComponent<Image>();
+            headBtnImg.color = new Color(1f, 1f, 1f, 0.001f);
+            var headBtn = headRow.AddComponent<Button>();
+            var bodyGO = b.gameObject;
+            var chevTMP = chev;
+            headBtn.onClick.AddListener(() =>
+            {
+                bool baru = !bodyGO.activeSelf;
+                bodyGO.SetActive(baru);
+                chevTMP.text = baru ? "\u25BC" : "\u25B6";
+                AudioManager.Instance?.Click();
+                LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)entry.transform);
+            });
+        }
     }
 
     void HandleLanjut()

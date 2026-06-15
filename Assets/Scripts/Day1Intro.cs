@@ -222,6 +222,11 @@ public class Day1Intro : MonoBehaviour
              "Sambungkan ke Day1Controller.MulaiGame() di Inspector.")]
     public UnityEvent onIntroSelesai;
 
+    /// True setelah intro selesai. GameObject Day1Intro TIDAK dihancurkan (hanya
+    /// canvas-nya), jadi sistem lain (mis. MobileControls) harus memeriksa flag ini
+    /// — bukan sekadar keberadaan komponen — untuk tahu intro sudah berakhir.
+    public bool Selesai { get; private set; }
+
     // ══════════════════════════════════════════════════════════════════════
     // EDITOR AUTO-LOAD SPRITES
     // ══════════════════════════════════════════════════════════════════════
@@ -684,7 +689,9 @@ public class Day1Intro : MonoBehaviour
 
         // ── Langkah 5: Beritahu Day1Controller untuk mulai game ───────────        // Pastikan player di-unfreeze langsung di sini sebagai jaminan,
         // agar tidak bergantung penuh pada Day1Controller.MulaiGame()
-        if (_playerComp != null) _playerComp.frozen = false;        onIntroSelesai?.Invoke();
+        if (_playerComp != null) _playerComp.frozen = false;
+        Selesai = true;
+        onIntroSelesai?.Invoke();
     }
 
     // ══════════════════════════════════════════════════════════════════════

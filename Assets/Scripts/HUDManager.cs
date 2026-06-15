@@ -48,6 +48,14 @@ public class HUDManager : MonoBehaviour
     public bool          buildHUDAtRuntime = true;
     public TMP_FontAsset fontAsset;
 
+    [Header("Responsif Mobile")]
+    [Tooltip("Hormati Safe Area (notch / status bar) — navbar didorong masuk agar tak tertutup.")]
+    public bool  hormatiSafeArea = true;
+    [Tooltip("Aspek layar (lebar/tinggi) DI BAWAH nilai ini dianggap layar sempit/portrait → navbar diperkecil. 1.5 ≈ lebih sempit dari 3:2.")]
+    public float aspekSempitThreshold = 1.5f;
+    [Tooltip("Skala navbar saat layar sempit (portrait mobile) supaya 3 panel tidak tumpang tindih. 1 = tidak diperkecil.")]
+    [Range(0.5f, 1f)] public float skalaNavbarSempit = 0.78f;
+
     [Tooltip("Sprite hati penuh. Jika kosong, pakai lingkaran merah solid.")]
     public Sprite heartFullSprite;
     [Tooltip("Sprite hati kosong. Jika kosong, pakai lingkaran abu solid.")]
@@ -182,6 +190,10 @@ public class HUDManager : MonoBehaviour
     // Canvas navbar (untuk disembunyikan/ditampilkan oleh layar tertentu, mis. ChatSim).
     private GameObject       _navbarCanvasGO;
 
+    // Root penampung panel navbar — dipakai untuk Safe Area + skala responsif mobile.
+    private RectTransform    _navRootRT;
+    private Vector2Int       _lastScreenSize;
+
     // Referensi singleton runtime — agar Day1Controller bisa mengaksesnya
     public static HUDManager Instance { get; private set; }
 
@@ -255,6 +267,11 @@ public class HUDManager : MonoBehaviour
 
         // Live edit: terapkan perubahan Inspector ke navbar secara real-time
         if (liveEditNavbar) ApplyNavbarCustomization();
+
+        // Responsif: re-apply Safe Area + skala saat ukuran/orientasi layar berubah.
+        if (_navRootRT != null &&
+            (_lastScreenSize.x != Screen.width || _lastScreenSize.y != Screen.height))
+            ApplySafeAreaDanSkala();
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -949,8 +966,19 @@ public class HUDManager : MonoBehaviour
         sc.matchWidthOrHeight  = 0.5f;
         cGO.AddComponent<GraphicRaycaster>();
 
+        // Root penampung semua panel navbar. Dipakai untuk Safe Area (notch) +
+        // skala responsif di layar sempit/portrait. Pivot atas-tengah supaya saat
+        // diperkecil navbar tetap menempel ke tepi atas.
+        var rootGO = new GameObject("NavRoot");
+        rootGO.transform.SetParent(cGO.transform, false);
+        _navRootRT = rootGO.AddComponent<RectTransform>();
+        _navRootRT.anchorMin = Vector2.zero;
+        _navRootRT.anchorMax = Vector2.one;
+        _navRootRT.pivot     = new Vector2(0.5f, 1f);
+        _navRootRT.offsetMin = _navRootRT.offsetMax = Vector2.zero;
+
         // ── KIRI: Skor + Hati ─────────────────────────────────────────────
-        var left = Panel(cGO, "NavLeft", panelBgColor,
+        var left = Panel(rootGO, "NavLeft", panelBgColor,
             new Vector2(0f, 1f), new Vector2(0f, 1f),
             new Vector2(14f, -12f), new Vector2(360f, 66f));
 
@@ -983,7 +1011,7 @@ public class HUDManager : MonoBehaviour
         }
 
         // ── TENGAH: Progress Hari (H1 → H2 → H3) ─────────────────────────
-        var center = Panel(cGO, "NavCenter", new Color(0, 0, 0, 0),
+        var center = Panel(rootGO, "NavCenter", new Color(0, 0, 0, 0),
             new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
             new Vector2(0f, -6f), new Vector2(360f, 92f));
 
@@ -1049,7 +1077,7 @@ public class HUDManager : MonoBehaviour
 
         // ── KANAN: Voice Meter (fill bar + marker) ─────────────────────────
         // Panel lebih lebar agar bar cukup besar
-        var right = Panel(cGO, "NavRight", panelBgColor,
+        var right = Panel(rootGO, "NavRight", panelBgColor,
             new Vector2(1f, 1f), new Vector2(1f, 1f),
             new Vector2(-14f, -12f), new Vector2(340f, 66f));
         _gaugePanelGO = right.gameObject;   // disimpan agar bisa disembunyikan di Hari 2 & 3
@@ -1064,8 +1092,8 @@ public class HUDManager : MonoBehaviour
         glRT.offsetMin = new Vector2(10f, 0f);
         glRT.offsetMax = Vector2.zero;
 
-        // Label level (Diam / Normal / Sedang / TERIAK!) di bawah label SUARA
-        _gaugeLevelLabel = Tmp(right, "LevelLabel", "Diam", 13,
+        // Label level (DIAM / TENANG / SEDANG / TERIAK!) di bawah label SUARA
+        _gaugeLevelLabel = Tmp(right, "LevelLabel", "DIAM", 13,
             new Color(0.55f, 0.55f, 0.60f, 1f));
         _gaugeLevelLabel.alignment = TextAlignmentOptions.MidlineLeft;
         var llRT = _gaugeLevelLabel.rectTransform;
@@ -1093,6 +1121,7 @@ public class HUDManager : MonoBehaviour
             new Color(0.55f, 0.10f, 0.08f, 0.40f),   // merah redup
         };
         _gaugeZones = new Image[3];
+        string[] zNama = { "TENANG", "SEDANG", "TERIAK" };
         for (int i = 0; i < 3; i++)
         {
             var zGO = new GameObject("ZoneBg" + i);
@@ -1103,6 +1132,19 @@ public class HUDManager : MonoBehaviour
             zRT.offsetMin = zRT.offsetMax = Vector2.zero;
             _gaugeZones[i]       = zGO.AddComponent<Image>();
             _gaugeZones[i].color = zOff[i];
+
+            // Label statis nama zona (TENANG/SEDANG/TERIAK) di tengah zona
+            var zLbl = Tmp(zGO, "ZoneLbl" + i, zNama[i], 11,
+                new Color(1f, 1f, 1f, 0.78f));
+            zLbl.alignment = TextAlignmentOptions.Center;
+            zLbl.fontStyle = FontStyles.Bold;
+            zLbl.enableAutoSizing = true;
+            zLbl.fontSizeMin = 8;
+            zLbl.fontSizeMax = 12;
+            var zlRT = zLbl.rectTransform;
+            zlRT.anchorMin = Vector2.zero;
+            zlRT.anchorMax = Vector2.one;
+            zlRT.offsetMin = zlRT.offsetMax = Vector2.zero;
         }
 
         // ── Fill bar (tumbuh dari kiri, warna berubah sesuai level) ────
@@ -1128,7 +1170,7 @@ public class HUDManager : MonoBehaviour
         // ── PANEL BUKTI (muncul Hari 2–3) ─────────────────────────────────
         // Checklist bukti (screenshot & plat) agar pemain paham kenapa
         // ending pelapor terbuka/terkunci. Disembunyikan saat Hari 1.
-        _buktiPanel = Panel(cGO, "NavBukti", panelBgColor,
+        _buktiPanel = Panel(rootGO, "NavBukti", panelBgColor,
             new Vector2(0f, 1f), new Vector2(0f, 1f),
             new Vector2(14f, -84f), new Vector2(340f, 40f));
         _buktiText = Tmp(_buktiPanel, "BuktiText", "", 16, Color.white);
@@ -1140,6 +1182,43 @@ public class HUDManager : MonoBehaviour
         btRT.offsetMin = new Vector2(12f, 0f);
         btRT.offsetMax = new Vector2(-10f, 0f);
         _buktiPanel.SetActive(false);
+
+        // Terapkan Safe Area + skala responsif setelah semua panel dibangun.
+        ApplySafeAreaDanSkala();
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // RESPONSIF MOBILE — Safe Area + skala layar sempit/portrait
+    // ══════════════════════════════════════════════════════════════════════
+    void ApplySafeAreaDanSkala()
+    {
+        if (_navRootRT == null) return;
+
+        // ── Safe Area (notch / status bar) ──────────────────────────────
+        if (hormatiSafeArea)
+        {
+            Rect sa = Screen.safeArea;
+            int w = Screen.width  > 0 ? Screen.width  : 1;
+            int h = Screen.height > 0 ? Screen.height : 1;
+            Vector2 aMin = new Vector2(sa.xMin / w, sa.yMin / h);
+            Vector2 aMax = new Vector2(sa.xMax / w, sa.yMax / h);
+            _navRootRT.anchorMin = aMin;
+            _navRootRT.anchorMax = aMax;
+        }
+        else
+        {
+            _navRootRT.anchorMin = Vector2.zero;
+            _navRootRT.anchorMax = Vector2.one;
+        }
+        _navRootRT.offsetMin = _navRootRT.offsetMax = Vector2.zero;
+
+        // ── Skala responsif: layar sempit/portrait → perkecil agar 3 panel
+        //    (kiri/tengah/kanan) tidak saling tumpang tindih. ───────────────
+        float aspek = (Screen.height > 0) ? (float)Screen.width / Screen.height : 1.777f;
+        float skala = (aspek < aspekSempitThreshold) ? Mathf.Clamp(skalaNavbarSempit, 0.5f, 1f) : 1f;
+        _navRootRT.localScale = new Vector3(skala, skala, 1f);
+
+        _lastScreenSize = new Vector2Int(Screen.width, Screen.height);
     }
 
     // ══════════════════════════════════════════════════════════════════════

@@ -224,7 +224,8 @@ public class ChatSimWhatsApp : MonoBehaviour
         var pRT = _phoneFrame.GetComponent<RectTransform>();
         pRT.anchorMin = new Vector2(0.5f, 0.5f); pRT.anchorMax = new Vector2(0.5f, 0.5f);
         pRT.pivot = new Vector2(0.5f, 0.5f);
-        pRT.sizeDelta = new Vector2(720f, 1000f);
+        // Frame HP diperbesar mendekati fullscreen vertikal agar teks chat mudah dibaca di mobile.
+        pRT.sizeDelta = new Vector2(880f, 1050f);
 
         // Header WhatsApp
         var header = new GameObject("Header");
@@ -236,17 +237,17 @@ public class ChatSimWhatsApp : MonoBehaviour
         var hRT = header.GetComponent<RectTransform>();
         hRT.anchorMin = new Vector2(0f, 1f); hRT.anchorMax = new Vector2(1f, 1f);
         hRT.pivot = new Vector2(0.5f, 1f);
-        hRT.sizeDelta = new Vector2(0f, 90f);
+        hRT.sizeDelta = new Vector2(0f, 104f);
         hRT.offsetMin = new Vector2(8f, hRT.offsetMin.y);
         hRT.offsetMax = new Vector2(-8f, -8f);
 
-        var nama = BuatTeks(header.transform, "Nama", namaKontak, 22, warnaTeksHeader, FontStyles.Bold);
+        var nama = BuatTeks(header.transform, "Nama", namaKontak, 30, warnaTeksHeader, FontStyles.Bold);
         nama.alignment = TextAlignmentOptions.MidlineLeft;
         var nrt = nama.rectTransform;
         nrt.anchorMin = new Vector2(0f, 0.4f); nrt.anchorMax = new Vector2(1f, 1f);
         nrt.offsetMin = new Vector2(80f, 0f); nrt.offsetMax = new Vector2(-12f, -8f);
 
-        var status = BuatTeks(header.transform, "Status", statusKontak, 14, new Color(1f,1f,1f,0.75f), FontStyles.Italic);
+        var status = BuatTeks(header.transform, "Status", statusKontak, 18, new Color(1f,1f,1f,0.75f), FontStyles.Italic);
         status.alignment = TextAlignmentOptions.MidlineLeft;
         var stt = status.rectTransform;
         stt.anchorMin = new Vector2(0f, 0f); stt.anchorMax = new Vector2(1f, 0.4f);
@@ -272,8 +273,8 @@ public class ChatSimWhatsApp : MonoBehaviour
         cbImg.color = warnaChatBg;
         var cbRT = chatBg.GetComponent<RectTransform>();
         cbRT.anchorMin = new Vector2(0f, 0f); cbRT.anchorMax = new Vector2(1f, 1f);
-        cbRT.offsetMin = new Vector2(8f, 312f);
-        cbRT.offsetMax = new Vector2(-8f, -100f);
+        cbRT.offsetMin = new Vector2(8f, 372f);
+        cbRT.offsetMax = new Vector2(-8f, -114f);
 
         // Scroll container utk pesan
         var scroll = new GameObject("ChatScroll");
@@ -341,7 +342,7 @@ public class ChatSimWhatsApp : MonoBehaviour
         bVlg.childControlWidth = true; bVlg.childControlHeight = true;
         bVlg.childForceExpandWidth = true; bVlg.childForceExpandHeight = false;
 
-        var tmp = BuatTeks(bubble.transform, "Dots", "\u2022 \u2022 \u2022", 22,
+        var tmp = BuatTeks(bubble.transform, "Dots", "\u2022 \u2022 \u2022", 28,
                            new Color(1f, 1f, 1f, 0.6f), FontStyles.Bold);
         tmp.alignment = TextAlignmentOptions.Center;
 
@@ -362,7 +363,7 @@ public class ChatSimWhatsApp : MonoBehaviour
         var row = new GameObject("Row");
         row.transform.SetParent(_chatScroll, false);
         var rowLE = row.AddComponent<LayoutElement>();
-        rowLE.preferredWidth = 512f;   // lebar maksimum bubble masuk
+        rowLE.preferredWidth = 640f;   // lebar maksimum bubble masuk
         rowLE.flexibleWidth  = 0f;
         var rowVlg = row.AddComponent<VerticalLayoutGroup>();
         rowVlg.childAlignment      = TextAnchor.UpperLeft;
@@ -394,13 +395,13 @@ public class ChatSimWhatsApp : MonoBehaviour
         bubbleVlg.childForceExpandHeight = false;
 
         // Teks pesan — word-wrap, tinggi mengikuti panjang teks.
-        var t = BuatTeks(go.transform, "Text", teks, 21, warnaTeksBubble, FontStyles.Normal);
+        var t = BuatTeks(go.transform, "Text", teks, 28, warnaTeksBubble, FontStyles.Normal);
         t.alignment          = TextAlignmentOptions.TopLeft;
         t.textWrappingMode   = TextWrappingModes.Normal;
         t.lineSpacing        = 6f;
 
         // Jam kecil ala WhatsApp di pojok kanan bawah bubble.
-        var jam = BuatTeks(go.transform, "Jam", WaktuSekarang(), 13,
+        var jam = BuatTeks(go.transform, "Jam", WaktuSekarang(), 16,
                            new Color(1f, 1f, 1f, 0.45f), FontStyles.Normal);
         jam.alignment = TextAlignmentOptions.BottomRight;
 
@@ -484,11 +485,11 @@ public class ChatSimWhatsApp : MonoBehaviour
         var tpRT = _tombolPanel.GetComponent<RectTransform>();
         tpRT.anchorMin = new Vector2(0f, 0f); tpRT.anchorMax = new Vector2(1f, 0f);
         tpRT.pivot = new Vector2(0.5f, 0f);
-        tpRT.sizeDelta = new Vector2(-16f, 296f);
+        tpRT.sizeDelta = new Vector2(-16f, 348f);
         tpRT.anchoredPosition = new Vector2(0f, 8f);
 
         // Timer di bagian atas bilah aksi
-        _timerText = BuatTeks(_tombolPanel.transform, "Timer", "", 24, warnaTimer, FontStyles.Bold);
+        _timerText = BuatTeks(_tombolPanel.transform, "Timer", "", 30, warnaTimer, FontStyles.Bold);
         _timerText.alignment = TextAlignmentOptions.Center;
         var trt = _timerText.rectTransform;
         trt.anchorMin = new Vector2(0f, 1f); trt.anchorMax = new Vector2(1f, 1f);
@@ -530,7 +531,7 @@ public class ChatSimWhatsApp : MonoBehaviour
         gRT.offsetMax = new Vector2(-14f, -64f);
 
         var grid = gridGO.AddComponent<GridLayoutGroup>();
-        grid.cellSize = new Vector2(330f, 60f);
+        grid.cellSize = new Vector2(410f, 84f);
         grid.spacing = new Vector2(14f, 12f);
         grid.childAlignment = TextAnchor.UpperCenter;
         grid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
@@ -590,10 +591,10 @@ public class ChatSimWhatsApp : MonoBehaviour
         // Efek hover: tombol membesar saat kursor masuk (terasa interaktif).
         PasangHover(go, 1.05f);
 
-        var t = BuatTeks(go.transform, "Label", teks, 16, Color.white, FontStyles.Bold);
+        var t = BuatTeks(go.transform, "Label", teks, 24, Color.white, FontStyles.Bold);
         t.alignment = TextAlignmentOptions.Center;
         t.enableAutoSizing = true;
-        t.fontSizeMin = 12f; t.fontSizeMax = 16f;
+        t.fontSizeMin = 18f; t.fontSizeMax = 24f;
         var trt = t.rectTransform;
         trt.anchorMin = Vector2.zero; trt.anchorMax = Vector2.one;
         trt.offsetMin = new Vector2(8f, 4f);
@@ -695,13 +696,13 @@ public class ChatSimWhatsApp : MonoBehaviour
         var rt = _reaksiPanel.GetComponent<RectTransform>();
         rt.anchorMin = new Vector2(0.5f, 0f); rt.anchorMax = new Vector2(0.5f, 0f);
         rt.pivot = new Vector2(0.5f, 0f);
-        rt.sizeDelta = new Vector2(1000f, 220f);
+        rt.sizeDelta = new Vector2(1120f, 280f);
         rt.anchoredPosition = new Vector2(0f, 30f);
 
         // Animasi pop saat panel reaksi muncul.
         StartCoroutine(AnimasiPop(rt));
 
-        var teks = BuatTeks(_reaksiPanel.transform, "Reaksi", a.reaksi, 22, new Color(1f,1f,0.92f,1f), FontStyles.Normal);
+        var teks = BuatTeks(_reaksiPanel.transform, "Reaksi", a.reaksi, 28, new Color(1f,1f,0.92f,1f), FontStyles.Normal);
         teks.alignment = TextAlignmentOptions.Center;
         var trt = teks.rectTransform;
         trt.anchorMin = new Vector2(0f, 0f); trt.anchorMax = new Vector2(1f, 1f);
@@ -718,7 +719,7 @@ public class ChatSimWhatsApp : MonoBehaviour
         var bRT = btnGO.GetComponent<RectTransform>();
         bRT.anchorMin = new Vector2(0.5f, 0f); bRT.anchorMax = new Vector2(0.5f, 0f);
         bRT.pivot = new Vector2(0.5f, 0f);
-        bRT.sizeDelta = new Vector2(280f, 55f);
+        bRT.sizeDelta = new Vector2(360f, 88f);
         bRT.anchoredPosition = new Vector2(0f, 18f);
 
         var btn = btnGO.AddComponent<Button>();
@@ -733,7 +734,7 @@ public class ChatSimWhatsApp : MonoBehaviour
         });
         PasangHover(btnGO, 1.06f);
 
-        var lab = BuatTeks(btnGO.transform, "Label", tombolLanjutTeks, 20, Color.white, FontStyles.Bold);
+        var lab = BuatTeks(btnGO.transform, "Label", tombolLanjutTeks, 26, Color.white, FontStyles.Bold);
         lab.alignment = TextAlignmentOptions.Center;
         var lrt = lab.rectTransform;
         lrt.anchorMin = Vector2.zero; lrt.anchorMax = Vector2.one;

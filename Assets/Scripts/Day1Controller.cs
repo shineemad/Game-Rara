@@ -251,6 +251,36 @@ public class Day1Controller : MonoBehaviour
     [Tooltip("Centang jika ingin langsung mulai tanpa Day1Intro (untuk testing).")]
     public bool autoMulaiTanpaIntro = false;
 
+    // Penjaga instance tunggal. Scene ternyata memuat DUA komponen Day1Controller
+    // (satu di "day1Intro", satu di "NpcDialogCanvas"). Bila keduanya jalan, mereka
+    // saling berebut: dobel set dialogActive, MulaiGame dipanggil 2x, player
+    // di-freeze ganda, dua tutorial berjalan, dan state phase balapan — akibatnya
+    // game macet/tidak bisa berjalan setelah main menu. Guard ini memastikan hanya
+    // satu controller yang aktif; duplikatnya menonaktifkan diri di Awake sehingga
+    // Start()-nya tidak pernah dijalankan.
+    static Day1Controller _instanceAktif;
+
+    /// Controller Hari 1 yang sedang aktif (dipakai sistem lain, mis. MobileControls
+    /// untuk membaca level teriak demi mengisi cincin gauge tombol TERIAK).
+    public static Day1Controller Aktif => _instanceAktif;
+
+    /// Level teriak ternormalisasi (0..1) untuk visual gauge di tombol mobile.
+    public float ShoutLevel01 => Mathf.Clamp01(shoutLevel);
+
+    // ══════════════════════════════════════════════════════════════════════
+    void Awake()
+    {
+        if (_instanceAktif != null && _instanceAktif != this)
+        {
+            // Sudah ada controller aktif → matikan duplikat ini.
+            Debug.LogWarning("[Day1Controller] Duplikat terdeteksi pada '" + gameObject.name +
+                             "'. Komponen ini dinonaktifkan agar tidak bentrok.");
+            enabled = false;   // Menonaktifkan di Awake menunda Start() selamanya
+            return;
+        }
+        _instanceAktif = this;
+    }
+
     // ══════════════════════════════════════════════════════════════════════
     void Start()
     {
@@ -319,6 +349,8 @@ public class Day1Controller : MonoBehaviour
     /// </summary>
     void OnDestroy()
     {
+        if (_instanceAktif == this) _instanceAktif = null;
+
         if (_introRef != null && _introRef.onIntroSelesai != null)
             _introRef.onIntroSelesai.RemoveListener(MulaiGame);
         if (eduCardContinueBtn != null)
@@ -562,6 +594,16 @@ public class Day1Controller : MonoBehaviour
     void BuildShoutButton()
     {
         if (_shoutCanvasGO != null) return;
+
+        // Tombol TERIAK kini disediakan oleh controller mobile terpadu (MobileControls),
+        // satu paket dengan tombol arah. Bila MobileControls ada, JANGAN bangun tombol
+        // radial ini agar tidak ada dua tombol TERIAK yang tumpang tindih.
+        if (MobileControls.Instance != null) return;
+
+        // Tombol TERIAK (radial) KHUSUS perangkat sentuh (HP/tablet). Di desktop
+        // disembunyikan — pemain memakai SPACE / mikrofon. Deteksi disamakan
+        // dengan tombol arah mobile lewat MobileControls.ShouldShowTouchUI().
+        if (!MobileControls.ShouldShowTouchUI()) return;
 
         _shoutCanvasGO = new GameObject("Day1ShoutCanvas");
         // Penjaga mandiri: sembunyikan kanvas TERIAK begitu bukan Hari 1 lagi.
@@ -956,26 +998,35 @@ public class Day1Controller : MonoBehaviour
         bool  berhasil = false;
         while (true)
         {
-            // Sumber intensitas: VoiceMeter (mic/fallback) atau isi/luruh lokal.
+            // Sumber intensitas. Tombol TERIAK / SPACE harus SELALU berfungsi
+            // (mengisi meter langsung), terlepas dari ada-tidaknya mikrofon.
             bool spaceHeld = Input.GetKey(KeyCode.Space);
-            bool held      = ditekan || spaceHeld;
-            if (VoiceMeter.Instance != null)
-            {
-                VoiceMeter.Instance.fallbackButtonHeld = held;
+            bool held      = ditekan || spaceHeld || MobileControls.ShoutHeld;
+            bool micAktif  = VoiceMeter.Instance != null && VoiceMeter.Instance.MicActive;
+
+            if (VoiceMeter.Instance != null) VoiceMeter.Instance.fallbackButtonHeld = held;
+
+            if (held)
+                // Tombol/SPACE ditahan → isi meter langsung sampai penuh.
+                shoutLevel = Mathf.Min(1f, shoutLevel + shoutFillRate * Time.deltaTime);
+            else if (micAktif)
+                // Tidak menekan tombol → ikuti level mikrofon.
                 shoutLevel = VoiceMeter.Instance.NormalizedLevel;
-            }
             else
-            {
-                shoutLevel = held
-                    ? Mathf.Min(1f, shoutLevel + shoutFillRate * Time.deltaTime)
-                    : Mathf.Max(0f, shoutLevel - shoutDecayRate * Time.deltaTime);
-            }
+                // Tanpa mic & tanpa tombol → meter luruh perlahan.
+                shoutLevel = Mathf.Max(0f, shoutLevel - shoutDecayRate * Time.deltaTime);
 
             // Apakah suara sudah mencapai level KERAS (>80 dB)?
-            // Bar diisi sebagai progres menuju ambang KERAS (thresholdLoud).
+            // Jalur tombol: pakai shoutLevel langsung. Jalur mic: bandingkan
+            // NormalizedLevel dengan ambang KERAS (thresholdLoud).
             bool  keras;
             float progresKeras;
-            if (VoiceMeter.Instance != null)
+            if (held)
+            {
+                progresKeras = Mathf.Clamp01(shoutLevel);
+                keras        = shoutLevel >= 0.96f;
+            }
+            else if (micAktif)
             {
                 float ambangKeras = Mathf.Max(0.0001f, VoiceMeter.Instance.thresholdLoud);
                 progresKeras = Mathf.Clamp01(VoiceMeter.Instance.NormalizedLevel / ambangKeras);
@@ -1794,29 +1845,31 @@ public class Day1Controller : MonoBehaviour
 
     void HandleShout()
     {
-        // Prioritas: gunakan VoiceMeter jika tersedia
-        if (VoiceMeter.Instance != null)
-        {
-            // shoutLevel = NormalizedLevel dari mic (atau fallback tombol/SpaceBar)
-            shoutLevel = VoiceMeter.Instance.NormalizedLevel;
+        // Tombol TERIAK on-screen / SpaceBar harus SELALU berfungsi (bukan hanya
+        // lewat mikrofon). Saat ditahan → langsung mode TERIAK (Loud).
+        // MobileControls.ShoutHeld = tombol TERIAK di controller mobile terpadu.
+        bool tombolDitahan = shoutHeld || Input.GetKey(KeyCode.Space) || MobileControls.ShoutHeld;
 
-            // Efek kecepatan player berdasarkan level suara
+        if (tombolDitahan)
+        {
+            // Naikkan gauge cepat & paksa efek LARI, tak bergantung mikrofon.
+            shoutLevel = Mathf.Min(1f, shoutLevel + shoutFillRate * Time.deltaTime);
+            if (VoiceMeter.Instance != null) VoiceMeter.Instance.fallbackButtonHeld = true;
+            AplikasiEfekSuara(VoiceMeter.VoiceLevel.Loud);
+        }
+        else if (VoiceMeter.Instance != null)
+        {
+            // Tidak menekan tombol → ikuti mikrofon (atau diam).
+            if (VoiceMeter.Instance.fallbackButtonHeld)
+                VoiceMeter.Instance.fallbackButtonHeld = false;
+            shoutLevel = VoiceMeter.Instance.NormalizedLevel;
             AplikasiEfekSuara(VoiceMeter.Instance.Level);
         }
         else
         {
-            // Fallback lama: tombol shout / SpaceBar
-            bool spaceheld = Input.GetKey(KeyCode.Space);
-            bool isShout   = shoutHeld || spaceheld;
-            if (isShout)
-                shoutLevel = Mathf.Min(1f, shoutLevel + shoutFillRate * Time.deltaTime);
-            else
-                shoutLevel = Mathf.Max(0f, shoutLevel - shoutDecayRate * Time.deltaTime);
-
-            // Teriak penuh (gauge >= 0.5) → mode lari, selain itu normal.
-            AplikasiEfekSuara(shoutLevel >= 0.5f
-                ? VoiceMeter.VoiceLevel.Loud
-                : VoiceMeter.VoiceLevel.Normal);
+            // Tanpa VoiceMeter & tanpa tombol → meter luruh.
+            shoutLevel = Mathf.Max(0f, shoutLevel - shoutDecayRate * Time.deltaTime);
+            AplikasiEfekSuara(VoiceMeter.VoiceLevel.Normal);
         }
 
         if (shoutGauge != null) shoutGauge.value = shoutLevel;

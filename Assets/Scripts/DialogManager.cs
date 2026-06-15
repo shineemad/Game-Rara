@@ -178,12 +178,23 @@ public class DialogManager : MonoBehaviour
         foreach (Transform child in choicePanel.transform)
             Destroy(child.gameObject);
 
-        float slotH = 1f / line.choices.Length;
+        // VerticalLayoutGroup menjaga tinggi tombol minimum (target sentuh mobile).
+        // Tinggi tiap tombol dijamin >= MIN_CHOICE_HEIGHT via LayoutElement.
+        var vlg = choicePanel.GetComponent<VerticalLayoutGroup>();
+        if (vlg == null) vlg = choicePanel.AddComponent<VerticalLayoutGroup>();
+        vlg.spacing               = 12f;
+        vlg.padding               = new RectOffset(0, 0, 0, 0);
+        vlg.childAlignment        = TextAnchor.LowerCenter;
+        vlg.childControlWidth     = true;
+        vlg.childControlHeight    = true;
+        vlg.childForceExpandWidth = true;
+        vlg.childForceExpandHeight = true;
+
+        const float MIN_CHOICE_HEIGHT = 96f; // px (ref 1080) — target sentuh ramah anak/mobile
+
         for (int i = 0; i < line.choices.Length; i++)
         {
             var choice = line.choices[i];
-            float yMax = 1f - i * slotH;
-            float yMin = yMax - slotH + 0.015f;
 
             GameObject btnObj;
             if (choiceButtonPrefab != null)
@@ -192,14 +203,10 @@ public class DialogManager : MonoBehaviour
             }
             else
             {
-                // Auto-build tombol tanpa prefab
+                // Auto-build tombol tanpa prefab — posisi diatur VerticalLayoutGroup
                 btnObj = new GameObject("Choice_" + i);
                 btnObj.transform.SetParent(choicePanel.transform, false);
-                var bRT = btnObj.AddComponent<RectTransform>();
-                bRT.anchorMin = new Vector2(0f, yMin);
-                bRT.anchorMax = new Vector2(1f, yMax);
-                bRT.offsetMin = new Vector2(0f,  4f);
-                bRT.offsetMax = new Vector2(0f, -4f);
+                btnObj.AddComponent<RectTransform>();
                 btnObj.AddComponent<Image>();
 
                 var lblGO = new GameObject("Label");
@@ -207,17 +214,27 @@ public class DialogManager : MonoBehaviour
                 var lblRT = lblGO.AddComponent<RectTransform>();
                 lblRT.anchorMin = Vector2.zero;
                 lblRT.anchorMax = Vector2.one;
-                lblRT.offsetMin = new Vector2(14f,  4f);
-                lblRT.offsetMax = new Vector2(-14f, -4f);
+                lblRT.offsetMin = new Vector2(18f,  6f);
+                lblRT.offsetMax = new Vector2(-18f, -6f);
                 var lbl = lblGO.AddComponent<TextMeshProUGUI>();
-                lbl.fontSize           = 24;
+                lbl.fontSize           = 28;
                 lbl.color              = Color.white;
                 lbl.fontStyle          = FontStyles.Bold;
                 lbl.alignment          = TextAlignmentOptions.MidlineLeft;
                 lbl.textWrappingMode   = TextWrappingModes.Normal;
+                lbl.enableAutoSizing   = true;
+                lbl.fontSizeMin        = 20;
+                lbl.fontSizeMax        = 28;
                 lbl.raycastTarget      = false;
                 btnObj.AddComponent<Button>();
             }
+
+            // Jamin tinggi minimum tombol (target sentuh) untuk semua jalur build
+            var le = btnObj.GetComponent<LayoutElement>();
+            if (le == null) le = btnObj.AddComponent<LayoutElement>();
+            le.minHeight       = MIN_CHOICE_HEIGHT;
+            le.preferredHeight = MIN_CHOICE_HEIGHT;
+            le.flexibleHeight  = 1f;
 
             // Teks & warna
             var tmp = btnObj.GetComponentInChildren<TextMeshProUGUI>();

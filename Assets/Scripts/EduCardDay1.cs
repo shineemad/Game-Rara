@@ -96,6 +96,18 @@ public class EduCardDay1 : MonoBehaviour
         }
     };
 
+    [Header("Ilustrasi (opsional)")]
+    [Tooltip("Sprite ilustrasi besar di bawah judul. Kosong = tidak tampil.")]
+    public Sprite ilustrasiSprite;
+    [Tooltip("Tinggi area ilustrasi (px). Lebar mengikuti lebar kartu.")]
+    public float ilustrasiTinggi = 150f;
+
+    [Header("Accordion")]
+    [Tooltip("Tiap tip jadi accordion: klik heading untuk buka/tutup isi (hemat ruang).")]
+    public bool accordion = true;
+    [Tooltip("Indeks tip yang terbuka di awal (-1 = semua tertutup, 0 = tip pertama).")]
+    public int accordionTerbukaAwal = 0;
+
     [Header("Footer (Hotline)")]
     [TextArea(2, 4)]
     [Tooltip("Teks footer — biasanya nomor hotline. Kosong = tidak tampil.")]
@@ -317,13 +329,31 @@ public class EduCardDay1 : MonoBehaviour
         titleTMP.alignment = TextAlignmentOptions.Center;
         titleTMP.textWrappingMode = TextWrappingModes.Normal;
 
+        // ── Ilustrasi (opsional) di bawah judul ──────────────────────────
+        float tipsTopOffset = -110f;
+        if (ilustrasiSprite != null)
+        {
+            var illGO = new GameObject("Ilustrasi");
+            illGO.transform.SetParent(card.transform, false);
+            var illRT = illGO.AddComponent<RectTransform>();
+            illRT.anchorMin = new Vector2(0f, 1f); illRT.anchorMax = new Vector2(1f, 1f);
+            illRT.pivot     = new Vector2(0.5f, 1f);
+            illRT.offsetMin = new Vector2(40f, -110f - ilustrasiTinggi);
+            illRT.offsetMax = new Vector2(-40f, -110f);
+            var illImg = illGO.AddComponent<Image>();
+            illImg.sprite         = ilustrasiSprite;
+            illImg.preserveAspect = true;
+            illImg.raycastTarget  = false;
+            tipsTopOffset = -110f - ilustrasiTinggi - 14f;
+        }
+
         // ── Container tips ───────────────────────────────────────────────
         var listGO = new GameObject("TipsList");
         listGO.transform.SetParent(card.transform, false);
         var listRT = listGO.AddComponent<RectTransform>();
         listRT.anchorMin = new Vector2(0f, 0f); listRT.anchorMax = new Vector2(1f, 1f);
         listRT.offsetMin = new Vector2(40f, 140f);
-        listRT.offsetMax = new Vector2(-40f, -110f);
+        listRT.offsetMax = new Vector2(-40f, tipsTopOffset);
         var vlg = listGO.AddComponent<VerticalLayoutGroup>();
         vlg.childAlignment       = TextAnchor.UpperLeft;
         vlg.childControlWidth    = true;
@@ -334,8 +364,8 @@ public class EduCardDay1 : MonoBehaviour
         vlg.padding              = new RectOffset(8, 8, 8, 8);
 
         if (tipsList != null)
-            foreach (var tip in tipsList)
-                BuatTipEntry(listGO.transform, tip);
+            for (int i = 0; i < tipsList.Length; i++)
+                BuatTipEntry(listGO.transform, tipsList[i], i);
 
         // ── Footer (hotline) ─────────────────────────────────────────────
         if (!string.IsNullOrEmpty(footerText))
@@ -393,7 +423,7 @@ public class EduCardDay1 : MonoBehaviour
         StartCoroutine(PopIn(cardRT));
     }
 
-    void BuatTipEntry(Transform parent, TipsEntry tip)
+    void BuatTipEntry(Transform parent, TipsEntry tip, int index)
     {
         if (tip == null) return;
 
@@ -436,16 +466,59 @@ public class EduCardDay1 : MonoBehaviour
         var txtLE = txtCol.AddComponent<LayoutElement>();
         txtLE.flexibleWidth      = 1f;
 
-        var h = BuatTeks(txtCol.transform, "Heading", tip.heading, 22,
+        // ── Baris heading (klik untuk buka/tutup bila accordion) ─────────
+        var headRow = new GameObject("HeaderRow");
+        headRow.transform.SetParent(txtCol.transform, false);
+        headRow.AddComponent<RectTransform>();
+        var headHLG = headRow.AddComponent<HorizontalLayoutGroup>();
+        headHLG.childAlignment       = TextAnchor.UpperLeft;
+        headHLG.childControlWidth    = true;
+        headHLG.childControlHeight   = true;
+        headHLG.childForceExpandWidth  = false;
+        headHLG.childForceExpandHeight = false;
+        headHLG.spacing              = 8f;
+
+        var h = BuatTeks(headRow.transform, "Heading", tip.heading, 22,
                           tip.warnaHeading, FontStyles.Bold);
         h.alignment        = TextAlignmentOptions.TopLeft;
         h.textWrappingMode = TextWrappingModes.Normal;
+        var hLE = h.gameObject.AddComponent<LayoutElement>();
+        hLE.flexibleWidth  = 1f;
 
         var b = BuatTeks(txtCol.transform, "Isi", tip.isi, 18,
                           tip.warnaIsi, FontStyles.Normal);
         b.alignment        = TextAlignmentOptions.TopLeft;
         b.textWrappingMode = TextWrappingModes.Normal;
         b.lineSpacing      = 6f;
+
+        if (accordion)
+        {
+            // Chevron indikator buka/tutup
+            bool terbuka = (index == accordionTerbukaAwal);
+            var chev = BuatTeks(headRow.transform, "Chevron", terbuka ? "▼" : "▶", 18,
+                                 tip.warnaHeading, FontStyles.Bold);
+            chev.alignment = TextAlignmentOptions.MidlineRight;
+            var chLE = chev.gameObject.AddComponent<LayoutElement>();
+            chLE.preferredWidth = 28f;
+            chLE.flexibleWidth  = 0f;
+
+            b.gameObject.SetActive(terbuka);
+
+            // Tombol transparan di area heading
+            var headBtnImg = headRow.AddComponent<Image>();
+            headBtnImg.color = new Color(1f, 1f, 1f, 0.001f); // hampir transparan tapi bisa diklik
+            var headBtn = headRow.AddComponent<Button>();
+            var bodyGO = b.gameObject;
+            var chevTMP = chev;
+            headBtn.onClick.AddListener(() =>
+            {
+                bool baru = !bodyGO.activeSelf;
+                bodyGO.SetActive(baru);
+                chevTMP.text = baru ? "▼" : "▶";
+                AudioManager.Instance?.Click();
+                LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)entry.transform);
+            });
+        }
     }
 
     void HandleLanjut()

@@ -1,5 +1,7 @@
+using System.Collections;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 /// <summary>
 /// DayTransitionManager — Manager transisi antar hari dalam SATU scene (single-scene mode).
@@ -61,6 +63,19 @@ public class DayTransitionManager : MonoBehaviour
     [Tooltip("Referensi langsung Day3PrologScreen. Kosongkan = auto-find via Singleton.")]
     public Day3PrologScreen day3Prolog;
 
+    [Header("Transisi Fade Antar Hari")]
+    [Tooltip("Kalau true, layar fade ke hitam saat berpindah hari (menutupi swap GameObject yang mendadak).")]
+    public bool gunakanFade = true;
+    [Tooltip("Durasi fade in/out (detik).")]
+    [Range(0.1f, 1.5f)]
+    public float fadeDurasi = 0.45f;
+    [Tooltip("Warna layar saat transisi (default hitam).")]
+    public Color fadeWarna = Color.black;
+
+    // Overlay fade prosedural (dibuat sekali, dipakai ulang).
+    private CanvasGroup _fadeGroup;
+    private Image       _fadeImg;
+
     [Header("Debug")]
     public bool debugLog = true;
 
@@ -83,6 +98,13 @@ public class DayTransitionManager : MonoBehaviour
     public void LanjutKeDay2()
     {
         if (debugLog) Debug.Log("[DayTransitionManager] LanjutKeDay2()");
+        StartCoroutine(TransisiKeDay2());
+    }
+
+    IEnumerator TransisiKeDay2()
+    {
+        // Fade ke hitam dulu supaya swap GameObject Day1→Day2 tidak terlihat mendadak.
+        yield return Fade(true);
 
         // Logika transisi hari (set GameState.day=2 + refresh navbar + animasi
         // highlight H2) DI-CENTRALIZE di HUDManager.OnLanjutHari2().
@@ -118,11 +140,14 @@ public class DayTransitionManager : MonoBehaviour
                     prolog.gameObject.SetActive(true);
                 }
                 prolog.Tampilkan(() => MulaiDay2Sesungguhnya());
-                return;
+                // Layar prolog sudah menutupi konten → aman fade in (mengungkap prolog).
+                yield return Fade(false);
+                yield break;
             }
 
             // Tidak ada prolog → langsung jalan Day 2
             MulaiDay2Sesungguhnya();
+            yield return Fade(false);
         }
         else
         {
@@ -179,6 +204,13 @@ public class DayTransitionManager : MonoBehaviour
     public void LanjutKeDay3()
     {
         if (debugLog) Debug.Log("[DayTransitionManager] LanjutKeDay3()");
+        StartCoroutine(TransisiKeDay3());
+    }
+
+    IEnumerator TransisiKeDay3()
+    {
+        // Fade ke hitam dulu supaya swap GameObject Day2→Day3 tidak terlihat mendadak.
+        yield return Fade(true);
 
         // Logika transisi hari (set GameState.day=3 + refresh navbar + animasi
         // highlight H3) DI-CENTRALIZE di HUDManager.OnLanjutHari3().
@@ -212,11 +244,14 @@ public class DayTransitionManager : MonoBehaviour
                     prolog.gameObject.SetActive(true);
                 }
                 prolog.Tampilkan(() => MulaiDay3Sesungguhnya());
-                return;
+                // Layar prolog sudah menutupi konten → aman fade in (mengungkap prolog).
+                yield return Fade(false);
+                yield break;
             }
 
             // Tidak ada prolog → langsung jalan Day 3
             MulaiDay3Sesungguhnya();
+            yield return Fade(false);
         }
         else
         {
@@ -267,6 +302,58 @@ public class DayTransitionManager : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
     // INTERNAL HELPERS
     // ══════════════════════════════════════════════════════════════════════
+
+    /// <summary>
+    /// Fade layar ke hitam (keHitam=true) atau dari hitam ke transparan
+    /// (keHitam=false). Overlay dibuat prosedural sekali dan dipakai ulang.
+    /// </summary>
+    IEnumerator Fade(bool keHitam)
+    {
+        if (!gunakanFade) yield break;
+        PastikanFadeOverlay();
+        if (_fadeGroup == null) yield break;
+
+        _fadeGroup.blocksRaycasts = true;   // cegah klik selama transisi
+        float dari = _fadeGroup.alpha;
+        float tujuan = keHitam ? 1f : 0f;
+        float durasi = Mathf.Max(0.01f, fadeDurasi);
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.unscaledDeltaTime / durasi;
+            _fadeGroup.alpha = Mathf.Lerp(dari, tujuan, Mathf.Clamp01(t));
+            yield return null;
+        }
+        _fadeGroup.alpha = tujuan;
+        // Saat sudah transparan penuh, jangan blok klik konten di bawahnya.
+        _fadeGroup.blocksRaycasts = keHitam;
+    }
+
+    /// <summary>Buat overlay fade fullscreen (Canvas + Image hitam) sekali saja.</summary>
+    void PastikanFadeOverlay()
+    {
+        if (_fadeGroup != null) return;
+
+        var go = new GameObject("[DayTransitionFade]");
+        go.transform.SetParent(transform, false);
+        var canvas = go.AddComponent<Canvas>();
+        canvas.renderMode   = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = 31000;        // di atas HUD, di bawah layar hasil (32000)
+        go.AddComponent<GraphicRaycaster>();
+        _fadeGroup = go.AddComponent<CanvasGroup>();
+        _fadeGroup.alpha = 0f;
+        _fadeGroup.blocksRaycasts = false;
+
+        var imgGO = new GameObject("FadeImg");
+        imgGO.transform.SetParent(go.transform, false);
+        _fadeImg = imgGO.AddComponent<Image>();
+        _fadeImg.color = fadeWarna;
+        var rt = _fadeImg.rectTransform;
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero;
+        rt.offsetMax = Vector2.zero;
+    }
 
     void SetActiveAll(GameObject[] arr, bool active)
     {

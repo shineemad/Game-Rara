@@ -29,7 +29,7 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
     public int    judulUkuran = 38;
     [TextArea(2, 5)]
     public string deskripsiTeks =
-        "Pria itu makin merapat di dalam angkot!\nTAHAN tombol TERIAK (atau tahan SPACE) untuk memanggil Pak Supir.\n\nTahan selama {DURASI} detik sebelum waktu habis.";
+        "Pria itu makin merapat di dalam angkot!\n\n\uD83D\uDC49 TAHAN TERUS tombol TERIAK (atau tahan SPACE) tanpa dilepas.\nBar hijau akan PENUH dalam {DURASI} detik \u2014 kalau dilepas, bar TURUN lagi.\nLengkapi sebelum waktu habis untuk memanggil Pak Supir!";
     public Color  deskripsiWarna = new Color(1f, 1f, 0.92f, 0.95f);
     public int    deskripsiUkuran = 22;
 
@@ -83,7 +83,7 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
 
     [Header("Timer")]
     [Tooltip("Window total waktu (detik) untuk menyelesaikan tantangan.")]
-    public float waktuWindow = 12f;
+    public float waktuWindow = 20f;
     [Tooltip("Berapa detik tombol harus DITAHAN BERTURUT-TURUT supaya berhasil.")]
     public float durasiTahan = 1.5f;
 

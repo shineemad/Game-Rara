@@ -197,6 +197,29 @@ public class PauseMenu : MonoBehaviour
     public string mainMenuSceneName = "MainMenu";
 
     // ══════════════════════════════════════════════════════════════════════
+    // INSPECTOR — PENGATURAN (Settings)
+    // ══════════════════════════════════════════════════════════════════════
+    [Header("── PENGATURAN (Settings) ──")]
+    [Tooltip("Tampilkan tombol ⚙ Pengaturan di panel jeda (volume, font, aksesibilitas).")]
+    public bool   tampilkanPengaturan = true;
+    public string settingsButtonLabel = "⚙ PENGATURAN";
+    public string settingsTitleText   = "PENGATURAN";
+    public Color  settingsColor       = new Color(0.20f, 0.40f, 0.65f, 1f);
+
+    // ══════════════════════════════════════════════════════════════════════
+    // INSPECTOR — KELUAR (Quit)
+    // ══════════════════════════════════════════════════════════════════════
+    [Header("── KELUAR (Quit) ──")]
+    [Tooltip("Tampilkan tombol ✖ Keluar di panel jeda (dengan konfirmasi).")]
+    public bool   tampilkanKeluar      = true;
+    public string keluarKonfirmasiJudul = "KELUAR GAME?";
+    [TextArea(2, 4)]
+    public string keluarKonfirmasiPesan = "Yakin ingin keluar dari game?\nProgres yang belum selesai tidak tersimpan.";
+    public string keluarBatalLabel     = "BATAL";
+    public string keluarYaLabel        = "KELUAR";
+    public Color  keluarColor          = new Color(0.84f, 0.27f, 0.22f, 1f);
+
+    // ══════════════════════════════════════════════════════════════════════
     // INTERNAL
     // ══════════════════════════════════════════════════════════════════════
     Canvas canvas;
@@ -209,8 +232,12 @@ public class PauseMenu : MonoBehaviour
     float prevTimeScale = 1f;
     bool builtOnce = false;
 
+    GameObject settingsPanel;   // overlay Pengaturan (null = belum dibangun / tertutup)
+    GameObject keluarPanel;     // overlay Konfirmasi Keluar (null = tertutup)
+
     void Start()
     {
+        GameSettings.Init();   // muat & terapkan preferensi tersimpan (volume, dll)
         if (uiRootRef != null && panelRootRef != null && btnResumeRef != null)
         {
             usingEditorRefs = true;
@@ -262,26 +289,48 @@ public class PauseMenu : MonoBehaviour
 
         var img = mobileBtnRoot.AddComponent<Image>();
         if (mobilePauseButtonSprite != null) { img.sprite = mobilePauseButtonSprite; img.type = Image.Type.Sliced; }
-        else                                  img.color = new Color(0f, 0f, 0f, 0.5f);
+        else                                  img.color = new Color(0.1f, 0.1f, 0.15f, 0.92f);
 
         mobilePauseBtn = mobileBtnRoot.AddComponent<Button>();
         mobilePauseBtn.onClick.AddListener(Toggle);
 
-        // Icon "❚❚"
+        // Ikon pause = dua batang vertikal yang DIGAMBAR via Image (tidak
+        // bergantung pada glyph font, jadi selalu tampil jelas di semua platform).
         if (mobilePauseButtonSprite == null)
         {
-            var iconGO = new GameObject("Icon");
-            iconGO.transform.SetParent(mobileBtnRoot.transform, false);
-            var irt = iconGO.AddComponent<RectTransform>();
-            irt.anchorMin = Vector2.zero; irt.anchorMax = Vector2.one;
-            irt.offsetMin = Vector2.zero; irt.offsetMax = Vector2.zero;
-            var icon = iconGO.AddComponent<TextMeshProUGUI>();
-            ApplyFont(icon);
-            icon.text = "❚❚";
-            icon.fontSize = mobilePauseButtonSize.y * 0.5f;
-            icon.color = Color.white;
-            icon.alignment = TextAlignmentOptions.Center;
-            icon.fontStyle = FontStyles.Bold;
+            // Bingkai lingkaran tipis kuning agar tombol jelas terlihat sebagai kontrol.
+            var ringGO = new GameObject("Ring");
+            ringGO.transform.SetParent(mobileBtnRoot.transform, false);
+            var ringRT = ringGO.AddComponent<RectTransform>();
+            ringRT.anchorMin = Vector2.zero; ringRT.anchorMax = Vector2.one;
+            ringRT.offsetMin = new Vector2(4f, 4f); ringRT.offsetMax = new Vector2(-4f, -4f);
+            var ringImg = ringGO.AddComponent<Image>();
+            ringImg.color = new Color(1f, 0.85f, 0.1f, 0.9f);
+
+            var innerGO = new GameObject("Inner");
+            innerGO.transform.SetParent(ringGO.transform, false);
+            var innerRT = innerGO.AddComponent<RectTransform>();
+            innerRT.anchorMin = Vector2.zero; innerRT.anchorMax = Vector2.one;
+            innerRT.offsetMin = new Vector2(4f, 4f); innerRT.offsetMax = new Vector2(-4f, -4f);
+            var innerImg = innerGO.AddComponent<Image>();
+            innerImg.color = new Color(0.1f, 0.1f, 0.15f, 1f);
+
+            // Dua batang putih (simbol jeda).
+            float barW = mobilePauseButtonSize.x * 0.13f;
+            float gapH = mobilePauseButtonSize.x * 0.10f;
+            float barH = mobilePauseButtonSize.y * 0.40f;
+            for (int s = -1; s <= 1; s += 2)
+            {
+                var barGO = new GameObject(s < 0 ? "BarKiri" : "BarKanan");
+                barGO.transform.SetParent(innerGO.transform, false);
+                var barRT = barGO.AddComponent<RectTransform>();
+                barRT.anchorMin = barRT.anchorMax = new Vector2(0.5f, 0.5f);
+                barRT.pivot      = new Vector2(0.5f, 0.5f);
+                barRT.sizeDelta  = new Vector2(barW, barH);
+                barRT.anchoredPosition = new Vector2(s * (gapH + barW) * 0.5f, 0f);
+                var barImg = barGO.AddComponent<Image>();
+                barImg.color = Color.white;
+            }
         }
     }
 
@@ -399,6 +448,8 @@ public class PauseMenu : MonoBehaviour
 
     public void ClosePanel()
     {
+        if (settingsPanel != null) { Destroy(settingsPanel); settingsPanel = null; }
+        if (keluarPanel != null) { Destroy(keluarPanel); keluarPanel = null; }
         if (usingEditorRefs)
         {
             if (panelRootRef != null) panelRootRef.SetActive(false);
@@ -529,7 +580,417 @@ public class PauseMenu : MonoBehaviour
                    new Vector2(0.09f, 0.05f), new Vector2(0.91f, 0.15f),
                    menuColor, OnMenuClicked);
 
+        // Tombol ⚙ Pengaturan — kotak kecil di pojok kanan-atas panel agar tidak
+        // mengganggu tata letak konten (tips / nomor darurat).
+        if (tampilkanPengaturan)
+        {
+            var gearGO = new GameObject("BtnSettings");
+            gearGO.transform.SetParent(panelRoot.transform, false);
+            var gRT = gearGO.AddComponent<RectTransform>();
+            gRT.anchorMin = new Vector2(1f, 1f); gRT.anchorMax = new Vector2(1f, 1f);
+            gRT.pivot     = new Vector2(1f, 1f);
+            gRT.sizeDelta = new Vector2(64f, 64f);
+            gRT.anchoredPosition = new Vector2(-14f, -14f);
+            var gImg = gearGO.AddComponent<Image>();
+            gImg.sprite = GetRoundedSpritePause();
+            gImg.type   = Image.Type.Sliced;
+            gImg.color  = settingsColor;
+            var gOl = gearGO.AddComponent<Outline>();
+            gOl.effectColor = new Color(1f, 1f, 1f, 0.30f);
+            gOl.effectDistance = new Vector2(2f, -2f);
+            var gBtn = gearGO.AddComponent<Button>();
+            gBtn.onClick.AddListener(OpenSettings);
+            var gLblGO = new GameObject("Icon");
+            gLblGO.transform.SetParent(gearGO.transform, false);
+            var gLblRT = gLblGO.AddComponent<RectTransform>();
+            gLblRT.anchorMin = Vector2.zero; gLblRT.anchorMax = Vector2.one;
+            gLblRT.offsetMin = Vector2.zero; gLblRT.offsetMax = Vector2.zero;
+            var gLbl = gLblGO.AddComponent<TextMeshProUGUI>();
+            ApplyFont(gLbl);
+            gLbl.text = "⚙";
+            gLbl.fontSize = 34;
+            gLbl.color = Color.white;
+            gLbl.alignment = TextAlignmentOptions.Center;
+        }
+
+        // Tombol ✖ Keluar — kotak kecil di pojok kiri-atas panel (cermin tombol ⚙).
+        if (tampilkanKeluar)
+        {
+            var exitGO = new GameObject("BtnKeluar");
+            exitGO.transform.SetParent(panelRoot.transform, false);
+            var eRT = exitGO.AddComponent<RectTransform>();
+            eRT.anchorMin = new Vector2(0f, 1f); eRT.anchorMax = new Vector2(0f, 1f);
+            eRT.pivot     = new Vector2(0f, 1f);
+            eRT.sizeDelta = new Vector2(64f, 64f);
+            eRT.anchoredPosition = new Vector2(14f, -14f);
+            var eImg = exitGO.AddComponent<Image>();
+            eImg.sprite = GetRoundedSpritePause();
+            eImg.type   = Image.Type.Sliced;
+            eImg.color  = keluarColor;
+            var eOl = exitGO.AddComponent<Outline>();
+            eOl.effectColor = new Color(1f, 1f, 1f, 0.30f);
+            eOl.effectDistance = new Vector2(2f, -2f);
+            var eBtn = exitGO.AddComponent<Button>();
+            eBtn.onClick.AddListener(KonfirmasiKeluar);
+            var eLblGO = new GameObject("Icon");
+            eLblGO.transform.SetParent(exitGO.transform, false);
+            var eLblRT = eLblGO.AddComponent<RectTransform>();
+            eLblRT.anchorMin = Vector2.zero; eLblRT.anchorMax = Vector2.one;
+            eLblRT.offsetMin = Vector2.zero; eLblRT.offsetMax = Vector2.zero;
+            var eLbl = eLblGO.AddComponent<TextMeshProUGUI>();
+            ApplyFont(eLbl);
+            eLbl.text = "\u2716";
+            eLbl.fontSize = 32;
+            eLbl.color = Color.white;
+            eLbl.alignment = TextAlignmentOptions.Center;
+        }
+
         if (debugLog) Debug.Log("[PauseMenu] Mode B aktif.");
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // KONFIRMASI KELUAR (Quit)
+    // ══════════════════════════════════════════════════════════════════════
+    public void KonfirmasiKeluar()
+    {
+        AudioManager.Instance?.Click();
+        if (keluarPanel != null) { Destroy(keluarPanel); keluarPanel = null; }
+        BuildKeluarPanel();
+    }
+
+    public void TutupKonfirmasiKeluar()
+    {
+        AudioManager.Instance?.Click();
+        if (keluarPanel != null) { Destroy(keluarPanel); keluarPanel = null; }
+    }
+
+    public void KeluarSekarang()
+    {
+        AudioManager.Instance?.Click();
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+    }
+
+    void BuildKeluarPanel()
+    {
+        Transform parent = (uiRoot != null) ? uiRoot.transform
+                         : (uiRootRef != null) ? uiRootRef.transform
+                         : (canvas != null ? canvas.transform : transform);
+
+        // Overlay gelap (klik luar = batal)
+        keluarPanel = new GameObject("KeluarPanel");
+        keluarPanel.transform.SetParent(parent, false);
+        var ovRT = keluarPanel.AddComponent<RectTransform>();
+        ovRT.anchorMin = Vector2.zero; ovRT.anchorMax = Vector2.one;
+        ovRT.offsetMin = Vector2.zero; ovRT.offsetMax = Vector2.zero;
+        var ovImg = keluarPanel.AddComponent<Image>();
+        ovImg.color = new Color(0f, 0f, 0f, 0.65f);
+        var ovBtn = keluarPanel.AddComponent<Button>();
+        ovBtn.transition = Selectable.Transition.None;
+        ovBtn.onClick.AddListener(TutupKonfirmasiKeluar);
+
+        // Kartu tengah
+        var card = new GameObject("Card");
+        card.transform.SetParent(keluarPanel.transform, false);
+        var cardRT = card.AddComponent<RectTransform>();
+        cardRT.anchorMin = new Vector2(0.5f, 0.5f);
+        cardRT.anchorMax = new Vector2(0.5f, 0.5f);
+        cardRT.pivot     = new Vector2(0.5f, 0.5f);
+        cardRT.sizeDelta = new Vector2(620f, 360f);
+        var cardImg = card.AddComponent<Image>();
+        cardImg.sprite = GetRoundedSpritePause();
+        cardImg.type   = Image.Type.Sliced;
+        cardImg.color  = panelBgColor;
+        var cardOl = card.AddComponent<Outline>();
+        cardOl.effectColor = keluarColor;
+        cardOl.effectDistance = new Vector2(3f, -3f);
+        var cardBlocker = card.AddComponent<Button>();
+        cardBlocker.transition = Selectable.Transition.None;
+
+        // Judul
+        MakeText(card, "KeluarTitle", new Vector2(0f, 1f), new Vector2(1f, 1f),
+                 new Vector2(20f, -84f), new Vector2(-20f, -18f), 36, keluarColor,
+                 TextAlignmentOptions.Center, true, keluarKonfirmasiJudul);
+
+        // Pesan
+        MakeText(card, "KeluarPesan", new Vector2(0f, 0f), new Vector2(1f, 1f),
+                 new Vector2(30f, 110f), new Vector2(-30f, -96f), 26, tipsColor,
+                 TextAlignmentOptions.Center, false, keluarKonfirmasiPesan);
+
+        // Tombol BATAL (kiri)
+        var batalGO = new GameObject("BtnBatal");
+        batalGO.transform.SetParent(card.transform, false);
+        var bRT = batalGO.AddComponent<RectTransform>();
+        bRT.anchorMin = new Vector2(0.5f, 0f); bRT.anchorMax = new Vector2(0.5f, 0f);
+        bRT.pivot = new Vector2(0.5f, 0f);
+        bRT.sizeDelta = new Vector2(240f, 64f);
+        bRT.anchoredPosition = new Vector2(-130f, 28f);
+        var bImg = batalGO.AddComponent<Image>();
+        bImg.sprite = GetRoundedSpritePause(); bImg.type = Image.Type.Sliced;
+        bImg.color  = settingsColor;
+        var bBtn = batalGO.AddComponent<Button>();
+        bBtn.onClick.AddListener(TutupKonfirmasiKeluar);
+        var bLbl = MakeText(batalGO, "Label", Vector2.zero, Vector2.one,
+                            Vector2.zero, Vector2.zero, 28, btnTextColor,
+                            TextAlignmentOptions.Center, true, keluarBatalLabel);
+        bLbl.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+
+        // Tombol KELUAR (kanan)
+        var yaGO = new GameObject("BtnKeluarYa");
+        yaGO.transform.SetParent(card.transform, false);
+        var yRT = yaGO.AddComponent<RectTransform>();
+        yRT.anchorMin = new Vector2(0.5f, 0f); yRT.anchorMax = new Vector2(0.5f, 0f);
+        yRT.pivot = new Vector2(0.5f, 0f);
+        yRT.sizeDelta = new Vector2(240f, 64f);
+        yRT.anchoredPosition = new Vector2(130f, 28f);
+        var yImg = yaGO.AddComponent<Image>();
+        yImg.sprite = GetRoundedSpritePause(); yImg.type = Image.Type.Sliced;
+        yImg.color  = keluarColor;
+        var yBtn = yaGO.AddComponent<Button>();
+        yBtn.onClick.AddListener(KeluarSekarang);
+        var yLbl = MakeText(yaGO, "Label", Vector2.zero, Vector2.one,
+                            Vector2.zero, Vector2.zero, 28, btnTextColor,
+                            TextAlignmentOptions.Center, true, keluarYaLabel);
+        yLbl.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // PENGATURAN (Settings) — volume, font, aksesibilitas
+    // ══════════════════════════════════════════════════════════════════════
+    public void OpenSettings()
+    {
+        AudioManager.Instance?.Click();
+        if (settingsPanel != null) { Destroy(settingsPanel); settingsPanel = null; }
+        BuildSettingsPanel();
+    }
+
+    public void CloseSettings()
+    {
+        AudioManager.Instance?.Click();
+        if (settingsPanel != null) { Destroy(settingsPanel); settingsPanel = null; }
+    }
+
+    void BuildSettingsPanel()
+    {
+        // Induk = uiRoot (Mode B) atau uiRootRef (Mode A); fallback ke canvas.
+        Transform parent = (uiRoot != null) ? uiRoot.transform
+                         : (uiRootRef != null) ? uiRootRef.transform
+                         : (canvas != null ? canvas.transform : transform);
+
+        // Overlay gelap (klik luar = tutup)
+        settingsPanel = new GameObject("SettingsPanel");
+        settingsPanel.transform.SetParent(parent, false);
+        var ovRT = settingsPanel.AddComponent<RectTransform>();
+        ovRT.anchorMin = Vector2.zero; ovRT.anchorMax = Vector2.one;
+        ovRT.offsetMin = Vector2.zero; ovRT.offsetMax = Vector2.zero;
+        var ovImg = settingsPanel.AddComponent<Image>();
+        ovImg.color = new Color(0f, 0f, 0f, 0.6f);
+        var ovBtn = settingsPanel.AddComponent<Button>();
+        ovBtn.transition = Selectable.Transition.None;
+        ovBtn.onClick.AddListener(CloseSettings);
+
+        // Kartu tengah
+        var card = new GameObject("Card");
+        card.transform.SetParent(settingsPanel.transform, false);
+        var cardRT = card.AddComponent<RectTransform>();
+        cardRT.anchorMin = new Vector2(0.5f, 0.5f);
+        cardRT.anchorMax = new Vector2(0.5f, 0.5f);
+        cardRT.pivot     = new Vector2(0.5f, 0.5f);
+        cardRT.sizeDelta = new Vector2(620f, 640f);
+        var cardImg = card.AddComponent<Image>();
+        cardImg.sprite = GetRoundedSpritePause();
+        cardImg.type   = Image.Type.Sliced;
+        cardImg.color  = panelBgColor;
+        var cardOl = card.AddComponent<Outline>();
+        cardOl.effectColor = borderColor;
+        cardOl.effectDistance = new Vector2(3f, -3f);
+        var cardBlocker = card.AddComponent<Button>();   // cegah klik tembus ke overlay
+        cardBlocker.transition = Selectable.Transition.None;
+
+        // Judul
+        var judul = MakeText(card, "SettingsTitle", new Vector2(0f, 1f), new Vector2(1f, 1f),
+                             new Vector2(20f, -84f), new Vector2(-20f, -18f), 36, titleColor,
+                             TextAlignmentOptions.Center, true, settingsTitleText);
+        judul.color = borderColor;
+
+        float y = -110f;   // kursor vertikal dari atas kartu
+
+        // ── VOLUME ───────────────────────────────────────────────────────
+        BuatLabelSeksi(card, "🔊 Volume", ref y);
+        BuatSlider(card, "Volume Suara", GameSettings.MasterVolume, 0f, 1f, ref y, (v) =>
+        {
+            GameSettings.MasterVolume = v;
+        });
+        BuatToggle(card, "Musik Latar", GameSettings.MusicOn, ref y, (on) =>
+        {
+            GameSettings.MusicOn = on;
+        });
+
+        // ── FONT ─────────────────────────────────────────────────────────
+        BuatLabelSeksi(card, "🔤 Ukuran Font", ref y);
+        BuatSlider(card, "Skala Teks", GameSettings.FontScale, 0.8f, 1.6f, ref y, (v) =>
+        {
+            GameSettings.FontScale = v;
+        });
+
+        // ── AKSESIBILITAS ────────────────────────────────────────────────
+        BuatLabelSeksi(card, "♿ Aksesibilitas", ref y);
+        BuatToggle(card, "Kurangi Animasi", GameSettings.ReduceMotion, ref y, (on) =>
+        {
+            GameSettings.ReduceMotion = on;
+        });
+
+        // Tombol Tutup
+        var tutupGO = new GameObject("BtnTutupSettings");
+        tutupGO.transform.SetParent(card.transform, false);
+        var tRT = tutupGO.AddComponent<RectTransform>();
+        tRT.anchorMin = new Vector2(0.5f, 0f); tRT.anchorMax = new Vector2(0.5f, 0f);
+        tRT.pivot = new Vector2(0.5f, 0f);
+        tRT.sizeDelta = new Vector2(300f, 64f);
+        tRT.anchoredPosition = new Vector2(0f, 24f);
+        var tImg = tutupGO.AddComponent<Image>();
+        tImg.sprite = GetRoundedSpritePause();
+        tImg.type   = Image.Type.Sliced;
+        tImg.color  = resumeColor;
+        var tOl = tutupGO.AddComponent<Outline>();
+        tOl.effectColor = new Color(1f, 1f, 1f, 0.30f);
+        tOl.effectDistance = new Vector2(2f, -2f);
+        var tBtn = tutupGO.AddComponent<Button>();
+        tBtn.onClick.AddListener(CloseSettings);
+        var tLbl = MakeText(tutupGO, "Label", Vector2.zero, Vector2.one,
+                            Vector2.zero, Vector2.zero, 28, btnTextColor,
+                            TextAlignmentOptions.Center, true, "TUTUP");
+        tLbl.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+    }
+
+    // Label judul seksi (Volume / Font / Aksesibilitas)
+    void BuatLabelSeksi(GameObject card, string teks, ref float y)
+    {
+        var lbl = MakeText(card, "Seksi_" + teks, new Vector2(0f, 1f), new Vector2(1f, 1f),
+                           new Vector2(28f, y - 36f), new Vector2(-28f, y), 24,
+                           borderColor, TextAlignmentOptions.MidlineLeft, true, teks);
+        y -= 46f;
+    }
+
+    // Slider berlabel dengan nilai persen di kanan.
+    void BuatSlider(GameObject card, string nama, float nilai, float min, float max,
+                    ref float y, Action<float> onChange)
+    {
+        // Label kiri
+        MakeText(card, "Lbl_" + nama, new Vector2(0f, 1f), new Vector2(0.5f, 1f),
+                 new Vector2(40f, y - 44f), new Vector2(-8f, y), 20, tipsColor,
+                 TextAlignmentOptions.MidlineLeft, false, nama);
+
+        // Nilai persen kanan
+        var valTMP = MakeText(card, "Val_" + nama, new Vector2(0.78f, 1f), new Vector2(1f, 1f),
+                 new Vector2(0f, y - 44f), new Vector2(-28f, y), 20, borderColor,
+                 TextAlignmentOptions.MidlineRight, true, Mathf.RoundToInt(nilai * 100f) + "%");
+
+        y -= 44f;
+
+        // Track slider
+        var sGO = new GameObject("Slider_" + nama);
+        sGO.transform.SetParent(card.transform, false);
+        var sRT = sGO.AddComponent<RectTransform>();
+        sRT.anchorMin = new Vector2(0f, 1f); sRT.anchorMax = new Vector2(1f, 1f);
+        sRT.pivot = new Vector2(0.5f, 1f);
+        sRT.offsetMin = new Vector2(40f, y - 28f);
+        sRT.offsetMax = new Vector2(-28f, y);
+        var slider = sGO.AddComponent<Slider>();
+
+        // Background track
+        var bgGO = new GameObject("Background");
+        bgGO.transform.SetParent(sGO.transform, false);
+        var bgRT = bgGO.AddComponent<RectTransform>();
+        bgRT.anchorMin = new Vector2(0f, 0.35f); bgRT.anchorMax = new Vector2(1f, 0.65f);
+        bgRT.offsetMin = bgRT.offsetMax = Vector2.zero;
+        var bgImg = bgGO.AddComponent<Image>();
+        bgImg.sprite = GetRoundedSpritePause(); bgImg.type = Image.Type.Sliced;
+        bgImg.color = new Color(0f, 0f, 0f, 0.55f);
+
+        // Fill area
+        var fillAreaGO = new GameObject("Fill Area");
+        fillAreaGO.transform.SetParent(sGO.transform, false);
+        var faRT = fillAreaGO.AddComponent<RectTransform>();
+        faRT.anchorMin = new Vector2(0f, 0.35f); faRT.anchorMax = new Vector2(1f, 0.65f);
+        faRT.offsetMin = new Vector2(2f, 0f); faRT.offsetMax = new Vector2(-2f, 0f);
+        var fillGO = new GameObject("Fill");
+        fillGO.transform.SetParent(fillAreaGO.transform, false);
+        var fillRT = fillGO.AddComponent<RectTransform>();
+        fillRT.anchorMin = new Vector2(0f, 0f); fillRT.anchorMax = new Vector2(0f, 1f);
+        fillRT.offsetMin = Vector2.zero; fillRT.offsetMax = Vector2.zero;
+        var fillImg = fillGO.AddComponent<Image>();
+        fillImg.sprite = GetRoundedSpritePause(); fillImg.type = Image.Type.Sliced;
+        fillImg.color = settingsColor;
+
+        // Handle
+        var hAreaGO = new GameObject("Handle Slide Area");
+        hAreaGO.transform.SetParent(sGO.transform, false);
+        var haRT = hAreaGO.AddComponent<RectTransform>();
+        haRT.anchorMin = new Vector2(0f, 0f); haRT.anchorMax = new Vector2(1f, 1f);
+        haRT.offsetMin = new Vector2(10f, 0f); haRT.offsetMax = new Vector2(-10f, 0f);
+        var handleGO = new GameObject("Handle");
+        handleGO.transform.SetParent(hAreaGO.transform, false);
+        var handleRT = handleGO.AddComponent<RectTransform>();
+        handleRT.sizeDelta = new Vector2(34f, 34f);
+        var handleImg = handleGO.AddComponent<Image>();
+        handleImg.sprite = GetRoundedSpritePause(); handleImg.type = Image.Type.Sliced;
+        handleImg.color = Color.white;
+
+        slider.fillRect       = fillRT;
+        slider.handleRect     = handleRT;
+        slider.targetGraphic  = handleImg;
+        slider.direction      = Slider.Direction.LeftToRight;
+        slider.minValue       = min;
+        slider.maxValue       = max;
+        slider.value          = nilai;
+        slider.onValueChanged.AddListener((v) =>
+        {
+            valTMP.text = Mathf.RoundToInt(v * 100f) + "%";
+            onChange(v);
+        });
+
+        y -= 40f;
+    }
+
+    // Toggle berlabel (kotak centang) untuk opsi on/off.
+    void BuatToggle(GameObject card, string nama, bool nilai, ref float y, Action<bool> onChange)
+    {
+        MakeText(card, "Lbl_" + nama, new Vector2(0f, 1f), new Vector2(0.7f, 1f),
+                 new Vector2(40f, y - 48f), new Vector2(0f, y), 20, tipsColor,
+                 TextAlignmentOptions.MidlineLeft, false, nama);
+
+        var tGO = new GameObject("Toggle_" + nama);
+        tGO.transform.SetParent(card.transform, false);
+        var tRT = tGO.AddComponent<RectTransform>();
+        tRT.anchorMin = new Vector2(1f, 1f); tRT.anchorMax = new Vector2(1f, 1f);
+        tRT.pivot = new Vector2(1f, 1f);
+        tRT.sizeDelta = new Vector2(48f, 48f);
+        tRT.anchoredPosition = new Vector2(-28f, y - 2f);
+        var bgImg = tGO.AddComponent<Image>();
+        bgImg.sprite = GetRoundedSpritePause(); bgImg.type = Image.Type.Sliced;
+        bgImg.color = new Color(0f, 0f, 0f, 0.55f);
+        var toggle = tGO.AddComponent<Toggle>();
+
+        // Tanda centang
+        var checkGO = new GameObject("Check");
+        checkGO.transform.SetParent(tGO.transform, false);
+        var cRT = checkGO.AddComponent<RectTransform>();
+        cRT.anchorMin = new Vector2(0.12f, 0.12f); cRT.anchorMax = new Vector2(0.88f, 0.88f);
+        cRT.offsetMin = cRT.offsetMax = Vector2.zero;
+        var cImg = checkGO.AddComponent<Image>();
+        cImg.sprite = GetRoundedSpritePause(); cImg.type = Image.Type.Sliced;
+        cImg.color = settingsColor;
+
+        toggle.targetGraphic = bgImg;
+        toggle.graphic       = cImg;
+        toggle.isOn          = nilai;
+        toggle.onValueChanged.AddListener((on) => onChange(on));
+
+        y -= 56f;
     }
 
     TextMeshProUGUI MakeText(GameObject parent, string name,

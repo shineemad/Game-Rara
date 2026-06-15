@@ -60,6 +60,56 @@ public class AudioManager : MonoBehaviour
     [Tooltip("Klip ambience suasana angkot/jalan yang diputar berulang (loop) selama Hari 2.")]
     public AudioClip ambienceAngkot;
 
+    [Header("SFX — Umum Tambahan (Nyawa, Game Over, Tegang)")]
+    [Tooltip("Nyawa −1 saat pilihan BAHAYA. 'Heart break' / nada turun singkat.")]
+    public AudioClip sfxKehilanganNyawa;
+    [Tooltip("Layar Game Over saat nyawa habis. Sting kalah lembut, ramah anak.")]
+    public AudioClip sfxGameOver;
+    [Tooltip("Momen tegang (disentuh, pojok sepi, boss). Detak jantung 'dug-dug'.")]
+    public AudioClip sfxDetakJantung;
+    [Tooltip("Hitung mundur Quiz/ChatSim. 'Tik' jam per detik.")]
+    public AudioClip sfxTimerTik;
+    [Tooltip("Tahan tombol TERIAK / Voice Meter terisi. Nada naik 'power up'.")]
+    public AudioClip sfxTeriakCharge;
+
+    [Header("SFX — Hari 2 Tambahan")]
+    [Tooltip("Naik / turun angkot. Pintu geser besi 'klek-srek'.")]
+    public AudioClip sfxAngkotPintu;
+    [Tooltip("Angkat chip di Quiz Zona Tubuh. 'Pluk' ambil ringan.")]
+    public AudioClip sfxDragAmbil;
+    [Tooltip("Jatuhkan chip ke zona. 'Tuk' tempel mantap.")]
+    public AudioClip sfxDragLepas;
+
+    [Header("SFX — Hari 3 (Hujan & Boss)")]
+    [Tooltip("Aksen dramatis saat boss / keputusan. Guruh + petir.")]
+    public AudioClip sfxPetir;
+    [Tooltip("Tekan Panic Button (lapor darurat). Alarm / sirine pendek.")]
+    public AudioClip sfxPanicAlarm;
+    [Tooltip("Kedatangan ojol (palsu) Day 3. Mesin motor mendekat lalu idle.")]
+    public AudioClip sfxMotorOjol;
+    [Tooltip("Boss 'Si Bayangan Gelap' mundur / kalah. Lega + kemenangan kecil.")]
+    public AudioClip sfxBossKalah;
+
+    [Header("SFX — Polish (Prolog, Skor, Kartu, Lencana)")]
+    [Tooltip("Pindah slide Prolog. Whoosh halaman geser.")]
+    public AudioClip sfxSlideProlog;
+    [Tooltip("Animasi skor bertambah di Summary. 'Tik-tik-tik' cepat naik nada.")]
+    public AudioClip sfxSkorNaik;
+    [Tooltip("Kartu / panel muncul. Whoosh lembut + pop.")]
+    public AudioClip sfxMuncul;
+    [Tooltip("Popup kartu muncul. Kosong = pakai sfxMuncul.")]
+    public AudioClip sfxMunculKartu;
+    [Tooltip("Klik tombol 'Lanjut'. Konfirmasi positif. Kosong = pakai sfxClick.")]
+    public AudioClip sfxKlikLanjut;
+    [Tooltip("Klik tombol 'Ulangi'. Klik netral/mundur. Kosong = pakai sfxClick.")]
+    public AudioClip sfxKlikUlangi;
+    [Tooltip("Lencana terbuka. Sparkle / chime ceria. Kosong = pakai sfxAchievement.")]
+    public AudioClip sfxUnlock;
+
+    [Header("Ambience (loop) — Hari 3")]
+    [Tooltip("Hujan latar sepanjang Day 3 (loop). Diputar via ambienceSource.")]
+    public AudioClip ambienceHujan;
+
     // ══════════════════════════════════════════════════════════════════════
     void Awake()
     {
@@ -161,6 +211,33 @@ public class AudioManager : MonoBehaviour
     public void PlayPeluit()    => PlaySFX(sfxPeluit != null ? sfxPeluit : sfxLapor);
     public void PlayLangkah()   => PlaySFX(sfxLangkah);
 
+    // ── Umum Tambahan (Nyawa, Game Over, Tegang) ──────────────────────────
+    public void PlayKehilanganNyawa() => PlaySFX(sfxKehilanganNyawa);
+    public void PlayGameOver()        => PlaySFX(sfxGameOver);
+    public void PlayDetakJantung()    => PlaySFX(sfxDetakJantung);
+    public void PlayTimerTik()        => PlaySFX(sfxTimerTik);
+    public void PlayTeriakCharge()    => PlaySFX(sfxTeriakCharge);
+
+    // ── Hari 2 Tambahan ───────────────────────────────────────────────────
+    public void PlayAngkotPintu() => PlaySFX(sfxAngkotPintu);
+    public void PlayDragAmbil()   => PlaySFX(sfxDragAmbil);
+    public void PlayDragLepas()   => PlaySFX(sfxDragLepas);
+
+    // ── Hari 3 (Hujan & Boss) ─────────────────────────────────────────────
+    public void PlayPetir()      => PlaySFX(sfxPetir);
+    public void PlayPanicAlarm() => PlaySFX(sfxPanicAlarm);
+    public void PlayMotorOjol()  => PlaySFX(sfxMotorOjol);
+    public void PlayBossKalah()  => PlaySFX(sfxBossKalah);
+
+    // ── Polish (Prolog, Skor, Kartu, Lencana) ─────────────────────────────
+    public void PlaySlideProlog() => PlaySFX(sfxSlideProlog);
+    public void PlaySkorNaik()    => PlaySFX(sfxSkorNaik);
+    public void PlayMuncul()      => PlaySFX(sfxMuncul);
+    public void PlayMunculKartu() => PlaySFX(sfxMunculKartu != null ? sfxMunculKartu : sfxMuncul);
+    public void PlayKlikLanjut()  => PlaySFX(sfxKlikLanjut  != null ? sfxKlikLanjut  : sfxClick);
+    public void PlayKlikUlangi()  => PlaySFX(sfxKlikUlangi  != null ? sfxKlikUlangi  : sfxClick);
+    public void PlayUnlock()      => PlaySFX(sfxUnlock      != null ? sfxUnlock      : sfxAchievement);
+
     // ── Ambience suasana (loop) ───────────────────────────────────────────
     /// Mulai ambience loop (mis. suasana angkot/jalan Hari 2).
     public void PlayAmbience(AudioClip clip = null, float volume = 0.4f)
@@ -180,6 +257,9 @@ public class AudioManager : MonoBehaviour
     {
         if (ambienceSource != null) ambienceSource.Stop();
     }
+
+    /// Mulai ambience hujan loop (Hari 3). Praktis = PlayAmbience(ambienceHujan).
+    public void PlayAmbienceHujan(float volume = 0.4f) => PlayAmbience(ambienceHujan, volume);
 
     /// Putar SFX sesuai kategori "AMAN" | "RAGU" | "BAHAYA" | "LAPOR".
     public void PlayKategori(string kategori)

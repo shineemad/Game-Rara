@@ -2215,7 +2215,7 @@ public class Day3Controller : MonoBehaviour
         skorPil.type   = Image.Type.Sliced;
         skorPil.raycastTarget = false;
         var spRt = skorPil.rectTransform;
-        spRt.anchorMin = new Vector2(0.22f, 0.795f); spRt.anchorMax = new Vector2(0.78f, 0.89f);
+        spRt.anchorMin = new Vector2(0.22f, 0.820f); spRt.anchorMax = new Vector2(0.78f, 0.895f);
         spRt.offsetMin = Vector2.zero; spRt.offsetMax = Vector2.zero;
         var spOutline = skorPil.gameObject.AddComponent<Outline>();
         spOutline.effectColor    = new Color(0.95f, 0.72f, 0.18f, 0.6f);
@@ -2229,11 +2229,22 @@ public class Day3Controller : MonoBehaviour
         skorText.textWrappingMode = TextWrappingModes.NoWrap;
         Stretch(skorText.rectTransform, 16f, 4f);
 
+        // ── Tangga TINGKAT ENDING (3 tingkat) — perjelas hasil pemain berada
+        //    di tingkat mana & tingkat terbaik yang bisa diraih. ──
+        var tierText = BuatTeks(cardT, "TierLadder", TeksTierLadder(),
+            22, Color.white, FontStyles.Normal);
+        tierText.alignment = TextAlignmentOptions.Center;
+        tierText.enableAutoSizing = true; tierText.fontSizeMin = 13; tierText.fontSizeMax = 22;
+        tierText.textWrappingMode = TextWrappingModes.NoWrap;
+        var tierRt = tierText.rectTransform;
+        tierRt.anchorMin = new Vector2(0.04f, 0.758f); tierRt.anchorMax = new Vector2(0.96f, 0.812f);
+        tierRt.offsetMin = Vector2.zero; tierRt.offsetMax = Vector2.zero;
+
         // Ringkasan dibagi menjadi 3 SEKSI berpanel terpisah agar rapih dan
         // mudah dibedakan: (1) Keputusan, (2) Bukti, (3) 3 Kata Sakti.
         int jBukti = gs != null ? gs.JumlahBukti : 0;
         BuatSeksiHasil(cardT, "SeksiKeputusan", "RINGKASAN KEPUTUSAN",
-            TeksKeputusan(gs), warnaTeksJudul, 0.560f, 0.780f);
+            TeksKeputusan(gs), warnaTeksJudul, 0.560f, 0.745f);
         BuatSeksiHasil(cardT, "SeksiBukti", "BUKTI TERKUMPUL (" + jBukti + "/4)",
             TeksBukti(gs), new Color(0.55f, 0.85f, 1f, 1f), 0.405f, 0.545f);
         BuatSeksiHasil(cardT, "SeksiKataSakti", "3 KATA SAKTI",
@@ -2245,11 +2256,22 @@ public class Day3Controller : MonoBehaviour
                      : skor >= ambangLuarBiasa ? pesanLuarBiasa
                      : skor >= ambangBagus     ? pesanBagus
                      : pesanKurang;
+        // Untuk hasil selain TERBAIK (bukan Trauma & bukan LaporSukses), beri
+        // petunjuk konkret cara membuka ending tertinggi: lengkapi semua bukti.
+        if (!trauma && !laporSukses)
+        {
+            int kurang = gs != null ? (4 - gs.JumlahBukti) : 4;
+            pesan += kurang > 0
+                ? "\n<size=85%><color=#FFD24A>\uD83D\uDCA1 Ending TERBAIK 'PELAPOR HEBAT': lengkapi " + kurang +
+                  " bukti lagi (screenshot chat & cek plat) lalu BERANI lapor!</color></size>"
+                : "\n<size=85%><color=#FFD24A>\uD83D\uDCA1 Bukti lengkap! Tinggal pilih BERANI LAPOR untuk ending TERBAIK.</color></size>";
+        }
         var pesanText = BuatTeks(cardT, "Pesan", pesan, 24, trauma ? warnaBahaya : warnaTeksJudul, FontStyles.Italic);
         pesanText.alignment = TextAlignmentOptions.Center;
+        pesanText.enableAutoSizing = true; pesanText.fontSizeMin = 14; pesanText.fontSizeMax = 24;
         pesanText.textWrappingMode = TextWrappingModes.Normal;
         var pRt = pesanText.rectTransform;
-        pRt.anchorMin = new Vector2(0.06f, 0.225f); pRt.anchorMax = new Vector2(0.94f, 0.295f);
+        pRt.anchorMin = new Vector2(0.06f, 0.218f); pRt.anchorMax = new Vector2(0.94f, 0.298f);
         pRt.offsetMin = Vector2.zero; pRt.offsetMax = Vector2.zero;
 
         // Footer nomor darurat — pengingat edukasi yang selalu tampil.
@@ -2376,6 +2398,27 @@ public class Day3Controller : MonoBehaviour
         return Cek(gs.usedTidak) + " TIDAK      " +
                Cek(gs.usedPergi) + " PERGI      " +
                Cek(gs.usedCerita) + " CERITA";
+    }
+
+    // Tangga TINGKAT ENDING: 3 tingkat (Game Over \u2192 Pulang Aman \u2192 Pelapor Hebat).
+    // Tingkat yang diraih pemain disorot (\u25C9 + tebal + warna), sisanya redup.
+    string TeksTierLadder()
+    {
+        int tier = _hasilDay3 == HasilDay3.Trauma ? 1
+                 : _hasilDay3 == HasilDay3.LaporSukses ? 3 : 2;
+        string[] nama  = { "GAME OVER", "PULANG AMAN", "PELAPOR HEBAT" };
+        string[] aktif = { "#E84D3D", "#F2C44D", "#FFD24A" };
+        var sb = new System.Text.StringBuilder();
+        for (int i = 0; i < 3; i++)
+        {
+            bool ini = (i + 1) == tier;
+            string ikon  = ini ? "\u25C9" : "\u25CB";
+            string warna = ini ? aktif[i] : "#5A5A66";
+            string isi   = ini ? "<b>" + nama[i] + "</b>" : nama[i];
+            sb.Append("<color=" + warna + ">" + ikon + " " + isi + "</color>");
+            if (i < 2) sb.Append("  <color=#5A5A66>\u2192</color>  ");
+        }
+        return sb.ToString();
     }
 
     void MainLagi()

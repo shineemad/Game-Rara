@@ -58,10 +58,13 @@ public class MobileControls : MonoBehaviour
 
     [Header("Tampilkan")]
     [Tooltip("Tampilkan tombol mobile di PC juga (untuk testing di editor). Jika dicentang, deteksi otomatis diabaikan.")]
-    public bool forceShowOnDesktop = false;
+    public bool forceShowOnDesktop = true;
 
     [Tooltip("Paksa SEMBUNYI tombol mobile (mengalahkan deteksi otomatis). Untuk demo di layar besar.")]
     public bool forceHide = false;
+
+    [Tooltip("Jaga agar tombol controller tidak keluar dari Safe Area (notch / rounded corner HP).")]
+    public bool hormatiSafeArea = true;
 
     [Header("Deteksi Otomatis Ukuran Layar")]
     [Tooltip("Aktifkan deteksi otomatis berdasarkan ukuran layar fisik. Off = pakai Application.isMobilePlatform saja.")]
@@ -114,18 +117,46 @@ public class MobileControls : MonoBehaviour
 
     // ── internal ──────────────────────────────────────────────────────────
     private Canvas canvas;
+    private RectTransform _safeRootRT;   // root yang dibatasi Safe Area (induk semua tombol)
     private bool   leftHeld;
     private bool   rightHeld;
     private bool   runHeld;
     private bool   shoutBtnHeld;
 
     private Image  leftImg, rightImg, runImg, shoutImg;
+    private Image  shoutGaugeImg;   // cincin gauge radial pada tombol TERIAK
 
     // ══════════════════════════════════════════════════════════════════════
     void Awake()
     {
-        if (Instance != null && Instance != this) { Destroy(gameObject); return; }
-        Instance = this;
+        // Scene memuat DUA komponen MobileControls: satu NONAKTIF (m_Enabled:0,
+        // forceShowOnDesktop:0) dan satu AKTIF (forceShowOnDesktop:1) di gameManager.
+        // Karena Awake tetap dipanggil pada komponen nonaktif, urutan eksekusi jadi
+        // taruhan. Jika komponen nonaktif "menang" jadi Instance, Start()-nya TAK
+        // PERNAH jalan → tombol tak pernah dibangun. Selain itu Destroy(gameObject)
+        // lama bisa menghancurkan GameObject lain (mis. gameManager + PrologScreen).
+        //
+        // Solusi: hanya hancurkan KOMPONEN duplikat (Destroy(this)), bukan GameObject,
+        // dan selalu utamakan komponen yang AKTIF sebagai Instance.
+        if (Instance != null && Instance != this)
+        {
+            if (!Instance.enabled && this.enabled)
+            {
+                // Instance lama nonaktif, yang ini aktif → ambil alih.
+                Destroy(Instance);
+                Instance = this;
+            }
+            else
+            {
+                // Duplikat → hancurkan komponen ini saja, biarkan GameObject utuh.
+                Destroy(this);
+                return;
+            }
+        }
+        else
+        {
+            Instance = this;
+        }
     }
 
     void Start()
@@ -152,6 +183,12 @@ public class MobileControls : MonoBehaviour
     bool ShouldShowMobileButtons()
     {
         if (forceHide)            return false;
+
+        // ── KHUSUS HARI 1 ──────────────────────────────────────────────
+        // Tombol arah hanya relevan di Hari 1 (side-scroller jalan kaki).
+        // Hari 2 (angkot) & Hari 3 (boss) berbasis UI/dialog → tak butuh tombol.
+        if (GameState.Instance != null && GameState.Instance.day != 1) return false;
+
         if (forceShowOnDesktop)   return true;
 
         // ── (3) Build native HP (compile-time) — Android, iOS ──
@@ -189,6 +226,34 @@ public class MobileControls : MonoBehaviour
         return likelyPhone;
     }
 
+    /// <summary>
+    /// Deteksi perangkat sentuh (HP/tablet) untuk dipakai sistem LAIN agar
+    /// konsisten dengan tombol mobile — mis. tombol TERIAK radial di Day1Controller.
+    /// Menghormati forceHide / forceShowOnDesktop bila komponen tersedia.
+    /// Tidak bergantung pada Hari (gating Hari 1 diurus pemanggil masing-masing).
+    /// </summary>
+    public static bool ShouldShowTouchUI()
+    {
+        if (Instance != null)
+        {
+            if (Instance.forceHide)          return false;
+            if (Instance.forceShowOnDesktop) return true;
+        }
+
+#if (UNITY_ANDROID || UNITY_IOS || UNITY_TVOS) && !UNITY_EDITOR
+        return true;
+#else
+        if (Application.isMobilePlatform)                 return true;
+        if (SystemInfo.deviceType == DeviceType.Handheld) return true;
+
+        int w = Screen.width, h = Screen.height;
+        float dpi = Screen.dpi;
+        if (dpi > 0f)
+            return (Mathf.Sqrt(w * w + h * h) / dpi) <= 8f; // diagonal fisik ≤ 8"
+        return Mathf.Min(w, h) <= 900 && Input.touchSupported;
+#endif
+    }
+
     void Update()
     {
         // Auto-hide tombol saat ada dialog/intro/pemilihan aktif — agar UI bersih
@@ -208,6 +273,19 @@ public class MobileControls : MonoBehaviour
         if (rightImg != null) rightImg.color = rightHeld ? dpadPressColor : dpadColor;
         if (runImg   != null) runImg.color   = runHeld   ? new Color(0.3f, 1f, 0.4f, 0.8f) : runColor;
         if (shoutImg != null) shoutImg.color = shoutBtnHeld ? new Color(1f, 0.4f, 0.2f, 0.9f) : shoutColor;
+
+        // Cincin gauge teriak mengikuti level suara dari Day1Controller (bila ada).
+        if (shoutGaugeImg != null)
+        {
+            float level = (Day1Controller.Aktif != null) ? Day1Controller.Aktif.ShoutLevel01
+                                                          : (shoutBtnHeld ? 1f : 0f);
+            shoutGaugeImg.fillAmount = Mathf.Lerp(shoutGaugeImg.fillAmount, level, 0.30f);
+            bool keras  = level >= 0.80f;
+            bool sedang = level >= 0.45f && !keras;
+            shoutGaugeImg.color = keras  ? new Color(0.92f, 0.22f, 0.18f, 1f)
+                                : sedang ? new Color(0.95f, 0.62f, 0.07f, 1f)
+                                :          new Color(0.20f, 0.78f, 0.40f, 1f);
+        }
     }
 
     // ── Cache untuk auto-hide (throttle agar tidak Find tiap frame) ──────
@@ -225,20 +303,23 @@ public class MobileControls : MonoBehaviour
             if (_screenCheckTimer <= 0f)
             {
                 _screenCheckTimer = screenCheckInterval;
-                if (Screen.width != _lastW || Screen.height != _lastH)
+                _lastW = Screen.width;
+                _lastH = Screen.height;
+                // Evaluasi ulang tiap interval (bukan hanya saat ukuran layar
+                // berubah) agar tombol ikut muncul/hilang saat ganti hari
+                // (mis. Hari 1 → Hari 2) maupun saat timing awal scene.
+                bool harusTampil = ShouldShowMobileButtons();
+                if (harusTampil && canvas == null) BuildUI();
+                if (!harusTampil && canvas != null)
                 {
-                    _lastW = Screen.width;
-                    _lastH = Screen.height;
-                    bool harusTampil = ShouldShowMobileButtons();
-                    if (harusTampil && canvas == null) BuildUI();
-                    if (!harusTampil && canvas != null)
-                    {
-                        Destroy(canvas.gameObject);
-                        canvas = null;
-                        leftHeld = rightHeld = runHeld = shoutBtnHeld = false;
-                        return;
-                    }
+                    Destroy(canvas.gameObject);
+                    canvas = null;
+                    leftHeld = rightHeld = runHeld = shoutBtnHeld = false;
+                    return;
                 }
+                // Refresh Safe Area saat layar/orientasi berubah agar tombol
+                // tetap berada di dalam area aman.
+                if (canvas != null) ApplySafeAreaToRoot();
             }
         }
 
@@ -268,11 +349,15 @@ public class MobileControls : MonoBehaviour
         foreach (var d in npcDialogs)
             if (d != null && d.IsPlaying) return true;
 
-        // 2) Day1Intro masih ada di scene? (script ini di-Destroy setelah intro selesai)
-        if (FindFirstObjectByType<Day1Intro>() != null) return true;
+        // 2) Day1Intro MASIH berjalan? GameObject Day1Intro TIDAK dihancurkan
+        // setelah intro (hanya canvas-nya), jadi cek flag Selesai — bukan sekadar
+        // keberadaan komponen. Tanpa ini tombol mobile tersembunyi selamanya.
+        var intro = FindFirstObjectByType<Day1Intro>();
+        if (intro != null && !intro.Selesai) return true;
 
-        // 3) PrologScreen masih ada?
-        if (FindFirstObjectByType<PrologScreen>() != null) return true;
+        // 3) PrologScreen MASIH berjalan? Komponennya juga tidak dihancurkan
+        // (ikut di gameManager). Pakai flag statis prologDone, bukan keberadaan.
+        if (FindFirstObjectByType<PrologScreen>() != null && !PrologScreen.prologDone) return true;
 
         // 4) PathChoiceUI panel aktif?
         var pathChoice = FindFirstObjectByType<PathChoiceUI>();
@@ -310,7 +395,10 @@ public class MobileControls : MonoBehaviour
         canvas.sortingOrder = 985;
         var scaler = cGO.AddComponent<CanvasScaler>();
         scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1080f, 1920f);
+        // Game ini LANDSCAPE (1920×1080). Samakan reference dgn canvas lain
+        // (Day1 shout, intro, HUD) supaya skala & posisi tombol konsisten —
+        // sebelumnya portrait (1080×1920) membuat tombol ter-skala salah.
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
         scaler.matchWidthOrHeight  = 0.5f;
         cGO.AddComponent<GraphicRaycaster>();
 
@@ -322,13 +410,22 @@ public class MobileControls : MonoBehaviour
             esGO.AddComponent<StandaloneInputModule>();
         }
 
+        // Root Safe Area — semua tombol dibuat di dalam ini supaya tidak keluar
+        // dari area aman (notch / sudut membulat HP). Anchor diisi fraksi
+        // Screen.safeArea via ApplySafeAreaToRoot() (juga di-refresh saat resize).
+        var safeGO = new GameObject("SafeAreaRoot");
+        safeGO.transform.SetParent(cGO.transform, false);
+        _safeRootRT = safeGO.AddComponent<RectTransform>();
+        _safeRootRT.offsetMin = _safeRootRT.offsetMax = Vector2.zero;
+        ApplySafeAreaToRoot();
+        var host = safeGO;   // induk semua tombol (bukan canvas langsung)
+
         float bs = dpadButtonSize;
-        float ab = actionButtonSize;
         float bm = bottomMargin;
 
         // ── D-PAD: kiri & kanan (pojok kiri bawah) ──────────────────────
         // Tombol KIRI
-        leftImg = MakeButton(cGO, "BtnLeft", "◄", iconLeft,
+        leftImg = MakeButton(host, "BtnLeft", "◄", iconLeft,
             new Vector2(leftMargin, bm),
             new Vector2(bs, bs),
             new Vector2(0f, 0f),   // anchor kiri-bawah
@@ -338,7 +435,7 @@ public class MobileControls : MonoBehaviour
             onUp:   () => leftHeld  = false);
 
         // Tombol KANAN
-        rightImg = MakeButton(cGO, "BtnRight", "►", iconRight,
+        rightImg = MakeButton(host, "BtnRight", "►", iconRight,
             new Vector2(leftMargin + bs + 20f, bm),
             new Vector2(bs, bs),
             new Vector2(0f, 0f),
@@ -347,28 +444,138 @@ public class MobileControls : MonoBehaviour
             onDown: () => rightHeld = true,
             onUp:   () => rightHeld = false);
 
-        // ── AKSI: RUN & TERIAK (pojok kanan bawah) ───────────────────────
-        // Tombol TERIAK (besar, merah — paling sering dipakai)
-        shoutImg = MakeButton(cGO, "BtnShout", "TERIAK", iconShout,
-            new Vector2(-(rightMargin + ab), bm),
-            new Vector2(ab, ab),
-            new Vector2(1f, 0f),   // anchor kanan-bawah
-            new Vector2(1f, 0f),
-            shoutColor,
-            onDown: () => shoutBtnHeld = true,
-            onUp:   () => shoutBtnHeld = false);
+        // ── AKSI: TERIAK (pojok kanan bawah) ─────────────────────────────
+        // Bagian dari controller mobile terpadu. Menggerakkan ShoutHeld yang
+        // dibaca Day1Controller (HandleShout & tutorial). Dilengkapi cincin gauge
+        // radial yang terisi mengikuti level teriak (dari Day1Controller.ShoutLevel01).
+        // Dengan ini tombol TERIAK menyatu dengan tombol arah — tidak ada lagi
+        // tombol radial terpisah (Day1Controller.BuildShoutButton dimatikan saat
+        // MobileControls hadir) sehingga tidak ada tombol ganda.
+        BuildTeriakButton(host, actionButtonSize);
 
-        // Tombol RUN (di atas TERIAK)
-        runImg = MakeButton(cGO, "BtnRun", "RUN", iconRun,
-            new Vector2(-(rightMargin + ab), bm + ab + 16f),
-            new Vector2(ab, ab * 0.65f),
-            new Vector2(1f, 0f),
-            new Vector2(1f, 0f),
-            runColor,
-            onDown: () => runHeld = true,
-            onUp:   () => runHeld = false);
+        Debug.Log("[MobileControls] Tombol arah + TERIAK mobile berhasil dibuat (khusus Hari 1).");
+    }
 
-        Debug.Log("[MobileControls] Tombol mobile berhasil dibuat.");
+    // Terapkan Safe Area ke root tombol. Anchor di-set ke fraksi Screen.safeArea
+    // sehingga tombol pojok (kiri-bawah / kanan-bawah) otomatis berada di dalam
+    // area aman pada HP ber-notch / sudut membulat. Dipanggil ulang saat resize.
+    void ApplySafeAreaToRoot()
+    {
+        if (_safeRootRT == null) return;
+        if (hormatiSafeArea)
+        {
+            Rect sa = Screen.safeArea;
+            float w = Screen.width  > 0 ? Screen.width  : 1f;
+            float h = Screen.height > 0 ? Screen.height : 1f;
+            _safeRootRT.anchorMin = new Vector2(sa.xMin / w, sa.yMin / h);
+            _safeRootRT.anchorMax = new Vector2(sa.xMax / w, sa.yMax / h);
+        }
+        else
+        {
+            _safeRootRT.anchorMin = Vector2.zero;
+            _safeRootRT.anchorMax = Vector2.one;
+        }
+        _safeRootRT.offsetMin = _safeRootRT.offsetMax = Vector2.zero;
+    }
+
+    // ── Bangun tombol TERIAK bundar + cincin gauge radial ────────────────
+    void BuildTeriakButton(GameObject parent, float size)
+    {
+        // Root di pojok kanan-bawah
+        var root = new GameObject("BtnTeriakRoot");
+        root.transform.SetParent(parent.transform, false);
+        var rrt = root.AddComponent<RectTransform>();
+        rrt.anchorMin        = new Vector2(1f, 0f);
+        rrt.anchorMax        = new Vector2(1f, 0f);
+        rrt.pivot            = new Vector2(1f, 0f);
+        rrt.sizeDelta        = new Vector2(size, size);
+        rrt.anchoredPosition = new Vector2(-rightMargin, bottomMargin);
+
+        // Cincin track (latar gauge gelap)
+        var track = new GameObject("GaugeTrack");
+        track.transform.SetParent(root.transform, false);
+        var trackImg = track.AddComponent<Image>();
+        trackImg.sprite        = MakeCircleSprite();
+        trackImg.color         = new Color(0.10f, 0.05f, 0.02f, 0.80f);
+        trackImg.raycastTarget = false;
+        StretchFull(track.GetComponent<RectTransform>());
+
+        // Cincin gauge radial (terisi sesuai level teriak)
+        var fill = new GameObject("GaugeFill");
+        fill.transform.SetParent(root.transform, false);
+        shoutGaugeImg = fill.AddComponent<Image>();
+        shoutGaugeImg.sprite        = MakeCircleSprite();
+        shoutGaugeImg.color         = new Color(0.20f, 0.78f, 0.40f, 1f);
+        shoutGaugeImg.type          = Image.Type.Filled;
+        shoutGaugeImg.fillMethod    = Image.FillMethod.Radial360;
+        shoutGaugeImg.fillOrigin    = (int)Image.Origin360.Top;
+        shoutGaugeImg.fillClockwise = true;
+        shoutGaugeImg.fillAmount    = 0f;
+        shoutGaugeImg.raycastTarget = false;
+        StretchFull(fill.GetComponent<RectTransform>());
+
+        // Tombol bundar di dalam cincin (lebih kecil)
+        var btn = new GameObject("BtnTeriak");
+        btn.transform.SetParent(root.transform, false);
+        shoutImg = btn.AddComponent<Image>();
+        shoutImg.sprite = MakeCircleSprite();
+        shoutImg.color  = shoutColor;
+        var brt = btn.GetComponent<RectTransform>();
+        brt.anchorMin = new Vector2(0.5f, 0.5f);
+        brt.anchorMax = new Vector2(0.5f, 0.5f);
+        brt.pivot     = new Vector2(0.5f, 0.5f);
+        brt.sizeDelta = new Vector2(size * 0.74f, size * 0.74f);
+
+        bool hasIcon = (iconShout != null);
+
+        // Label teks (disembunyikan bila ada icon)
+        var txtGO = new GameObject("Label");
+        txtGO.transform.SetParent(btn.transform, false);
+        var txtRT = txtGO.AddComponent<RectTransform>();
+        txtRT.anchorMin = Vector2.zero; txtRT.anchorMax = Vector2.one;
+        txtRT.offsetMin = new Vector2(4f, 4f); txtRT.offsetMax = new Vector2(-4f, -4f);
+        var tmp = txtGO.AddComponent<TextMeshProUGUI>();
+        ApplyFont(tmp);
+        tmp.text          = "TERIAK";
+        tmp.fontSize      = 30;
+        tmp.color         = labelColor;
+        tmp.alignment     = TextAlignmentOptions.Center;
+        tmp.fontStyle     = FontStyles.Bold;
+        tmp.raycastTarget = false;
+        tmp.textWrappingMode = TextWrappingModes.Normal;
+        txtGO.SetActive(!hasIcon);
+
+        // Icon (bila sprite di-assign)
+        if (hasIcon)
+        {
+            var iconGO = new GameObject("Icon");
+            iconGO.transform.SetParent(btn.transform, false);
+            var iconRT = iconGO.AddComponent<RectTransform>();
+            float pad = (1f - iconSizeFraction) * 0.5f;
+            iconRT.anchorMin = new Vector2(pad, pad);
+            iconRT.anchorMax = new Vector2(1f - pad, 1f - pad);
+            iconRT.offsetMin = Vector2.zero; iconRT.offsetMax = Vector2.zero;
+            var iconImg = iconGO.AddComponent<Image>();
+            iconImg.sprite         = iconShout;
+            iconImg.color          = iconColor;
+            iconImg.preserveAspect = true;
+            iconImg.raycastTarget  = false;
+        }
+
+        // EventTrigger hold → shoutBtnHeld (dibaca via ShoutHeld)
+        var et = btn.AddComponent<EventTrigger>();
+        AddETEntry(et, EventTriggerType.PointerDown, _ => shoutBtnHeld = true);
+        AddETEntry(et, EventTriggerType.PointerUp,   _ => shoutBtnHeld = false);
+        AddETEntry(et, EventTriggerType.PointerExit, _ => shoutBtnHeld = false);
+    }
+
+    // Regang RectTransform memenuhi parent.
+    static void StretchFull(RectTransform rt)
+    {
+        rt.anchorMin = Vector2.zero;
+        rt.anchorMax = Vector2.one;
+        rt.offsetMin = Vector2.zero;
+        rt.offsetMax = Vector2.zero;
     }
 
     // ── Helper: buat satu tombol dengan EventTrigger hold/release ────────
