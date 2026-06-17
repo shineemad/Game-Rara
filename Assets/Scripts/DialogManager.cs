@@ -55,11 +55,16 @@ public class DialogManager : MonoBehaviour
     private bool             isTyping;
     private Coroutine        typingCoroutine;
 
-    // ── Warna Pilihan ──────────────────────────────────────────────────────
-    private static readonly Color COLOR_AMAN   = new Color(0.15f, 0.68f, 0.38f);
-    private static readonly Color COLOR_RAGU   = new Color(0.95f, 0.61f, 0.07f);
-    private static readonly Color COLOR_BAHAYA = new Color(0.91f, 0.30f, 0.24f);
-    private static readonly Color COLOR_NETRAL = new Color(0.20f, 0.60f, 0.86f);
+    // Pool tombol pilihan — dipakai ulang antar baris (hindari Destroy/Instantiate
+    // berulang yang memicu GC spike di mobile).
+    private readonly List<GameObject> _choicePool = new List<GameObject>();
+
+    // Pilihan baris yang sedang tampil (untuk fitur pilih ulang).
+    private Choice[] _currentChoices;
+    // True jika pemain sudah pernah memilih BAHAYA (salah) di baris pilihan ini.
+    // Dipakai untuk: (1) salah pertama gratis, salah berikutnya kurangi nyawa;
+    // (2) batasi skor pilihan benar setelah sempat salah ke maksimal RAGU.
+    private bool _pernahSalahDiBaris;
 
     // ══════════════════════════════════════════════════════════════════════
     // DATA STRUCTURES
@@ -109,12 +114,16 @@ public class DialogManager : MonoBehaviour
     /// Dipanggil tombol Lanjutkan atau klik panel.
     public void OnContinueClicked()
     {
+        // SFX klik untuk setiap ketukan lanjut (skip ketik / maju baris).
+        AudioManager.Instance?.Click();
+
         if (isTyping)
         {
-            // Skip animasi ketik — tampilkan teks langsung
+            // Skip animasi ketik — tampilkan teks langsung (seluruh karakter terlihat)
             if (typingCoroutine != null) StopCoroutine(typingCoroutine);
             isTyping         = false;
             dialogText.text  = currentLines[lineIndex].text;
+            dialogText.maxVisibleCharacters = int.MaxValue;
             ShowChoicesIfAny(currentLines[lineIndex]);
             return;
         }
@@ -152,13 +161,26 @@ public class DialogManager : MonoBehaviour
 
     IEnumerator TypeText(string fullText, Action onDone)
     {
-        isTyping        = true;
-        dialogText.text = "";
-        foreach (char c in fullText)
+        isTyping = true;
+
+        // Set teks penuh SEKALI lalu ungkap bertahap via maxVisibleCharacters.
+        // Keuntungan: rich-text (<b>, <color>) tidak pernah tampil mentah,
+        // tanpa alokasi string per huruf (bebas GC), dan tidak terpengaruh
+        // Time.timeScale karena memakai WaitForSecondsRealtime.
+        dialogText.text = fullText;
+        dialogText.ForceMeshUpdate();
+        int total = dialogText.textInfo.characterCount;
+        dialogText.maxVisibleCharacters = 0;
+
+        int shown = 0;
+        while (shown < total)
         {
-            dialogText.text += c;
-            yield return new WaitForSeconds(typeSpeed);
+            shown++;
+            dialogText.maxVisibleCharacters = shown;
+            yield return new WaitForSecondsRealtime(typeSpeed);
         }
+
+        dialogText.maxVisibleCharacters = int.MaxValue;
         isTyping = false;
         onDone?.Invoke();
     }
@@ -174,10 +196,6 @@ public class DialogManager : MonoBehaviour
         continueButton.gameObject.SetActive(false);
         choicePanel.SetActive(true);
 
-        // Bersihkan tombol lama
-        foreach (Transform child in choicePanel.transform)
-            Destroy(child.gameObject);
-
         // VerticalLayoutGroup menjaga tinggi tombol minimum (target sentuh mobile).
         // Tinggi tiap tombol dijamin >= MIN_CHOICE_HEIGHT via LayoutElement.
         var vlg = choicePanel.GetComponent<VerticalLayoutGroup>();
@@ -192,42 +210,19 @@ public class DialogManager : MonoBehaviour
 
         const float MIN_CHOICE_HEIGHT = 96f; // px (ref 1080) — target sentuh ramah anak/mobile
 
+        // Baris pilihan baru: reset status "pernah salah" & simpan daftar pilihan
+        // agar tombol salah bisa dinonaktifkan saat pemain diberi kesempatan ulang.
+        _currentChoices = line.choices;
+        _pernahSalahDiBaris = false;
+
         for (int i = 0; i < line.choices.Length; i++)
         {
             var choice = line.choices[i];
 
-            GameObject btnObj;
-            if (choiceButtonPrefab != null)
-            {
-                btnObj = Instantiate(choiceButtonPrefab, choicePanel.transform);
-            }
-            else
-            {
-                // Auto-build tombol tanpa prefab — posisi diatur VerticalLayoutGroup
-                btnObj = new GameObject("Choice_" + i);
-                btnObj.transform.SetParent(choicePanel.transform, false);
-                btnObj.AddComponent<RectTransform>();
-                btnObj.AddComponent<Image>();
-
-                var lblGO = new GameObject("Label");
-                lblGO.transform.SetParent(btnObj.transform, false);
-                var lblRT = lblGO.AddComponent<RectTransform>();
-                lblRT.anchorMin = Vector2.zero;
-                lblRT.anchorMax = Vector2.one;
-                lblRT.offsetMin = new Vector2(18f,  6f);
-                lblRT.offsetMax = new Vector2(-18f, -6f);
-                var lbl = lblGO.AddComponent<TextMeshProUGUI>();
-                lbl.fontSize           = 28;
-                lbl.color              = Color.white;
-                lbl.fontStyle          = FontStyles.Bold;
-                lbl.alignment          = TextAlignmentOptions.MidlineLeft;
-                lbl.textWrappingMode   = TextWrappingModes.Normal;
-                lbl.enableAutoSizing   = true;
-                lbl.fontSizeMin        = 20;
-                lbl.fontSizeMax        = 28;
-                lbl.raycastTarget      = false;
-                btnObj.AddComponent<Button>();
-            }
+            // Ambil tombol dari pool (atau bangun bila kurang) — bukan recreate tiap kali.
+            GameObject btnObj = GetOrCreateChoiceButton(i);
+            btnObj.SetActive(true);
+            btnObj.transform.SetSiblingIndex(i);
 
             // Jamin tinggi minimum tombol (target sentuh) untuk semua jalur build
             var le = btnObj.GetComponent<LayoutElement>();
@@ -236,37 +231,131 @@ public class DialogManager : MonoBehaviour
             le.preferredHeight = MIN_CHOICE_HEIGHT;
             le.flexibleHeight  = 1f;
 
-            // Teks & warna
+            // Teks + ikon penanda kategori (aksesibilitas buta warna): ✓ / ! / ✕
             var tmp = btnObj.GetComponentInChildren<TextMeshProUGUI>();
-            if (tmp != null) tmp.text = choice.label;
+            if (tmp != null)
+                tmp.text = UIPalette.KategoriIkon(choice.category) + "  " + choice.label;
 
             var img = btnObj.GetComponent<Image>();
             if (img != null) img.color = CategoryColor(choice.category);
 
-            var c = choice;
-            btnObj.GetComponent<Button>().onClick.AddListener(() => OnChoiceSelected(c));
+            // Efek tekan kecil agar tombol terasa responsif di layar sentuh.
+            if (btnObj.GetComponent<ButtonPressFeedback>() == null)
+                btnObj.AddComponent<ButtonPressFeedback>();
+
+            var c   = choice;
+            var btn = btnObj.GetComponent<Button>();
+            btn.interactable = true; // pastikan aktif kembali bila tombol dipakai ulang dari pool
+            btn.onClick.RemoveAllListeners();
+            btn.onClick.AddListener(() => OnChoiceSelected(c));
         }
+
+        // Sembunyikan sisa tombol pool yang tidak terpakai baris ini.
+        for (int i = line.choices.Length; i < _choicePool.Count; i++)
+            if (_choicePool[i] != null) _choicePool[i].SetActive(false);
+    }
+
+    // Ambil tombol pilihan dari pool pada indeks tertentu; bangun bila belum ada.
+    GameObject GetOrCreateChoiceButton(int index)
+    {
+        if (index < _choicePool.Count && _choicePool[index] != null)
+            return _choicePool[index];
+
+        GameObject btnObj;
+        if (choiceButtonPrefab != null)
+        {
+            btnObj = Instantiate(choiceButtonPrefab, choicePanel.transform);
+        }
+        else
+        {
+            // Auto-build tombol tanpa prefab — posisi diatur VerticalLayoutGroup
+            btnObj = new GameObject("Choice_" + index);
+            btnObj.transform.SetParent(choicePanel.transform, false);
+            btnObj.AddComponent<RectTransform>();
+            btnObj.AddComponent<Image>();
+
+            var lblGO = new GameObject("Label");
+            lblGO.transform.SetParent(btnObj.transform, false);
+            var lblRT = lblGO.AddComponent<RectTransform>();
+            lblRT.anchorMin = Vector2.zero;
+            lblRT.anchorMax = Vector2.one;
+            lblRT.offsetMin = new Vector2(18f,  6f);
+            lblRT.offsetMax = new Vector2(-18f, -6f);
+            var lbl = lblGO.AddComponent<TextMeshProUGUI>();
+            lbl.fontSize           = 28;
+            lbl.color              = Color.white;
+            lbl.fontStyle          = FontStyles.Bold;
+            lbl.alignment          = TextAlignmentOptions.MidlineLeft;
+            lbl.textWrappingMode   = TextWrappingModes.Normal;
+            lbl.enableAutoSizing   = true;
+            lbl.fontSizeMin        = 20;
+            lbl.fontSizeMax        = 28;
+            lbl.raycastTarget      = false;
+            btnObj.AddComponent<Button>();
+        }
+
+        if (index < _choicePool.Count) _choicePool[index] = btnObj;
+        else                           _choicePool.Add(btnObj);
+        return btnObj;
     }
 
     void OnChoiceSelected(Choice c)
     {
-        // Jalankan callback khusus (mis. kurangi boss mental)
-        c.onSelect?.Invoke();
+        // SFX per kategori untuk pilihan tanpa callback kustom (mis. Hari 1).
+        // Pilihan dengan onSelect kustom memainkan SFX-nya sendiri — hindari dobel.
+        if (c.onSelect == null)
+            AudioManager.Instance?.PlayKategori(c.category);
 
-        // Skor + nyawa via GameState
-        if (GameState.Instance != null)
+        // ── Pilihan SALAH (BAHAYA) → beri kesempatan memilih ulang (game edukasi) ──
+        // Tujuannya pemain BELAJAR jawaban benar, bukan langsung dihukum.
+        if (c.category == "BAHAYA")
         {
-            GameState.Instance.AddChoice(GameState.Instance.day, c.label, c.category);
-            if (c.category == "BAHAYA")
+            // Selalu tampilkan feedback edukatif "kenapa ini berbahaya".
+            TampilkanPenjelasanPilihan(c);
+
+            if (!_pernahSalahDiBaris)
             {
-                bool alive = GameState.Instance.LoseLife();
+                // Salah PERTAMA = peringatan gratis, nyawa belum berkurang.
+                _pernahSalahDiBaris = true;
+            }
+            else
+            {
+                // Salah LAGI = baru kurangi nyawa.
+                bool alive = GameState.Instance?.LoseLife() ?? true;
+                HUDManager.Instance?.FlashHeartLost(GameState.Instance?.lives ?? 0);
+                HUDManager.Instance?.ShowLifeLostPopup();
                 if (!alive)
                 {
-                    // Informasikan ke controller bahwa pemain mati
                     onComplete?.Invoke();
                     dialogPanel.SetActive(false);
                     return;
                 }
+            }
+
+            // Nonaktifkan tombol salah ini, panel tetap terbuka agar pemain memilih ulang.
+            NonaktifkanTombolPilihan(c);
+            return; // JANGAN lanjut ke baris berikutnya
+        }
+
+        // ── Pilihan BENAR (AMAN/RAGU) ──
+        // Jalankan callback khusus (mis. kurangi boss mental)
+        c.onSelect?.Invoke();
+
+        // Skor via GameState. Jika pemain sempat salah di baris ini, skor dibatasi
+        // maksimal RAGU (50) sebagai konsekuensi — tetap edukatif tapi tak "gratis".
+        if (GameState.Instance != null)
+        {
+            if (_pernahSalahDiBaris)
+            {
+                int basePts = c.category == "AMAN" ? GameState.SCORE_AMAN
+                            : c.category == "RAGU" ? GameState.SCORE_RAGU
+                            :                        GameState.SCORE_BAHAYA;
+                int poin = Mathf.Min(basePts, GameState.SCORE_RAGU);
+                GameState.Instance.AddChoice(GameState.Instance.day, c.label, c.category, poin);
+            }
+            else
+            {
+                GameState.Instance.AddChoice(GameState.Instance.day, c.label, c.category);
             }
         }
 
@@ -279,9 +368,23 @@ public class DialogManager : MonoBehaviour
         ShowLine(lineIndex);
     }
 
+    // Nonaktifkan tombol pilihan yang salah agar tidak bisa diklik lagi saat
+    // pemain diberi kesempatan memilih ulang (visual diredupkan).
+    void NonaktifkanTombolPilihan(Choice c)
+    {
+        if (_currentChoices == null) return;
+        int idx = System.Array.IndexOf(_currentChoices, c);
+        if (idx < 0 || idx >= _choicePool.Count) return;
+        var go = _choicePool[idx];
+        if (go == null) return;
+        var btn = go.GetComponent<Button>();
+        if (btn != null) btn.interactable = false;
+        var img = go.GetComponent<Image>();
+        if (img != null) { var col = img.color; col.a = 0.4f; img.color = col; }
+    }
+
     // ── Toast edukatif "💡 Kenapa?" setelah memilih (Hari 2) ───────────────
     private GameObject _eduToast;
-    private static Sprite _eduRounded;
     void TampilkanPenjelasanPilihan(Choice c)
     {
         if (dialogPanel == null) return;
@@ -295,11 +398,7 @@ public class DialogManager : MonoBehaviour
 
         if (_eduToast != null) Destroy(_eduToast);
 
-        Color aksen =
-            c.category == "AMAN"   ? new Color(0.18f, 0.68f, 0.38f, 1f) :
-            c.category == "RAGU"   ? new Color(0.95f, 0.62f, 0.07f, 1f) :
-            c.category == "BAHAYA" ? new Color(0.91f, 0.30f, 0.24f, 1f) :
-                                     new Color(0.20f, 0.60f, 0.86f, 1f);
+        Color aksen = UIPalette.Kategori(c.category);
 
         var toast = new GameObject("EduToast");
         toast.transform.SetParent(host, false);
@@ -387,23 +486,8 @@ public class DialogManager : MonoBehaviour
 
     static Sprite GetEduRounded()
     {
-        if (_eduRounded != null) return _eduRounded;
-        int size = 64, radius = 14;
-        var tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
-        tex.wrapMode = TextureWrapMode.Clamp; tex.filterMode = FilterMode.Bilinear;
-        Color32 w = new Color32(255, 255, 255, 255), cc = new Color32(255, 255, 255, 0);
-        for (int y = 0; y < size; y++) for (int x = 0; x < size; x++)
-        {
-            bool inside = true;
-            if      (x < radius && y < radius)                 { int dx = radius - x, dy = radius - y; inside = dx*dx + dy*dy <= radius*radius; }
-            else if (x >= size-radius && y < radius)           { int dx = x-(size-1-radius), dy = radius - y; inside = dx*dx + dy*dy <= radius*radius; }
-            else if (x < radius && y >= size-radius)           { int dx = radius - x, dy = y-(size-1-radius); inside = dx*dx + dy*dy <= radius*radius; }
-            else if (x >= size-radius && y >= size-radius)     { int dx = x-(size-1-radius), dy = y-(size-1-radius); inside = dx*dx + dy*dy <= radius*radius; }
-            tex.SetPixel(x, y, inside ? (Color)w : (Color)cc);
-        }
-        tex.Apply();
-        _eduRounded = Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), 100f, 0, SpriteMeshType.FullRect, new Vector4(radius, radius, radius, radius));
-        return _eduRounded;
+        // Delegasi ke sprite rounded 9-slice bersama (UIKit) — satu sprite untuk semua UI.
+        return UIKit.RoundedSprite();
     }
 
 
@@ -423,16 +507,9 @@ public class DialogManager : MonoBehaviour
         if (dialogPanel != null) return;   // sudah ter-assign, tidak perlu build
 
         // ── Canvas ─────────────────────────────────────────────────────────
-        var canvasGO = new GameObject("DialogManagerCanvas");
-        DontDestroyOnLoad(canvasGO);
-        var cv = canvasGO.AddComponent<Canvas>();
-        cv.renderMode   = RenderMode.ScreenSpaceOverlay;
-        cv.sortingOrder = 990;
-        var scaler = canvasGO.AddComponent<CanvasScaler>();
-        scaler.uiScaleMode         = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1920f, 1080f);
-        scaler.matchWidthOrHeight  = 0.5f;
-        canvasGO.AddComponent<GraphicRaycaster>();
+        // Dibuat lewat factory bersama → CanvasScaler responsif (Expand) sejak awal.
+        var cv = UIKit.CreateOverlayCanvas("DialogManagerCanvas", 990, dontDestroy: true);
+        var canvasGO = cv.gameObject;
 
         // ── EventSystem — wajib agar Button/onClick merespon ───────────────
         // Kalau scene belum punya EventSystem, tombol Lanjut & pilihan tidak
@@ -596,6 +673,7 @@ public class DialogManager : MonoBehaviour
         contImg.color = new Color(0.2f, 0.6f, 0.86f, 0.85f);
         continueButton = contGO.AddComponent<Button>();
         continueButton.onClick.AddListener(OnContinueClicked);
+        contGO.AddComponent<ButtonPressFeedback>();
 
         var contLblGO = new GameObject("Label");
         contLblGO.transform.SetParent(contGO.transform, false);
@@ -650,7 +728,8 @@ public class DialogManager : MonoBehaviour
 
         if (idx >= 0 && idx < portraits.Length && portraits[idx] != null)
         {
-            portraitImage.gameObject.SetActive(true);
+            // Potret/sprite profil disembunyikan dari box dialog.
+            portraitImage.gameObject.SetActive(false);
             portraitImage.sprite = portraits[idx];
         }
         else
@@ -659,11 +738,5 @@ public class DialogManager : MonoBehaviour
         }
     }
 
-    static Color CategoryColor(string category) => category switch
-    {
-        "AMAN"   => COLOR_AMAN,
-        "RAGU"   => COLOR_RAGU,
-        "BAHAYA" => COLOR_BAHAYA,
-        _        => COLOR_NETRAL
-    };
+    static Color CategoryColor(string category) => UIPalette.Kategori(category);
 }

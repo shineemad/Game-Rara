@@ -567,7 +567,7 @@ public class NpcGang : MonoBehaviour
         d.portraitPreserveAspect = false;
 
         // ── Banner nama (anchor area teks nama) ──
-        d.bannerAnchorMin = new Vector2(0.1f,   0.1f);
+        d.bannerAnchorMin = new Vector2(0.03f,  0.1f);
         d.bannerAnchorMax = new Vector2(0.253f, 0.333f);
 
         // ── Area teks utama ──
@@ -858,7 +858,7 @@ public class NpcGang : MonoBehaviour
         d.portraitPreserveAspect = false;
 
         // ── 5. Banner nama di bawah portrait ──
-        d.bannerAnchorMin = new Vector2(0.1f,   0.1f);
+        d.bannerAnchorMin = new Vector2(0.03f,  0.1f);
         d.bannerAnchorMax = new Vector2(0.253f, 0.333f);
 
         // ── 6. Area teks di kanan (besar) ──

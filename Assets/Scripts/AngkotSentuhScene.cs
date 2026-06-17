@@ -139,7 +139,7 @@ public class AngkotSentuhScene : MonoBehaviour
     public Vector2 vnPortraitAnchorMin = new Vector2(0.0455f, 0.304f);
     public Vector2 vnPortraitAnchorMax = new Vector2(0.2345f, 0.864f);
     [Tooltip("Area banner nama pembicara DI DALAM box.")]
-    public Vector2 vnNamaAnchorMin = new Vector2(0.11f, 0.11f);
+    public Vector2 vnNamaAnchorMin = new Vector2(0.057f, 0.196f);
     public Vector2 vnNamaAnchorMax = new Vector2(0.253f, 0.333f);
     [Tooltip("Area teks isi dialog DI DALAM box.")]
     public Vector2 vnTeksAnchorMin = new Vector2(0.31f, 0.55f);
@@ -465,10 +465,10 @@ public class AngkotSentuhScene : MonoBehaviour
 
         // Banner nama pembicara (bawah portrait)
         _namaTxt = BuatTeks(_dialogBoxGO.transform, "Nama", "", vnNamaUkuran, vnNamaWarna, FontStyles.Bold);
-        _namaTxt.alignment = TextAlignmentOptions.MidlineLeft;
+        _namaTxt.alignment = TextAlignmentOptions.Center;
         var nrt = _namaTxt.rectTransform;
         nrt.anchorMin = vnNamaAnchorMin; nrt.anchorMax = vnNamaAnchorMax;
-        nrt.offsetMin = new Vector2(12f, 2f); nrt.offsetMax = new Vector2(-4f, -2f);
+        nrt.offsetMin = new Vector2(8f, 2f); nrt.offsetMax = new Vector2(-8f, -2f);
 
         // Teks isi dialog (kanan)
         _narasiTxt = BuatTeks(_dialogBoxGO.transform, "Narasi", "", vnTeksUkuran, vnTeksWarna, FontStyles.Normal);
@@ -506,7 +506,7 @@ public class AngkotSentuhScene : MonoBehaviour
             "Pak Supir"  => portraitPakSupir  != null ? portraitPakSupir  : portraitNarasi,
             _             => portraitNarasi
         };
-        if (s != null) { _portraitImg.sprite = s; _portraitImg.enabled = true; }
+        if (s != null) { _portraitImg.sprite = s; _portraitImg.enabled = false; } // potret disembunyikan dari box dialog
         else           { _portraitImg.enabled = false; }
     }
 

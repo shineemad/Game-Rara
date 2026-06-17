@@ -87,6 +87,18 @@ public class GameOverScreen : MonoBehaviour
         BuatTombol("KeluarBtn", "\u2716  Keluar", new Color(0.45f, 0.22f, 0.22f, 1f),
             new Vector2(0.5f, 0.155f), Keluar);
 
+        // Bekukan gameplay: hanya tombol Main Lagi & Keluar yang boleh diklik.
+        // - timeScale 0 menghentikan gerak/fisika berbasis Time.deltaTime.
+        // - player.frozen mematikan input gerak pemain.
+        // - Mobile controls & tombol pause disembunyikan agar tak bisa ditekan.
+        // (FadeIn pakai unscaledDeltaTime sehingga animasi tetap jalan saat timeScale 0.)
+        Time.timeScale = 0f;
+        var pl = FindFirstObjectByType<player>();
+        if (pl != null) pl.frozen = true;
+        if (MobileControls.Instance != null) MobileControls.Instance.forceHide = true;
+        var pause = FindFirstObjectByType<PauseMenu>(FindObjectsInactive.Include);
+        if (pause != null) pause.showMobilePauseButton = false;
+
         AudioManager.Instance?.Wrong();
         StartCoroutine(FadeIn());
     }
@@ -111,6 +123,12 @@ public class GameOverScreen : MonoBehaviour
         Time.timeScale = 1f;
         IsShowing = false;
         GameState.Instance?.Reset();
+
+        // Kembalikan kontrol mobile (singleton persisten — disembunyikan saat Game Over).
+        if (MobileControls.Instance != null) MobileControls.Instance.forceHide = false;
+
+        // Putar musik menu utama (game kembali ke layar menu setelah scene reload).
+        AudioManager.Instance?.PlayBGM(AudioManager.BGMTrack.Menu);
 
         string scene = SceneManager.GetActiveScene().name;
         Destroy(gameObject);

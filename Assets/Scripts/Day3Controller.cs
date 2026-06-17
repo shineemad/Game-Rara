@@ -73,6 +73,9 @@ public class Day3Controller : MonoBehaviour
         public int bonusPoin = 0;
         [TextArea(2, 4)]
         public string reaksi = "\u2713 Bagus! Pelaku kehilangan nyali.";
+        [Tooltip("Sprite latar belakang fullscreen saat REAKSI pilihan ini tampil (gaya Day 2). " +
+                 "Kosong = pakai latar arena default.")]
+        public Sprite latarReaksi;
     }
 
     [System.Serializable]
@@ -105,6 +108,9 @@ public class Day3Controller : MonoBehaviour
         [Tooltip("Ending yang dipicu opsi ini.")]
         public HasilDay3 hasil = HasilDay3.Lanjut;
         public Color warna = new Color(0.20f, 0.60f, 0.86f, 1f);
+        [Tooltip("Sprite latar belakang fullscreen saat REAKSI pilihan ini tampil (gaya Day 2). " +
+                 "Kosong = pakai latar arena default.")]
+        public Sprite latarReaksi;
     }
 
     /// <summary>Satu baris dialog intro pembuka Day 3 (gaya naratif Day 2).</summary>
@@ -115,6 +121,9 @@ public class Day3Controller : MonoBehaviour
         public string pembicara = "Narasi";
         [TextArea(2, 4)]
         public string teks = "";
+        [Tooltip("Sprite latar belakang fullscreen khusus untuk baris ini (gaya Day 2). " +
+                 "Kosong = pakai latar arena default (arenaLatarSprite).")]
+        public Sprite latarBelakang;
     }
 
     /// <summary>
@@ -129,6 +138,9 @@ public class Day3Controller : MonoBehaviour
         public string ucapanBoss = "\"...\"";
         [Tooltip("Pilihan respons Rara (AMAN/RAGU/BAHAYA). AMAN menguras Mental paling banyak.")]
         public PilihanKonfrontasi[] pilihan;
+        [Tooltip("Sprite latar belakang fullscreen khusus untuk ronde ini (gaya Day 2). " +
+                 "Kosong = pakai latar arena default (arenaLatarSprite).")]
+        public Sprite latarBelakang;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -150,6 +162,8 @@ public class Day3Controller : MonoBehaviour
     public string barisPertama = "HARI 3";
     public string barisKedua   = "Hujan di Parkiran Sekolah";
     public string teksLokasi   = "Parkiran SMP \u2014 Musim Hujan";
+    [Tooltip("Sprite latar overlay judul BossIntro (opsional). Jika diisi, menggantikan warna solid warnaBackground.")]
+    public Sprite spriteBackground;
     public Color  warnaBackground = new Color(0f, 0f, 0.04f, 0.92f);
     public Color  warnaTeksJudul  = new Color(0.95f, 0.78f, 0.10f, 1f);
     public Color  warnaTeksLokasi = Color.white;
@@ -163,6 +177,9 @@ public class Day3Controller : MonoBehaviour
     public string narasiPembuka =
         "TUNGGU! Rara mau naik ojol...\ntapi seseorang tiba-tiba menghadang jalannya! \uD83D\uDE31\n" +
         "Itu dia \u2014 si pengirim pesan tadi \u2014 muncul langsung di depan Rara!!";
+    [Tooltip("Sprite latar belakang fullscreen saat narasi pembuka boss tampil (gaya Day 2). " +
+             "Kosong = pakai latar arena default (arenaLatarSprite).")]
+    public Sprite narasiPembukaLatar;
 
     [Header("Intro Pembuka Day 3 (gaya Day 2)")]
     [Tooltip("Tampilkan dialog pembuka (bel pulang, hujan, pesan ojol) sebelum jalan ke parkiran.")]
@@ -182,6 +199,12 @@ public class Day3Controller : MonoBehaviour
     [Header("Jalan di Hujan (menuju parkiran)")]
     [Tooltip("Segmen jalan kaki menembus hujan menuju parkiran (TAP / TERIAK untuk maju).")]
     public bool jalankanJalanHujan = true;
+    [Tooltip("Sprite latar belakang fullscreen segmen LARI di hujan (gaya Day 2). " +
+             "Kosong = warna gelap hujan solid.")]
+    public Sprite jalanHujanLatar;
+    [Tooltip("Sprite latar belakang fullscreen saat narasi TIBA di parkiran tampil (gaya Day 2). " +
+             "Kosong = pakai latar arena default (arenaLatarSprite).")]
+    public Sprite jalanSampaiLatar;
     [TextArea(2, 3)]
     public string jalanInstruksi = "\u2794 Jalan ke parkiran sekolah \u2014 TERIAK buat lari lebih cepat! \uD83C\uDFC3";
     [Tooltip("Jarak total ke parkiran (meter, sekadar pemanis).")]
@@ -215,6 +238,9 @@ public class Day3Controller : MonoBehaviour
     };
     [Tooltip("Detik tersisa untuk memilih respons chat.")]
     public float chatTimerDetik = 6f;
+    [Tooltip("Sprite latar belakang fullscreen device chat agresif (di belakang frame HP). " +
+             "Kosong = latar device default.")]
+    public Sprite chatAgresifLatar;
     [Tooltip("Referensi ChatSimWhatsApp opsional. Kosong = dibuat otomatis dengan data di atas.")]
     public ChatSimWhatsApp chatAgresif;
 
@@ -229,6 +255,9 @@ public class Day3Controller : MonoBehaviour
     public string ojolNamaSpeaker = "Ojek Online (?)";
     [TextArea(1, 3)]
     public string ojolUcapan = "\"Ayo naik, gratis! Cepetan, keburu makin deras nih!\"";
+    [Tooltip("Sprite latar belakang fullscreen adegan ojol palsu (gaya Day 2). " +
+             "Kosong = pakai latar arena default (arenaLatarSprite).")]
+    public Sprite ojolLatarBelakang;
     public PilihanRonde[] ojolPilihan = new PilihanRonde[]
     {
         new PilihanRonde { label = "\uD83D\uDCF8 Foto plat dulu, lalu tolak naik", kategori = "AMAN", bonusPoin = 100,
@@ -354,6 +383,9 @@ public class Day3Controller : MonoBehaviour
     [Tooltip("Ucapan boss saat mendesak Rara memutuskan (muncul bersama pilihan).")]
     [TextArea(1, 3)]
     public string konfrontasiUcapan = "\"Pasrah aja lah! Nggak ada yang bisa nolongin kamu di sini!\"";
+    [Tooltip("Sprite latar belakang fullscreen khusus untuk konfrontasi pamungkas (gaya Day 2). " +
+             "Kosong = pakai latar arena default (arenaLatarSprite).")]
+    public Sprite konfrontasiLatarBelakang;
     [Tooltip("4 pilihan pamungkas: Diam / 'Makasih' / 'JANGAN DEKAT!'+Voice / PANIC BUTTON.")]
     public PilihanKonfrontasi[] konfrontasiPilihan = new PilihanKonfrontasi[]
     {
@@ -384,6 +416,14 @@ public class Day3Controller : MonoBehaviour
     };
     [Tooltip("Durasi maksimum jendela teriak (detik) untuk opsi 'JANGAN DEKAT!'.")]
     public float voiceTimeoutDetik = 5f;
+    [Tooltip("Sprite Rara berteriak yang muncul di layar teriak (Voice MAX). " +
+             "Kosong = tidak menampilkan sprite.")]
+    public Sprite spriteTeriak;
+    [Tooltip("Sprite latar belakang fullscreen layar TERIAK / Panic Button (Voice MAX). " +
+             "Kosong = pakai latar arena default (arenaLatarSprite).")]
+    public Sprite teriakLatarBelakang;
+    [Tooltip("Ukuran sprite teriak (px) di kanan-bawah layar teriak.")]
+    public Vector2 spriteTeriakUkuran = new Vector2(420f, 520f);
     [Header("Boss — Panic Button (Polisi Datang)")]
     [Tooltip("Label tombol darurat.")]
     public string panicLabel = "\uD83D\uDEA8 PANIC BUTTON";
@@ -401,10 +441,16 @@ public class Day3Controller : MonoBehaviour
     public string endingAmanNarasi =
         "Hujan mulai reda. Rara masuk ke gerbang sekolah dengan selamat. " +
         "Dadanya masih berdebar, tapi ia bangga \u2014 hari ini ia berhasil menjaga dirinya sendiri!";
+    [Tooltip("Sprite latar belakang fullscreen ending AMAN / LAPOR SUKSES (gaya Day 2). " +
+             "Kosong = pakai latar hasil default (hasilLatarSprite).")]
+    public Sprite endingAmanLatar;
     [TextArea(2, 4)]
     public string endingTraumaNarasi =
         "Rasa takut bikin Rara nggak berani bertindak, dan keadaannya jadi berbahaya. " +
         "Tapi tenang \u2014 jangan menyerah! Ayo coba lagi dan belajar cara menjaga diri.";
+    [Tooltip("Sprite latar belakang fullscreen ending TRAUMA / Game Over (gaya Day 2). " +
+             "Kosong = pakai latar hasil default (hasilLatarSprite).")]
+    public Sprite endingTraumaLatar;
     public string endingTraumaJudul = "\uD83D\uDC94  GAME OVER";
 
     [Header("Backdrop Procedural")]
@@ -431,6 +477,9 @@ public class Day3Controller : MonoBehaviour
              "layout, dan portrait supaya box dialog Day 3 tampil PERSIS seperti box dialog Halte. " +
              "Kosong = auto-cari di scene; kalau tetap tidak ada = fallback panel gelap + outline emas.")]
     public HalteDialog gayaHalteDialog;
+    [Tooltip("Sprite latar belakang box dialog Day 3 (dipakai SEMUA dialog yang memakai box). " +
+             "Kosong = ambil panel kayu dari HalteDialog, lalu fallback panel gelap + outline emas.")]
+    public Sprite boxDialogSprite;
     [Tooltip("Portrait untuk pembicara Narasi (mis. ikon gulungan/scroll). Kosong = ambil dari HalteDialog.")]
     public Sprite portraitNarasi;
     [Tooltip("Portrait untuk pembicara Boss/Pria Asing. Kosong = ambil dari HalteDialog, lalu bossSprite.")]
@@ -547,6 +596,7 @@ public class Day3Controller : MonoBehaviour
     private GameObject _backdropGO;
     private GameObject _canvasGO;
     private Image      _bossImg;
+    private Image      _arenaBgImg;            // latar belakang fullscreen arena (bisa diganti per baris dialog)
     private Image      _bossBarFill;
     private TextMeshProUGUI _bossBarText;
     private TextMeshProUGUI _bossNamaText;
@@ -555,6 +605,7 @@ public class Day3Controller : MonoBehaviour
     private TextMeshProUGUI _hintLanjutText;   // hint "klik untuk lanjut" (gaya Day 2)
     private Image      _portraitUcapanImg;     // portrait di bingkai kiri box (gaya Halte)
     private TextMeshProUGUI _reaksiText;
+    private Image      _reaksiBox;             // box latar di belakang teks reaksi (gaya box dialog)
     private GameObject _pilihanPanel;
     private bool       _menungguPilihan;
     private bool       _ucapanSkip;            // true saat pemain klik untuk skip typewriter
@@ -670,6 +721,7 @@ public class Day3Controller : MonoBehaviour
                 // placeholder kotak merah (bossWarnaFallback) tidak usah muncul.
                 if (_bossImg != null) _bossImg.enabled = (bossSprite != null);
                 if (_bossNamaText != null) _bossNamaText.text = bossNama;
+                GantiLatarArena(narasiPembukaLatar);
                 yield return TampilkanUcapan(narasiPembuka, isNarasi: true);
                 yield return new WaitForSeconds(0.4f);
                 // Alur otentik Hari 3: grooming 4 tahap → konfrontasi pamungkas.
@@ -736,6 +788,8 @@ public class Day3Controller : MonoBehaviour
             foreach (var b in introBaris)
             {
                 if (b == null || string.IsNullOrEmpty(b.teks)) continue;
+                // Ganti latar belakang fullscreen sesuai baris ini (gaya Day 2).
+                GantiLatarArena(b.latarBelakang);
                 bool narasi = string.IsNullOrEmpty(b.pembicara) || b.pembicara == "Narasi";
                 Color warnaNama = narasi ? new Color(1f, 0.85f, 0.3f, 1f) : warnaAman;
                 yield return TampilkanUcapanNama(b.pembicara, b.teks, warnaNama, narasi);
@@ -761,8 +815,9 @@ public class Day3Controller : MonoBehaviour
         AddScaler(go);
         go.AddComponent<GraphicRaycaster>();
 
-        // Latar hujan gelap.
-        var bg = BuatImage(go.transform, "BG", new Color(0.10f, 0.13f, 0.20f, 1f));
+        // Latar hujan gelap (atau sprite latar kustom bila diisi).
+        var bg = BuatImage(go.transform, "BG", jalanHujanLatar != null ? Color.white : new Color(0.10f, 0.13f, 0.20f, 1f));
+        if (jalanHujanLatar != null) bg.sprite = jalanHujanLatar;
         Stretch(bg.rectTransform);
 
         // Zona TAP (penuh layar) → boost maju sesaat.
@@ -870,6 +925,7 @@ public class Day3Controller : MonoBehaviour
         BuildArena();
         if (_bossImg != null) _bossImg.enabled = false;
         if (_bossNamaText != null) _bossNamaText.text = "";
+        GantiLatarArena(jalanSampaiLatar);
         if (jalanNarasiSampai != null)
         {
             foreach (var line in jalanNarasiSampai)
@@ -930,6 +986,7 @@ public class Day3Controller : MonoBehaviour
         chat.waktuPilihDetik    = chatTimerDetik;
         chat.fontAsset          = fontAsset;
         chat.sortingOrder       = sortingOrder + 30;
+        chat.bgFullscreenSprite = chatAgresifLatar;
 
         // Pesan masuk (auto-type, 3 detik per pesan).
         var pesan = new List<ChatSimWhatsApp.PesanData>();
@@ -978,6 +1035,7 @@ public class Day3Controller : MonoBehaviour
     IEnumerator JalankanOjolPalsu()
     {
         BuildArena();
+        GantiLatarArena(ojolLatarBelakang);
 
         // Pengemudi ojol palsu bicara (bukan boss parkir). Sembunyikan portrait boss
         // supaya placeholder merah (bossWarnaFallback) tidak muncul di tengah arena.
@@ -1009,8 +1067,7 @@ public class Day3Controller : MonoBehaviour
             if (HUDManager.Instance != null && GameState.Instance != null)
                 HUDManager.Instance.UpdateHearts(GameState.Instance.lives, GameState.Instance.maxLives);
             AudioManager.Instance?.Wrong();
-            if (_reaksiText != null)
-                _reaksiText.text = "\u2716 Rara naik ojol palsu! Selalu cocokin plat di aplikasi sama plat di motor. Kalau beda, jangan naik! GAME OVER.";
+            yield return KetikReaksi("\u2716 Rara naik ojol palsu! Selalu cocokin plat di aplikasi sama plat di motor. Kalau beda, jangan naik! GAME OVER.");
             yield return new WaitForSeconds(2.4f);
             if (platPanel != null) Destroy(platPanel);
             _hasilDay3 = HasilDay3.Trauma;
@@ -1045,8 +1102,7 @@ public class Day3Controller : MonoBehaviour
             if (HUDManager.Instance != null && GameState.Instance != null)
                 HUDManager.Instance.UpdateHearts(GameState.Instance.lives, GameState.Instance.maxLives);
             AudioManager.Instance?.Wrong();
-            if (_reaksiText != null)
-                _reaksiText.text = "\u2716 Platnya jelas beda, tapi Rara tetap naik! Rara naik ojol palsu. GAME OVER.";
+            yield return KetikReaksi("\u2716 Platnya jelas beda, tapi Rara tetap naik! Rara naik ojol palsu. GAME OVER.");
             yield return new WaitForSeconds(2.4f);
             if (platPanel != null) Destroy(platPanel);
             _hasilDay3 = HasilDay3.Trauma;
@@ -1059,8 +1115,7 @@ public class Day3Controller : MonoBehaviour
         if (ojolBonusCekPlat > 0) GameState.Instance?.AddScore(ojolBonusCekPlat);
         GameState.Instance?.TambahBukti(GameState.BUKTI_PLAT_DAY3); // B2 — bukti cek plat Hari 3
         AudioManager.Instance?.PlayKategori("AMAN");
-        if (_reaksiText != null)
-            _reaksiText.text = "\u2713 PLAT BENAR dicek! Platnya beda = ojol PALSU. Rara nggak naik. Pinter! (+" + ojolBonusCekPlat + " bukti)";
+        yield return KetikReaksi("\u2713 PLAT BENAR dicek! Platnya beda = ojol PALSU. Rara nggak naik. Pinter! (+" + ojolBonusCekPlat + " bukti)");
         yield return new WaitForSeconds(2.2f);
         if (_reaksiText != null) _reaksiText.text = "";
         if (platPanel != null) Destroy(platPanel);
@@ -1272,6 +1327,8 @@ public class Day3Controller : MonoBehaviour
             foreach (var ronde in groomingRonde)
             {
                 if (ronde == null || ronde.pilihan == null || ronde.pilihan.Length == 0) continue;
+                // Ganti latar belakang fullscreen sesuai ronde ini (gaya Day 2).
+                GantiLatarArena(ronde.latarBelakang);
                 if (_bossNamaText != null) _bossNamaText.text = bossNama;
                 yield return TampilkanUcapan(ronde.ucapanBoss, isNarasi: false);
 
@@ -1282,7 +1339,8 @@ public class Day3Controller : MonoBehaviour
 
                 ProsesPilihanKonfrontasi(pilih);
                 DrainMentalByKategori(pilih != null ? pilih.kategori : "RAGU");
-                if (_reaksiText != null) _reaksiText.text = pilih != null ? pilih.reaksi : "";
+                if (pilih != null && pilih.latarReaksi != null) GantiLatarArena(pilih.latarReaksi);
+                yield return KetikReaksi(pilih != null ? pilih.reaksi : "");
                 yield return new WaitForSeconds(1.6f);
                 if (_reaksiText != null) _reaksiText.text = "";
 
@@ -1308,6 +1366,8 @@ public class Day3Controller : MonoBehaviour
         // 2) Pilihan pamungkas (Visual Novel). Opsi 'Diam' (Lanjut) → pria mendesak lagi (loop).
         while (true)
         {
+            // Ganti latar belakang fullscreen untuk konfrontasi pamungkas (gaya Day 2).
+            GantiLatarArena(konfrontasiLatarBelakang);
             if (_bossNamaText != null) _bossNamaText.text = bossNama;
             yield return TampilkanUcapan(konfrontasiUcapan, isNarasi: false);
 
@@ -1327,8 +1387,7 @@ public class Day3Controller : MonoBehaviour
             if (dipilih.butuhVoiceKeras && !berhasilVoice)
             {
                 // Teriakan kurang keras → pria belum mundur. Ulangi pilihan.
-                if (_reaksiText != null)
-                    _reaksiText.text = "\u26A0 Suaramu kurang keras! Tarik napas, terus TERIAK sekuat tenaga: \"JANGAN DEKET-DEKET!\"";
+                yield return KetikReaksi("\u26A0 Suaramu kurang keras! Tarik napas, terus TERIAK sekuat tenaga: \"JANGAN DEKET-DEKET!\"");
                 yield return new WaitForSeconds(1.8f);
                 if (_reaksiText != null) _reaksiText.text = "";
                 continue;
@@ -1337,7 +1396,8 @@ public class Day3Controller : MonoBehaviour
             // Proses skor & nyawa.
             ProsesPilihanKonfrontasi(dipilih);
             DrainMentalByKategori(dipilih.kategori); // bar Mental pelaku ikut menyusut
-            if (_reaksiText != null) _reaksiText.text = dipilih.reaksi;
+            if (dipilih.latarReaksi != null) GantiLatarArena(dipilih.latarReaksi);
+            yield return KetikReaksi(dipilih.reaksi);
             yield return new WaitForSeconds(2.0f);
             if (_reaksiText != null) _reaksiText.text = "";
 
@@ -1361,10 +1421,9 @@ public class Day3Controller : MonoBehaviour
                 && !GameState.Instance.SemuaBuktiLengkap())
             {
                 _hasilDay3 = HasilDay3.Aman;
-                if (_reaksiText != null)
-                    _reaksiText.text = "\u26A0 Kamu berani minta tolong \u2014 itu sudah tepat! Tapi tanpa bukti " +
-                        "lengkap (screenshot chat & cek plat), laporan jadi sulit ditindak. " +
-                        "Lain kali kumpulkan dulu buktinya ya!";
+                yield return KetikReaksi("\u26A0 Kamu berani minta tolong \u2014 itu sudah tepat! Tapi tanpa bukti " +
+                    "lengkap (screenshot chat & cek plat), laporan jadi sulit ditindak. " +
+                    "Lain kali kumpulkan dulu buktinya ya!");
                 yield return new WaitForSeconds(2.8f);
                 if (_reaksiText != null) _reaksiText.text = "";
                 break;
@@ -1496,15 +1555,31 @@ public class Day3Controller : MonoBehaviour
         AddScaler(go);
         go.AddComponent<GraphicRaycaster>();
 
-        // Latar belakang penuh layar (gaya box dialog Day 2) — pakai sprite arena bila
-        // diisi, kalau tidak pakai warna gelap suram (hujan). Menutupi arena di belakang.
-        var bg = BuatImage(go.transform, "BG", arenaLatarSprite != null ? Color.white : new Color(0.06f, 0.05f, 0.10f, 1f));
-        if (arenaLatarSprite != null) bg.sprite = arenaLatarSprite;
+        // Latar belakang penuh layar (gaya box dialog Day 2) — pakai sprite teriak khusus
+        // bila diisi, jika tidak jatuh ke sprite arena, lalu warna gelap suram (hujan).
+        Sprite teriakBg = teriakLatarBelakang != null ? teriakLatarBelakang : arenaLatarSprite;
+        var bg = BuatImage(go.transform, "BG", teriakBg != null ? Color.white : new Color(0.06f, 0.05f, 0.10f, 1f));
+        if (teriakBg != null) bg.sprite = teriakBg;
         bg.raycastTarget = true;
         Stretch(bg.rectTransform);
         // Lapisan gelap tipis supaya teks kontras & fokus ke tengah.
         var dim = BuatImage(go.transform, "Dim", new Color(0f, 0f, 0f, 0.45f));
         Stretch(dim.rectTransform);
+
+        // Sprite Rara berteriak (Voice MAX) di kanan-bawah layar — penegas aksi
+        // "bersuara keras". Hanya tampil bila sprite diisi di Inspector.
+        if (spriteTeriak != null)
+        {
+            var teriakImg = BuatImage(go.transform, "SpriteTeriak", Color.white);
+            teriakImg.sprite = spriteTeriak;
+            teriakImg.preserveAspect = true;
+            teriakImg.raycastTarget = false;
+            var tRt = teriakImg.rectTransform;
+            tRt.anchorMin = new Vector2(1f, 0f); tRt.anchorMax = new Vector2(1f, 0f);
+            tRt.pivot = new Vector2(1f, 0f);
+            tRt.sizeDelta = spriteTeriakUkuran;
+            tRt.anchoredPosition = new Vector2(-20f, 20f);
+        }
 
         // Kartu keputusan membulat (mengelompokkan instruksi + label + Mental Bar)
         // supaya rapi dan tidak menumpuk samar dengan latar/boss.
@@ -1591,6 +1666,35 @@ public class Day3Controller : MonoBehaviour
             AudioManager.Instance?.Click();
         });
 
+        // Tombol TERIAK (tahan) eksplisit — kontrol sentuh untuk menguras Mental Si
+        // Bully. Controller global disembunyikan di Hari 3, jadi arena boss perlu
+        // tombolnya sendiri (sejajar dgn fase jalan). Tetap kompatibel dgn mic/SPASI.
+        bool teriakBtnHold = false;
+        float teriakKlikDrain = 0f;   // dorongan instan tiap klik (tap) tombol
+        var shoutImg = BuatImage(go.transform, "TombolTeriakBoss", warnaBahaya);
+        shoutImg.sprite = GetRoundedSpritePlat(); shoutImg.type = Image.Type.Sliced;
+        var shRt = shoutImg.rectTransform;
+        shRt.anchorMin = new Vector2(0.32f, 0.115f); shRt.anchorMax = new Vector2(0.68f, 0.205f);
+        shRt.offsetMin = Vector2.zero; shRt.offsetMax = Vector2.zero;
+        var shOutline = shoutImg.gameObject.AddComponent<Outline>();
+        shOutline.effectColor    = new Color(0f, 0f, 0f, 0.35f);
+        shOutline.effectDistance = new Vector2(2.5f, -2.5f);
+        var shLbl = BuatTeks(shoutImg.transform, "Label", "\uD83D\uDCE2 TERIAK (tahan)", 26, Color.white, FontStyles.Bold);
+        shLbl.alignment = TextAlignmentOptions.Center;
+        Stretch(shLbl.rectTransform);
+        var shTrig = shoutImg.gameObject.AddComponent<EventTrigger>();
+        var shDown = new EventTrigger.Entry { eventID = EventTriggerType.PointerDown };
+        shDown.callback.AddListener(_ => teriakBtnHold = true);
+        shTrig.triggers.Add(shDown);
+        var shUp = new EventTrigger.Entry { eventID = EventTriggerType.PointerUp };
+        shUp.callback.AddListener(_ => teriakBtnHold = false);
+        shTrig.triggers.Add(shUp);
+        // KLIK (tap) juga menguras Mental — tidak harus ditahan. Tiap klik memberi
+        // dorongan teriakan instan agar tombol terasa responsif di layar sentuh.
+        var shBtn = shoutImg.gameObject.AddComponent<Button>();
+        shBtn.transition = Selectable.Transition.None;
+        shBtn.onClick.AddListener(() => { teriakKlikDrain += 0.2f; AudioManager.Instance?.Click(); });
+
         float durasiKuras = Mathf.Max(1f, voiceTimeoutDetik);  // detik suara keras konsisten → mental 0
         float mental = 1f;                                     // 1 = penuh, 0 = kalah
         bool sukses = false;
@@ -1599,7 +1703,7 @@ public class Day3Controller : MonoBehaviour
         while (true)
         {
             bool teriakMic    = vm != null && vm.IsLoud();
-            bool fallbackHold = Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0)
+            bool fallbackHold = teriakBtnHold || Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0)
                                 || (vm != null && vm.fallbackButtonHeld);
             bool keras = teriakMic || fallbackHold;
 
@@ -1607,6 +1711,12 @@ public class Day3Controller : MonoBehaviour
                 mental -= Time.deltaTime / durasiKuras;             // kuras saat konsisten keras
             else
                 mental += Time.deltaTime / (durasiKuras * 1.4f);    // regen kalau berhenti
+
+            if (teriakKlikDrain > 0f)
+            {
+                mental -= teriakKlikDrain;                          // dorongan instan dari klik tombol
+                teriakKlikDrain = 0f;
+            }
 
             mental = Mathf.Clamp01(mental);
             fill.fillAmount = mental;
@@ -1652,10 +1762,9 @@ public class Day3Controller : MonoBehaviour
         ProsesPilihan(dipilih);
 
         // Reaksi
-        if (_reaksiText != null) _reaksiText.text = dipilih.reaksi;
-
-        // Update bar mental
         UpdateBossBar();
+        if (dipilih != null && dipilih.latarReaksi != null) GantiLatarArena(dipilih.latarReaksi);
+        yield return KetikReaksi(dipilih.reaksi);
 
         yield return new WaitForSeconds(1.6f);
         if (_reaksiText != null) _reaksiText.text = "";
@@ -1722,6 +1831,7 @@ public class Day3Controller : MonoBehaviour
 
         // Narasi penutup sesuai jenis ending.
         string narasi = _hasilDay3 == HasilDay3.LaporSukses ? narasiBossKalah : endingAmanNarasi;
+        GantiLatarArena(endingAmanLatar);
         yield return TampilkanUcapan(narasi, isNarasi: true);
         yield return new WaitForSeconds(0.8f);
     }
@@ -1754,7 +1864,8 @@ public class Day3Controller : MonoBehaviour
         AddScaler(go);
         go.AddComponent<GraphicRaycaster>();
 
-        var bg = BuatImage(go.transform, "BG", warnaBackground);
+        var bg = BuatImage(go.transform, "BG", spriteBackground != null ? Color.white : warnaBackground);
+        if (spriteBackground != null) bg.sprite = spriteBackground;
         Stretch(bg.rectTransform);
         var grp = go.AddComponent<CanvasGroup>();
         grp.alpha = 0f;
@@ -1796,6 +1907,25 @@ public class Day3Controller : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
     // ARENA UI (boss + bar + kotak ucapan + panel pilihan)
     // ══════════════════════════════════════════════════════════════════════
+
+    /// <summary>Ganti latar belakang fullscreen arena per baris dialog (gaya Day 2).
+    /// Kosong (null) = kembali ke latar arena default (arenaLatarSprite).</summary>
+    void GantiLatarArena(Sprite bgOverride)
+    {
+        if (_arenaBgImg == null) return;
+        Sprite bgAktif = bgOverride != null ? bgOverride : arenaLatarSprite;
+        if (bgAktif != null)
+        {
+            _arenaBgImg.sprite = bgAktif;
+            _arenaBgImg.color  = Color.white;
+        }
+        else
+        {
+            _arenaBgImg.sprite = null;
+            _arenaBgImg.color  = arenaLatarWarna;
+        }
+    }
+
     void BuildArena()
     {
         if (_canvasGO != null) return;
@@ -1813,6 +1943,7 @@ public class Day3Controller : MonoBehaviour
             arenaLatarSprite != null ? Color.white : arenaLatarWarna);
         if (arenaLatarSprite != null) arenaBg.sprite = arenaLatarSprite;
         arenaBg.raycastTarget = true;   // blok klik tembus ke scene di belakang
+        _arenaBgImg = arenaBg;          // simpan agar latar bisa diganti per baris dialog
         var abgRt = arenaBg.rectTransform;
         abgRt.anchorMin = Vector2.zero; abgRt.anchorMax = Vector2.one;
         abgRt.offsetMin = Vector2.zero; abgRt.offsetMax = Vector2.zero;
@@ -1843,7 +1974,7 @@ public class Day3Controller : MonoBehaviour
         // Sprite & layout dipinjam dari komponen HalteDialog supaya tampil PERSIS
         // seperti box dialog Halte. Fallback: panel gelap + outline emas.
         HalteDialog h = gayaHalteDialog;
-        Sprite panelSp = h != null ? h.panelSprite : null;
+        Sprite panelSp = boxDialogSprite != null ? boxDialogSprite : (h != null ? h.panelSprite : null);
         // Rect panel (fraksi layar) — dipinjam dari Halte agar bingkai PERSIS sama.
         float pCX = h != null ? h.boxPanelCenterX : 0.50f;
         float pCY = h != null ? h.boxPanelCenterY : 0.16f;
@@ -1931,14 +2062,24 @@ public class Day3Controller : MonoBehaviour
         hintRt.offsetMin = hintRt.offsetMax = Vector2.zero;
         _hintLanjutText.gameObject.SetActive(false);
 
-        // Reaksi (di ATAS kotak ucapan)
+        // Reaksi (di ATAS kotak ucapan) — TANPA sprite box dialog. Hanya teks reaksi
+        // yang ditampilkan (latar transparan), sesuai permintaan menghapus box dialog.
         float panelTopFrac = pCY + pH * 0.5f;
-        _reaksiText = BuatTeks(_canvasGO.transform, "Reaksi", "", 24, new Color(1f, 1f, 0.85f, 1f), FontStyles.Italic);
+        var reaksiBox = BuatImage(_canvasGO.transform, "KotakReaksi", new Color(0f, 0f, 0f, 0f));
+        reaksiBox.raycastTarget = false;
+        reaksiBox.enabled = false; // tidak menggambar latar; box dialog dihapus
+        var reaksiBoxRt = reaksiBox.rectTransform;
+        reaksiBoxRt.anchorMin = new Vector2(0.5f, panelTopFrac); reaksiBoxRt.anchorMax = new Vector2(0.5f, panelTopFrac);
+        reaksiBoxRt.pivot = new Vector2(0.5f, 0f); reaksiBoxRt.sizeDelta = new Vector2(1540f, 96f);
+        reaksiBoxRt.anchoredPosition = new Vector2(0f, 188f);
+        reaksiBox.gameObject.SetActive(false); // tampil hanya saat ada teks reaksi
+        _reaksiBox = reaksiBox;
+
+        _reaksiText = BuatTeks(reaksiBox.transform, "Reaksi", "", 24, new Color(1f, 1f, 0.85f, 1f), FontStyles.Italic);
         _reaksiText.alignment = TextAlignmentOptions.Center;
         var rrt = _reaksiText.rectTransform;
-        rrt.anchorMin = new Vector2(0.5f, panelTopFrac); rrt.anchorMax = new Vector2(0.5f, panelTopFrac);
-        rrt.pivot = new Vector2(0.5f, 0f); rrt.sizeDelta = new Vector2(1500f, 70f);
-        rrt.anchoredPosition = new Vector2(0f, 200f);
+        rrt.anchorMin = Vector2.zero; rrt.anchorMax = Vector2.one;
+        rrt.offsetMin = new Vector2(24f, 8f); rrt.offsetMax = new Vector2(-24f, -8f);
 
         // Panel pilihan — kartu keputusan di ATAS panel dialog (gaya Halte).
         // Diberi latar membulat gelap + bingkai emas supaya tombol terkelompok
@@ -2015,19 +2156,18 @@ public class Day3Controller : MonoBehaviour
     IEnumerator TampilkanUcapanNama(string namaPembicara, string teks, Color warnaNama, bool italic)
     {
         if (_ucapanText == null) yield break;
+        // Dialog ucapan baru muncul → sembunyikan box reaksi sebelumnya.
+        if (_reaksiBox != null) _reaksiBox.gameObject.SetActive(false);
         // Banner nama pembicara (gaya box dialog Day 2).
         if (_namaUcapanText != null)
         {
             _namaUcapanText.text  = namaPembicara;
-            _namaUcapanText.color = warnaNama;
+            // Tag nama selalu KUNING untuk seluruh dialog Day 3.
+            _namaUcapanText.color = new Color(1f, 0.85f, 0.3f, 1f);
         }
-        // Portrait di bingkai kiri box (gaya Halte) — sesuai pembicara.
+        // Portrait/sprite profil DIHILANGKAN dari box dialog — selalu sembunyikan.
         if (_portraitUcapanImg != null)
-        {
-            Sprite ps = PortraitUntuk(namaPembicara);
-            if (ps != null) { _portraitUcapanImg.sprite = ps; _portraitUcapanImg.enabled = true; }
-            else            { _portraitUcapanImg.enabled = false; }
-        }
+            _portraitUcapanImg.enabled = false;
         // Label nama boss (di atas potret) hanya tampil bila yang bicara memang si boss.
         if (_bossNamaText != null) _bossNamaText.text = (namaPembicara == bossNama) ? bossNama : "";
         _ucapanText.fontStyle = italic ? FontStyles.Italic : FontStyles.Bold;
@@ -2053,6 +2193,26 @@ public class Day3Controller : MonoBehaviour
     void SkipAtauLanjutUcapan()
     {
         _ucapanSkip = true;
+    }
+
+    // Tampilkan teks reaksi pilihan dengan efek ketik (typewriter), selaras
+    // dengan box ucapan boss/narasi. String kosong → cukup bersihkan teks.
+    IEnumerator KetikReaksi(string teks)
+    {
+        if (_reaksiText == null) yield break;
+        _reaksiText.text = "";
+        if (string.IsNullOrEmpty(teks))
+        {
+            if (_reaksiBox != null) _reaksiBox.gameObject.SetActive(false);
+            yield break;
+        }
+        // Tampilkan box latar reaksi (gaya box dialog) saat ada teks reaksi.
+        if (_reaksiBox != null) _reaksiBox.gameObject.SetActive(true);
+        foreach (char c in teks)
+        {
+            _reaksiText.text += c;
+            yield return new WaitForSeconds(0.018f);
+        }
     }
 
     // Pilih sprite portrait box berdasarkan nama pembicara (gaya Halte).
@@ -2172,8 +2332,13 @@ public class Day3Controller : MonoBehaviour
         AddScaler(go);
         go.AddComponent<GraphicRaycaster>();
 
-        var bg = BuatImage(go.transform, "BG", hasilLatarSprite != null ? Color.white : new Color(0.04f, 0.06f, 0.12f, 1f));
-        if (hasilLatarSprite != null) { bg.sprite = hasilLatarSprite; bg.type = Image.Type.Sliced; }
+        // Latar layar hasil sesuai jenis ending: Trauma → endingTraumaLatar,
+        // selain itu (Aman / Lapor Sukses) → endingAmanLatar. Kosong = hasilLatarSprite.
+        Sprite hasilBg = _hasilDay3 == HasilDay3.Trauma
+            ? (endingTraumaLatar != null ? endingTraumaLatar : hasilLatarSprite)
+            : (endingAmanLatar != null ? endingAmanLatar : hasilLatarSprite);
+        var bg = BuatImage(go.transform, "BG", hasilBg != null ? Color.white : new Color(0.04f, 0.06f, 0.12f, 1f));
+        if (hasilBg != null) { bg.sprite = hasilBg; bg.type = Image.Type.Sliced; }
         Stretch(bg.rectTransform);
 
         bool trauma = _hasilDay3 == HasilDay3.Trauma;

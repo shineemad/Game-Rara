@@ -603,6 +603,10 @@ public class AngkotSeatPicker : MonoBehaviour
     {
         var beats = SusunBeatReaksi(k);
 
+        // Setelah memilih, kartu pilihan kursi DIHILANGKAN supaya layar fokus ke
+        // dialog reaksi saja.
+        if (_kursiPanel != null) _kursiPanel.SetActive(false);
+
         // Munculkan box dialog di belakang teks narasi (kalau diaktifkan).
         if (_reaksiBox != null) _reaksiBox.SetActive(tampilkanBoxDialog);
 

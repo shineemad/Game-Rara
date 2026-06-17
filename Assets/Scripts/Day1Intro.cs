@@ -227,6 +227,10 @@ public class Day1Intro : MonoBehaviour
     /// — bukan sekadar keberadaan komponen — untuk tahu intro sudah berakhir.
     public bool Selesai { get; private set; }
 
+    /// True selama overlay intro "HARI 1" sedang tampil. Dipakai sistem lain
+    /// (mis. PauseMenu) untuk menyembunyikan tombol saat intro masuk Hari 1.
+    public static bool SedangTampil = false;
+
     // ══════════════════════════════════════════════════════════════════════
     // EDITOR AUTO-LOAD SPRITES
     // ══════════════════════════════════════════════════════════════════════
@@ -661,6 +665,9 @@ public class Day1Intro : MonoBehaviour
 
     IEnumerator JalankanIntro()
     {
+        // Tandai intro sedang berjalan (untuk menyembunyikan tombol pause dll).
+        SedangTampil = true;
+
         // ── Bekukan player sejak awal intro hingga selesai ─────────────────
         _playerComp = FindFirstObjectByType<player>();
         if (_playerComp != null) _playerComp.frozen = true;
@@ -691,6 +698,7 @@ public class Day1Intro : MonoBehaviour
         // agar tidak bergantung penuh pada Day1Controller.MulaiGame()
         if (_playerComp != null) _playerComp.frozen = false;
         Selesai = true;
+        SedangTampil = false;
         onIntroSelesai?.Invoke();
     }
 

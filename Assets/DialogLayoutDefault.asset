@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f81ba975768597d4fae6d7a2c5fcb42f, type: 3}
   m_Name: DialogLayoutDefault
   m_EditorClassIdentifier: 
-  boxSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
+  boxSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
   nameBannerSprite: {fileID: 0}
   panelCenterX: 0.5
   panelCenterY: 0.219

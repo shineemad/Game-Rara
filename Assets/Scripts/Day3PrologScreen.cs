@@ -57,32 +57,25 @@ public class Day3PrologScreen : MonoBehaviour
         new PrologSlide
         {
             backgroundColor = new Color(0.12f, 0.14f, 0.20f, 1f),   // biru-kelabu (hujan)
-            title = "Hari 3: Hujan di Parkiran Sekolah",
-            text  = "Hujan deras mengguyur kota.\n" +
-                    "Rara berjalan menuju parkiran SMP Harapan.\n\n" +
-                    "Tiba-tiba, seseorang menghadang jalannya.\n" +
-                    "\"Hei, mau kubawa pulang pakai ojol?\"",
+            title = "Hari 3: Hujan di Parkiran",
+            text  = "Hujan deras. Rara menuju parkiran.\n" +
+                    "\"Hei, mau kuantar ojol?\"",
         },
         // Slide 2 — konflik / ancaman: grooming via chat
         new PrologSlide
         {
             backgroundColor = new Color(0.18f, 0.10f, 0.12f, 1f),   // merah gelap (tegang)
             title = "Ancaman Grooming",
-            text  = "Sebelumnya, ada orang asing yang terus\n" +
-                    "mengirim pesan ke HP Rara — memintanya\n" +
-                    "merahasiakan obrolan mereka dan meminta foto.\n\n" +
-                    "Ini adalah GROOMING!",
+            text  = "Orang asing minta foto & rahasia.\n" +
+                    "Ini GROOMING!",
         },
         // Slide 3 — bekal / kunci menghadapi Si Bayangan Gelap
         new PrologSlide
         {
             backgroundColor = new Color(0.10f, 0.16f, 0.14f, 1f),   // hijau gelap (panduan)
             title = "Hadapi Si Bayangan Gelap",
-            text  = "\"Si Bayangan Gelap\" adalah orang berbahaya\n" +
-                    "yang menyamar sebagai orang baik.\n\n" +
-                    "Satu-satunya cara mengalahkannya:\n" +
-                    "BERSUARA KERAS dan tekan PANIC BUTTON!\n" +
-                    "Minta bantuan orang dewasa terdekat!",
+            text  = "BERSUARA KERAS & tekan PANIC BUTTON!\n" +
+                    "Minta bantuan orang dewasa!",
         },
     };
 

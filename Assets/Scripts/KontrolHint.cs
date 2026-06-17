@@ -164,7 +164,7 @@ public class KontrolHint : MonoBehaviour
         tmp.color     = warnaTeks;
         tmp.alignment = TextAlignmentOptions.Center;
         tmp.fontStyle = FontStyles.Bold;
-        tmp.enableWordWrapping = true;
+        tmp.textWrappingMode = TextWrappingModes.Normal;
         tmp.raycastTarget = false;
         if (fontAsset != null) tmp.font = fontAsset;
 

@@ -97,6 +97,11 @@ public class Day2Controller : MonoBehaviour
     public Sprite jembatanPortraitRara;
     [Tooltip("Portrait Pria Asing untuk box dialog jembatan (opsional, upload nanti).")]
     public Sprite jembatanPortraitPria;
+    [Header("Jembatan VN — Animasi Ketik")]
+    [Tooltip("Animasi ketik untuk teks box dialog setelah ChatSim (jembatan ke Lapor).")]
+    public bool jembatanGunakanAnimasiKetik = true;
+    [Tooltip("Detik per huruf pada animasi ketik jembatan VN. 0 = tampil langsung.")]
+    [Range(0f, 0.10f)] public float jembatanDetikPerHuruf = 0.018f;
 
     [Header("Backdrop Procedural")]
     [Tooltip("Background utama dibuat dari script ini (gradient warna per fase).")]
@@ -125,6 +130,8 @@ public class Day2Controller : MonoBehaviour
     public Sprite bgAngkotSprite;
     public Sprite bgQuizSprite;
     public Sprite bgLaporSprite;
+    [Tooltip("Sprite latar fullscreen khusus jembatan VN sebelum fase Lapor. Kosong = pakai bgAngkotSprite.")]
+    public Sprite bgNarasiJembatanSprite;
     public Sprite bgChatSimSprite;
     public Sprite bgEduCardSprite;
 
@@ -609,11 +616,12 @@ public class Day2Controller : MonoBehaviour
         sc.matchWidthOrHeight  = 0.5f;
         cGO.AddComponent<GraphicRaycaster>();
 
-        // ── Latar: pakai sprite angkot kalau ada, kalau tidak warna interior. ──
+        // ── Latar: pakai sprite khusus jembatan VN kalau ada; fallback ke angkot. ──
+        Sprite bgSprite = bgNarasiJembatanSprite != null ? bgNarasiJembatanSprite : bgAngkotSprite;
         var bgImg = OvBuatImage(cGO.transform, "BG", Vector2.zero, Vector2.one, warnaAngkot);
-        if (bgAngkotSprite != null)
+        if (bgSprite != null)
         {
-            bgImg.sprite        = bgAngkotSprite;
+            bgImg.sprite        = bgSprite;
             bgImg.type          = Image.Type.Simple;
             bgImg.preserveAspect = false;
             bgImg.color         = Color.white;
@@ -700,10 +708,13 @@ public class Day2Controller : MonoBehaviour
                 b.speaker == "Rara"       ? (jembatanPortraitRara != null ? jembatanPortraitRara : (haltDialog != null ? haltDialog.portraitRara : null))
               : b.speaker == "Pria Asing" ? (jembatanPortraitPria != null ? jembatanPortraitPria : (haltDialog != null ? haltDialog.portraitPriaAsing : null))
               :                             (haltDialog != null ? haltDialog.portraitNarasi : null);
-            if (ps != null) { portraitImg.sprite = ps; portraitImg.enabled = true; }
+            if (ps != null) { portraitImg.sprite = ps; portraitImg.enabled = false; } // potret disembunyikan dari box dialog
             else            { portraitImg.enabled = false; }
 
-            teksTmp.text = b.teks;
+            if (jembatanGunakanAnimasiKetik && jembatanDetikPerHuruf > 0f)
+                yield return OvKetikTMP(teksTmp, b.teks ?? "", jembatanDetikPerHuruf);
+            else
+                teksTmp.text = b.teks;
 
             bool lanjut = false; float timer = 0f;
             while (!lanjut)
@@ -716,6 +727,30 @@ public class Day2Controller : MonoBehaviour
             }
         }
         Destroy(cGO);
+    }
+
+    IEnumerator OvKetikTMP(TextMeshProUGUI tmp, string teks, float detikPerHuruf)
+    {
+        if (tmp == null) yield break;
+        if (string.IsNullOrEmpty(teks) || detikPerHuruf <= 0f)
+        {
+            tmp.text = teks ?? "";
+            yield break;
+        }
+
+        tmp.text = "";
+        for (int i = 0; i < teks.Length; i++)
+        {
+            // Klik/SPACE/ENTER saat mengetik = langsung tampil penuh.
+            if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
+            {
+                tmp.text = teks;
+                yield break;
+            }
+
+            tmp.text += teks[i];
+            yield return new WaitForSeconds(detikPerHuruf);
+        }
     }
 
     // Narasi sederhana antar-fase: klik/tap/SPACE untuk maju per baris.

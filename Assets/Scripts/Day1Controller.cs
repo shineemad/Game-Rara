@@ -217,6 +217,10 @@ public class Day1Controller : MonoBehaviour
         }
     }
     bool    pathChosen   = false;
+    // Guard agar pilihan jalan (aman/gang) hanya dieksekusi SEKALI. Mencegah
+    // nyawa berkurang ganda kalau ada lebih dari satu panel PathChoiceUI yang
+    // sama-sama memanggil ChooseSafePath/ChooseDangerPath.
+    bool    _pathResolved = false;
     // Narasi jalan (ramai/gang) ditunda: baru tampil saat Rara BERJALAN setelah
     // memilih jalan, bukan langsung saat panel pilihan ditutup.
     bool    _narasiJalanMenunggu = false;  // ada narasi jalan menunggu Rara bergerak
@@ -1170,6 +1174,8 @@ public class Day1Controller : MonoBehaviour
     /// Dipanggil oleh tombol di pathChoicePanel.
     public void ChooseSafePath()
     {
+        if (_pathResolved) return;
+        _pathResolved = true;
         GameState.Instance.pathChoice = "safe";
         GameState.Instance.AddChoice(1, "Pilih jalan aman yang ramai", "AMAN");
         if (pathChoicePanel != null) pathChoicePanel.SetActive(false);
@@ -1195,6 +1201,11 @@ public class Day1Controller : MonoBehaviour
             {
                 pembicara = "Narasi",
                 teks      = "Rara memilih jalan utama. Suara klakson, tawa anak warung,\ndan langkah orang lalu-lalang membuat hatinya lebih tenang."
+            },
+            new Day1Intro.BarisNarasi
+            {
+                pembicara = "\uD83D\uDCA1 Tips Aman",
+                teks      = "Pilih jalan yang RAMAI dan TERANG. Banyak orang berarti\nbanyak saksi dan tempat minta tolong kalau terjadi sesuatu."
             }
         }));
         dialogActive = false;
@@ -1203,6 +1214,8 @@ public class Day1Controller : MonoBehaviour
 
     public void ChooseDangerPath()
     {
+        if (_pathResolved) return;
+        _pathResolved = true;
         GameState.Instance.pathChoice = "dangerous";
         GameState.Instance.AddChoice(1, "Pilih gang sepi sebagai jalan pintas", "BAHAYA");
         bool alive = GameState.Instance.LoseLife();
@@ -1212,6 +1225,9 @@ public class Day1Controller : MonoBehaviour
 
         // Aktifkan tampilan Gang Sepi (gelap)
         pathEnvironment?.AktifkanGangSepi();
+
+        // SFX menegangkan (detak jantung) saat memilih gang sepi yang berisiko.
+        AudioManager.Instance?.PlayDetakJantung();
 
         if (!alive)
         {
@@ -1245,6 +1261,11 @@ public class Day1Controller : MonoBehaviour
             {
                 pembicara = "Rara (dalam hati)",
                 teks      = "Harusnya aku ambil jalan ramai tadi\u2026"
+            },
+            new Day1Intro.BarisNarasi
+            {
+                pembicara = "\u26A0 Pelajaran",
+                teks      = "HINDARI jalan pintas yang sepi dan gelap \u2014 walau lebih cepat,\ndi sana tak ada orang yang bisa menolong. Lebih baik lewat jalan ramai."
             }
         }));
         dialogActive = false;
@@ -1728,6 +1749,7 @@ public class Day1Controller : MonoBehaviour
         var tombolBtn = tombolGO.AddComponent<Button>();
         tombolBtn.targetGraphic = tombolImg;
         tombolBtn.onClick.AddListener(GoToResult);
+        tombolBtn.onClick.AddListener(() => AudioManager.Instance?.Click());
 
         // Pastikan ada EventSystem agar tombol bisa diklik.
         if (FindAnyObjectByType<UnityEngine.EventSystems.EventSystem>() == null)
@@ -1739,6 +1761,9 @@ public class Day1Controller : MonoBehaviour
 
         // Animasi pop-in singkat.
         StartCoroutine(PopInEduCard(cardRt));
+
+        // SFX saat kartu edukasi muncul.
+        AudioManager.Instance?.Correct();
     }
 
     /// Animasi muncul kartu edukasi (skala 0.85 → 1.0).

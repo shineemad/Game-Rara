@@ -53,6 +53,8 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
     public Sprite vnPortraitPria;
     [Tooltip("Sprite latar belakang (mis. interior angkot). Opsional.")]
     public Sprite vnLatarSprite;
+    [Tooltip("Latar per baris untuk narasi pembuka VN. Urutan mengikuti 6 baris dialog pembuka.")]
+    public Sprite[] vnLatarPerBaris;
 
     [Header("Layout Box Dialog VN (mirror Day 1 intro \u2014 box-relatif 0\u20131)")]
     [Tooltip("Area kotak dialog di layar (anchorMin/Max). Default = mirror box Day 1 intro.")]
@@ -80,6 +82,14 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
     public bool  vnPortraitPreserveAspect = true;
     [Tooltip("Teks hint lanjut di pojok box.")]
     public string vnHintTeks = "\u25BC  Ketuk / SPACE untuk lanjut";
+
+    [Header("Animasi Ketik VN")]
+    [Tooltip("ON = teks narasi pembuka VN muncul per-huruf (typewriter).")]
+    public bool vnAnimasiKetik = true;
+    [Tooltip("Jeda antar huruf (detik) saat animasi ketik aktif.")]
+    [Range(0.005f, 0.08f)] public float vnKecepatanKetik = 0.02f;
+    [Tooltip("Saat ON, klik/SPACE/Enter saat teks masih berjalan akan langsung menampilkan teks penuh.")]
+    public bool vnBolehSkipKetik = true;
 
     [Header("Timer")]
     [Tooltip("Window total waktu (detik) untuk menyelesaikan tantangan.")]
@@ -312,11 +322,12 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
 
         // ── Banner nama ──
         var namaTmp = BuatTeks(box.transform, "Nama", "", vnNamaUkuran, vnNamaWarna, FontStyles.Bold);
-        namaTmp.alignment = TextAlignmentOptions.MidlineLeft;
+        namaTmp.alignment = TextAlignmentOptions.Center;
         var nRT = namaTmp.rectTransform;
         nRT.anchorMin = vnNamaAnchorMin;
         nRT.anchorMax = vnNamaAnchorMax;
-        nRT.offsetMin = new Vector2(12f, 0f); nRT.offsetMax = new Vector2(-4f, 0f);
+        nRT.offsetMin = Vector2.zero;
+        nRT.offsetMax = Vector2.zero;
 
         // ── Teks isi ──
         var teksTmp = BuatTeks(box.transform, "Teks", "", vnTeksUkuran, vnTeksWarna, FontStyles.Normal);
@@ -342,34 +353,94 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         var clickRT = clickGO.GetComponent<RectTransform>();
         clickRT.anchorMin = Vector2.zero; clickRT.anchorMax = Vector2.one;
         clickRT.offsetMin = Vector2.zero; clickRT.offsetMax = Vector2.zero;
-        bool diklik = false;
+        bool lanjutDiminta = false;
         var clickBtn = clickGO.AddComponent<Button>();
         clickBtn.transition = Selectable.Transition.None;
-        clickBtn.onClick.AddListener(() => diklik = true);
+        clickBtn.onClick.AddListener(() => lanjutDiminta = true);
 
-        foreach (var b in baris)
+        bool AdaInputLanjut()
         {
+            return lanjutDiminta
+                || Input.GetMouseButtonDown(0)
+                || Input.GetKeyDown(KeyCode.Space)
+                || Input.GetKeyDown(KeyCode.Return);
+        }
+
+        for (int i = 0; i < baris.Length; i++)
+        {
+            var b = baris[i];
             namaTmp.text  = b.speaker.ToUpper();
-            namaTmp.color = b.speaker == "Pria Asing" ? new Color(0.95f, 0.45f, 0.40f, 1f)
-                          : b.speaker == "Rara"       ? new Color(0.45f, 0.78f, 1.00f, 1f)
-                          :                             new Color(1f, 0.85f, 0.30f, 1f);
+            // Selalu pakai warna kuning agar tag nama konsisten dan rapi.
+            namaTmp.color = vnNamaWarna;
+
+            // Latar mengikuti urutan baris dialog jika disediakan.
+            if (vnLatarPerBaris != null && i < vnLatarPerBaris.Length && vnLatarPerBaris[i] != null)
+            {
+                bgImg.sprite = vnLatarPerBaris[i];
+                bgImg.color  = Color.white;
+            }
+            else if (vnLatarSprite != null)
+            {
+                bgImg.sprite = vnLatarSprite;
+                bgImg.color  = Color.white;
+            }
+            else
+            {
+                bgImg.sprite = null;
+                bgImg.color  = new Color(0.16f, 0.12f, 0.09f, 1f);
+            }
 
             Sprite ps = b.speaker == "Rara"       ? vnPortraitRara
                       : b.speaker == "Pria Asing" ? vnPortraitPria
                       :                             vnPortraitNarasi;
-            if (ps != null) { portraitImg.sprite = ps; portraitImg.enabled = true; }
+            if (ps != null) { portraitImg.sprite = ps; portraitImg.enabled = false; } // potret disembunyikan dari box dialog
             else            { portraitImg.enabled = false; }
 
-            teksTmp.text = b.teks;
+            // Tampilkan teks per-huruf (typewriter) agar transisi narasi lebih hidup.
+            if (vnAnimasiKetik)
+            {
+                teksTmp.text = "";
+                int idx = 0;
+                float t = 0f;
+                while (idx < b.teks.Length)
+                {
+                    if (vnBolehSkipKetik && AdaInputLanjut())
+                    {
+                        teksTmp.text = b.teks;
+                        lanjutDiminta = false; // konsumsi input skip
+                        break;
+                    }
 
-            diklik = false;
+                    t += Time.deltaTime;
+                    while (t >= vnKecepatanKetik && idx < b.teks.Length)
+                    {
+                        idx++;
+                        t -= vnKecepatanKetik;
+                        teksTmp.text = b.teks.Substring(0, idx);
+                    }
+
+                    yield return null;
+                }
+
+                if (idx >= b.teks.Length)
+                    teksTmp.text = b.teks;
+            }
+            else
+            {
+                teksTmp.text = b.teks;
+            }
+
+            // Tunggu input lanjut setelah teks selesai tampil.
+            lanjutDiminta = false;
             float timer = 0f;
-            while (!diklik)
+            while (true)
             {
                 timer += Time.deltaTime;
-                if (timer >= 0.2f &&
-                    (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
-                    diklik = true;
+                if (timer >= 0.12f && AdaInputLanjut())
+                {
+                    lanjutDiminta = false;
+                    break;
+                }
                 yield return null;
             }
         }

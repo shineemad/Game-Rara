@@ -31,6 +31,9 @@ public class ZonaTubuhQuiz : MonoBehaviour
         [Tooltip("Alasan singkat (opsional). Kosong = dipilih otomatis sesuai bagian tubuh.")]
         [TextArea(1, 3)]
         public string alasan = "";
+        [Tooltip("Sprite latar belakang fullscreen untuk dialog quiz VN pada chip ini.\n" +
+                 "Kosong = pakai latar narasi default.")]
+        public Sprite latarBelakangDialog;
     }
 
     [Header("Judul & Instruksi")]
@@ -54,6 +57,8 @@ public class ZonaTubuhQuiz : MonoBehaviour
     public string vnLabelBoleh = "\u2713  BOLEH";
     [Tooltip("Label tombol pilihan 'tidak boleh' (jawaban BAHAYA).")]
     public string vnLabelTidakBoleh = "\u2716  TIDAK BOLEH";
+    [Tooltip("Sprite latar fullscreen untuk dialog ringkasan akhir mode VN. Kosong = pakai latar default.")]
+    public Sprite vnRingkasanLatarBelakang;
 
     [Header("Timer")]
     public float waktuDetik = 15f;
@@ -133,6 +138,8 @@ public class ZonaTubuhQuiz : MonoBehaviour
         [TextArea(2, 5)]
         [Tooltip("Isi teks narasi.")]
         public string teks = "";
+        [Tooltip("Sprite latar belakang fullscreen khusus untuk baris ini. Kosong = pakai latar narasi default.")]
+        public Sprite latarBelakang;
     }
 
     [Header("Narasi Intro (sebelum quiz) — sambungan setelah AngkotSeatPicker")]
@@ -308,16 +315,26 @@ public class ZonaTubuhQuiz : MonoBehaviour
     private TextMeshProUGUI _narasiNamaTMP;
     private TextMeshProUGUI _narasiTeksTMP;
     private TextMeshProUGUI _narasiHintTMP;
+    private Image           _narasiBgImg;
     private Image           _narasiPortraitImg;
     private bool _ketikSelesai;
     private bool _skipKetik;
+
+    // State UI persisten yang disembunyikan/diatur selama kuis (controller & pause).
+    private MobileControls _mcRef;
+    private bool           _mcForceHideAsli;
+    private PauseMenu      _pauseRef;
+    private Vector2        _pauseMarginAsli;
+    private bool           _uiPersistenDisesuaikan = false;
 
     // ══════════════════════════════════════════════════════════════════════
     public void Mulai(Action onSelesai)
     {
         _onSelesai = onSelesai;
         HUDManager.Instance?.SetNavbarVisible(false); // sembunyikan navbar selama kuis batas tubuh
+        SesuaikanUiPersisten();                       // sembunyikan controller + rapikan tombol pause
         AutoResolveNarasiAssets();
+        TerapkanDefaultLatarDialogKosong();
         var narasiAktif = PilihNarasiIntroBerdasarkanKursi();
         if (narasiAktif != null && narasiAktif.Length > 0)
             StartCoroutine(JalankanNarasiLaluQuiz(narasiAktif));
@@ -325,6 +342,90 @@ public class ZonaTubuhQuiz : MonoBehaviour
             StartCoroutine(TampilkanTutorialLaluQuiz());
         else
             MulaiQuizLangsung();
+    }
+
+    void TerapkanDefaultLatarDialogKosong()
+    {
+        Sprite defaultBg = narasiBgFullscreenSprite != null ? narasiBgFullscreenSprite : bgFullscreenSprite;
+        if (defaultBg == null) return;
+
+        IsiDefaultLatarPadaBaris(narasiIntro, defaultBg);
+        IsiDefaultLatarPadaBaris(narasiIntroAman, defaultBg);
+        IsiDefaultLatarPadaBaris(narasiIntroRagu, defaultBg);
+        IsiDefaultLatarPadaBaris(narasiIntroBahaya, defaultBg);
+        IsiDefaultLatarPadaBaris(narasiOutro, defaultBg);
+
+        if (chips != null)
+        {
+            for (int i = 0; i < chips.Length; i++)
+            {
+                if (chips[i] == null) continue;
+                if (chips[i].latarBelakangDialog == null)
+                    chips[i].latarBelakangDialog = defaultBg;
+            }
+        }
+
+        if (vnRingkasanLatarBelakang == null)
+            vnRingkasanLatarBelakang = defaultBg;
+    }
+
+    void IsiDefaultLatarPadaBaris(BarisNarasiQuiz[] baris, Sprite defaultBg)
+    {
+        if (baris == null) return;
+        for (int i = 0; i < baris.Length; i++)
+        {
+            if (baris[i] == null) continue;
+            if (baris[i].latarBelakang == null)
+                baris[i].latarBelakang = defaultBg;
+        }
+    }
+
+    /// <summary>
+    /// Sembunyikan tombol controller (D-pad/TERIAK) dan rapikan posisi tombol pause
+    /// selama kuis berlangsung supaya tidak menumpuk dengan panel zona AMAN/BAHAYA.
+    /// Nilai asli disimpan agar bisa dikembalikan saat kuis selesai.
+    /// </summary>
+    void SesuaikanUiPersisten()
+    {
+        if (_uiPersistenDisesuaikan) return;
+        _uiPersistenDisesuaikan = true;
+
+        // Controller: paksa sembunyi selama kuis (drag-drop tidak butuh kontrol jalan).
+        _mcRef = MobileControls.Instance;
+        if (_mcRef != null)
+        {
+            _mcForceHideAsli = _mcRef.forceHide;
+            _mcRef.forceHide = true;
+        }
+
+        // Tombol pause: angkat ke pojok kanan-atas yang bersih (di atas panel zona)
+        // supaya tidak menimpa judul "ZONA BAHAYA". Posisi di-sync tiap frame oleh
+        // PauseMenu dari margin ini, jadi cukup ubah margin-nya.
+        _pauseRef = FindFirstObjectByType<PauseMenu>(FindObjectsInactive.Include);
+        if (_pauseRef != null)
+        {
+            _pauseMarginAsli = _pauseRef.mobilePauseButtonMargin;
+            _pauseRef.mobilePauseButtonMargin = new Vector2(28f, 24f);
+        }
+    }
+
+    /// <summary>
+    /// Kembalikan controller & posisi tombol pause ke kondisi semula setelah kuis.
+    /// </summary>
+    void KembalikanUiPersisten()
+    {
+        if (!_uiPersistenDisesuaikan) return;
+        _uiPersistenDisesuaikan = false;
+
+        if (_mcRef != null) _mcRef.forceHide = _mcForceHideAsli;
+        if (_pauseRef != null) _pauseRef.mobilePauseButtonMargin = _pauseMarginAsli;
+    }
+
+    // Jaring pengaman: kalau objek kuis dinonaktifkan/dihancurkan di tengah jalan,
+    // pastikan controller & tombol pause tetap dipulihkan agar tidak stuck.
+    void OnDisable()
+    {
+        KembalikanUiPersisten();
     }
 
     /// <summary>
@@ -432,6 +533,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
         {
             var chip = chips[i];
             if (chip == null) continue;
+            UpdateNarasiBackground(chip.latarBelakangDialog);
 
             // Tampilkan pertanyaan (typewriter) sebagai Rara.
             if (_narasiNamaTMP != null) _narasiNamaTMP.text = "RARA";
@@ -481,6 +583,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
 
         // Ringkasan singkat.
         bool semuaBenar = _chipBenar == chips.Length;
+        UpdateNarasiBackground(vnRingkasanLatarBelakang);
         if (_narasiNamaTMP != null) _narasiNamaTMP.text = "NARASI";
         UpdateNarasiPortrait("Narasi");
         yield return KetikTeksNarasi($"Kamu menjawab benar {_chipBenar}/{chips.Length}. Ingat: tubuhmu milikmu \u2014 kamu berhak bilang TIDAK.");
@@ -509,6 +612,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
         else
         {
             HUDManager.Instance?.SetNavbarVisible(true); // tampilkan kembali navbar saat keluar
+            KembalikanUiPersisten();
             _onSelesai?.Invoke();
         }
     }
@@ -583,6 +687,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
         {
             var baris = narasiAktif[i];
             if (baris == null) continue;
+            UpdateNarasiBackground(baris);
             if (_narasiNamaTMP != null) _narasiNamaTMP.text = (baris.pembicara ?? "").ToUpper();
             UpdateNarasiPortrait(baris.pembicara);
             yield return KetikTeksNarasi(baris.teks ?? "");
@@ -616,6 +721,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
         {
             var baris = narasiOutro[i];
             if (baris == null) continue;
+            UpdateNarasiBackground(baris);
             if (_narasiNamaTMP != null) _narasiNamaTMP.text = (baris.pembicara ?? "").ToUpper();
             UpdateNarasiPortrait(baris.pembicara);
             yield return KetikTeksNarasi(baris.teks ?? "");
@@ -625,7 +731,34 @@ public class ZonaTubuhQuiz : MonoBehaviour
         _narasiCanvasGO = null;
 
         HUDManager.Instance?.SetNavbarVisible(true); // tampilkan kembali navbar saat keluar
+        KembalikanUiPersisten();
         _onSelesai?.Invoke();
+    }
+
+    void UpdateNarasiBackground(BarisNarasiQuiz baris)
+    {
+        UpdateNarasiBackground(baris != null ? baris.latarBelakang : null);
+    }
+
+    void UpdateNarasiBackground(Sprite bgOverride)
+    {
+        if (_narasiBgImg == null) return;
+
+        Sprite bgAktif = bgOverride;
+        if (bgAktif == null)
+            bgAktif = narasiBgFullscreenSprite != null ? narasiBgFullscreenSprite : bgFullscreenSprite;
+
+        if (bgAktif != null)
+        {
+            _narasiBgImg.sprite         = bgAktif;
+            _narasiBgImg.preserveAspect = bgFullscreenPreserveAspect;
+            _narasiBgImg.color          = Color.white;
+        }
+        else
+        {
+            _narasiBgImg.sprite = null;
+            _narasiBgImg.color  = narasiBgWarna;
+        }
     }
 
     IEnumerator KetikTeksNarasi(string teks)
@@ -694,20 +827,20 @@ public class ZonaTubuhQuiz : MonoBehaviour
         var bgRT = bg.AddComponent<RectTransform>();
         bgRT.anchorMin = Vector2.zero; bgRT.anchorMax = Vector2.one;
         bgRT.offsetMin = bgRT.offsetMax = Vector2.zero;
-        var bgImg = bg.AddComponent<Image>();
+        _narasiBgImg = bg.AddComponent<Image>();
         if (bgSprite != null)
         {
-            bgImg.sprite         = bgSprite;
-            bgImg.preserveAspect = bgFullscreenPreserveAspect;
-            bgImg.color          = Color.white;
+            _narasiBgImg.sprite         = bgSprite;
+            _narasiBgImg.preserveAspect = bgFullscreenPreserveAspect;
+            _narasiBgImg.color          = Color.white;
         }
         else
         {
             // Fallback: warna interior angkot SOLID (sama dengan AngkotSentuhScene),
             // bukan dim transparan — supaya latar biru kosong scene tidak menembus.
-            bgImg.color = narasiBgWarna;
+            _narasiBgImg.color = narasiBgWarna;
         }
-        bgImg.raycastTarget = false;
+        _narasiBgImg.raycastTarget = false;
 
         // ── Panel utama (anchor fraksi layar, mirror Day1Intro) ──
         float pxMin = narasiPanelCenterX - narasiPanelWidthFrac  * 0.5f;
@@ -822,16 +955,17 @@ public class ZonaTubuhQuiz : MonoBehaviour
 
         if (sp != null)
         {
+            // Potret/sprite profil disembunyikan dari box dialog.
             _narasiPortraitImg.sprite  = sp;
             _narasiPortraitImg.color   = Color.white;
-            _narasiPortraitImg.enabled = true;
+            _narasiPortraitImg.enabled = false;
         }
         else
         {
             // Fallback: tampilkan kotak warna polos supaya tata letak tetap konsisten
             _narasiPortraitImg.sprite  = null;
             _narasiPortraitImg.color   = narasiPortraitFallbackWarna;
-            _narasiPortraitImg.enabled = true;
+            _narasiPortraitImg.enabled = false;
         }
     }
 
@@ -1153,9 +1287,11 @@ public class ZonaTubuhQuiz : MonoBehaviour
         var outl = go.AddComponent<Outline>();
         outl.effectColor    = border;
         outl.effectDistance = new Vector2(3f, -3f);
+
         var rt = go.GetComponent<RectTransform>();
-        rt.anchorMin = anchorMin; rt.anchorMax = anchorMax;
-        rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
+        rt.anchorMin = anchorMin;
+        rt.anchorMax = anchorMax;
+        rt.offsetMin = rt.offsetMax = Vector2.zero;
 
         // Judul zona (atas)
         var lab = BuatTeks(go.transform, "Label", label, 26, Color.white, FontStyles.Bold);
@@ -1487,6 +1623,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
             else
             {
                 if (_canvasGO != null) Destroy(_canvasGO);
+                KembalikanUiPersisten();
                 _onSelesai?.Invoke();
             }
         });

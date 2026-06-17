@@ -443,6 +443,14 @@ public class AchievementPopup : MonoBehaviour
         // Refresh posisi tombol 🏆 bila Safe Area berubah (mis. rotasi layar).
         if (_menuButtonRT != null && Screen.safeArea != _lastSafeArea)
             ApplyMenuButtonSafeArea();
+
+        // Sembunyikan tombol 🏆 selama layar prolog tampil; tampilkan lagi setelahnya.
+        if (_menuButtonRT != null)
+        {
+            bool bolehTampil = !PrologScreen.SedangTampil;
+            if (_menuButtonRT.gameObject.activeSelf != bolehTampil)
+                _menuButtonRT.gameObject.SetActive(bolehTampil);
+        }
     }
 
     // Perbarui angka jumlah lencana di tombol 🏆.

@@ -72,6 +72,21 @@ public class PauseMenu : MonoBehaviour
     public string menuLabel     = "MENU UTAMA";
 
     // ══════════════════════════════════════════════════════════════════════
+    // INSPECTOR — KONTEN KHUSUS HARI 2 (3 KATA SAKTI)
+    // ══════════════════════════════════════════════════════════════════════
+    [Header("── KONTEN HARI 2 (3 Kata Sakti) ──")]
+    [Tooltip("Saat berada di Day 2, ganti isi panel JEDA dengan 3 Kata Sakti (TIDAK → PERGI → CERITA).")]
+    public bool   gunakanKontenKataSaktiHari2 = true;
+    public string titleTextHari2 = "3 KATA SAKTI MENJAGA DIRI";
+    [TextArea(4, 10)]
+    public string tipsTextHari2 =
+        "<b><color=#E84D3D>TIDAK</color></b>  :  Berani berkata tidak saat ada yang membuatmu tak nyaman. Kamu berhak menolak; tubuhmu milikmu sendiri.\n\n" +
+        "<b><color=#F29D12>PERGI</color></b>  :  Segera menjauh dari situasi bahaya. Cari tempat ramai atau orang dewasa yang bisa dipercaya.\n\n" +
+        "<b><color=#26AD61>CERITA</color></b>  :  Ceritakan ke orang dewasa yang kamu percaya: orang tua, guru, atau telepon KPAI 021-31901556. Jangan simpan sendiri!";
+    [TextArea(2, 4)]
+    public string emergencyTextHari2 = "";
+
+    // ══════════════════════════════════════════════════════════════════════
     // INSPECTOR — WARNA (Mode B)
     // ══════════════════════════════════════════════════════════════════════
     [Header("── WARNA (Mode B / Fallback) ──")]
@@ -227,6 +242,7 @@ public class PauseMenu : MonoBehaviour
     GameObject panelRoot;
     GameObject mobileBtnRoot;
     Button     mobilePauseBtn;
+    TextMeshProUGUI _lencanaBadgeLabel;   // angka jumlah lencana yang menyatu di tombol pause
     bool usingEditorRefs = false;
     bool isOpen = false;
     float prevTimeScale = 1f;
@@ -258,6 +274,9 @@ public class PauseMenu : MonoBehaviour
         if (!builtOnce) return;
         if (Application.isPlaying)
         {
+            // Saat Game Over tampil: blokir jeda agar hanya tombol Main Lagi & Keluar aktif.
+            if (GameOverScreen.IsShowing) return;
+
             // Keyboard: Esc / P
             if (Input.GetKeyDown(toggleKey) || Input.GetKeyDown(altToggleKey))
                 Toggle();
@@ -332,6 +351,45 @@ public class PauseMenu : MonoBehaviour
                 barImg.color = Color.white;
             }
         }
+
+        // ── Badge jumlah lencana (digabung dari tombol 🏆 lama) ───────────
+        // Lingkaran kuning kecil di pojok kanan-atas tombol pause yang menampilkan
+        // berapa lencana sudah diraih. Info ini dipindah dari tombol lencana terpisah.
+        var badgeGO = new GameObject("LencanaBadge");
+        badgeGO.transform.SetParent(mobileBtnRoot.transform, false);
+        var badgeRT = badgeGO.AddComponent<RectTransform>();
+        float badgeD = mobilePauseButtonSize.x * 0.46f;
+        badgeRT.anchorMin = badgeRT.anchorMax = new Vector2(1f, 1f);
+        badgeRT.pivot     = new Vector2(0.5f, 0.5f);
+        badgeRT.sizeDelta = new Vector2(badgeD, badgeD);
+        badgeRT.anchoredPosition = new Vector2(-badgeD * 0.12f, -badgeD * 0.12f);
+        var badgeImg = badgeGO.AddComponent<Image>();
+        badgeImg.color = new Color(0.96f, 0.65f, 0.10f, 1f);   // kuning lencana
+        badgeImg.raycastTarget = false;
+
+        _lencanaBadgeLabel = new GameObject("Jumlah").AddComponent<TextMeshProUGUI>();
+        _lencanaBadgeLabel.transform.SetParent(badgeGO.transform, false);
+        var lblRT = _lencanaBadgeLabel.rectTransform;
+        lblRT.anchorMin = Vector2.zero; lblRT.anchorMax = Vector2.one;
+        lblRT.offsetMin = Vector2.zero; lblRT.offsetMax = Vector2.zero;
+        if (buttonFontAsset != null) _lencanaBadgeLabel.font = buttonFontAsset;
+        _lencanaBadgeLabel.text          = "0";
+        _lencanaBadgeLabel.fontSize      = badgeD * 0.62f;
+        _lencanaBadgeLabel.color         = new Color(0.2f, 0.1f, 0f, 1f);
+        _lencanaBadgeLabel.fontStyle     = FontStyles.Bold;
+        _lencanaBadgeLabel.alignment     = TextAlignmentOptions.Center;
+        _lencanaBadgeLabel.raycastTarget = false;
+        RefreshLencanaBadge();
+    }
+
+    // Perbarui angka lencana pada badge tombol pause dari GameState.
+    void RefreshLencanaBadge()
+    {
+        if (_lencanaBadgeLabel == null) return;
+        int n = (GameState.Instance != null && GameState.Instance.achievements != null)
+            ? GameState.Instance.achievements.Count : 0;
+        string s = n.ToString();
+        if (_lencanaBadgeLabel.text != s) _lencanaBadgeLabel.text = s;
     }
 
     // Atur anchor & pivot tombol pause sesuai sudut yang dipilih, plus margin
@@ -367,7 +425,8 @@ public class PauseMenu : MonoBehaviour
     void UpdateMobileButtonVisibility()
     {
         if (mobileBtnRoot == null) return;
-        bool shouldShow = showMobilePauseButton && !isOpen;
+        // Sembunyikan tombol pause selama layar prolog tampil.
+        bool shouldShow = showMobilePauseButton && !isOpen && !PrologScreen.SedangTampil && !Day1Intro.SedangTampil && !Day1SummaryScreen.SedangTampil;
         if (mobileBtnRoot.activeSelf != shouldShow) mobileBtnRoot.SetActive(shouldShow);
 
         // Sync ukuran/posisi live (mendukung perubahan sudut di Inspector)
@@ -382,6 +441,8 @@ public class PauseMenu : MonoBehaviour
         {
             img.sprite = mobilePauseButtonSprite; img.color = Color.white;
         }
+
+        RefreshLencanaBadge();
     }
 
     // ══════ Safe Area (notch handling) ══════
@@ -471,10 +532,29 @@ public class PauseMenu : MonoBehaviour
         ClosePanel();
         Time.timeScale = 1f;
         onGoMenu?.Invoke();
-        if (!string.IsNullOrEmpty(mainMenuSceneName))
+
+        // Reset progres pemain (nyawa, skor, pilihan, hari) supaya menu utama
+        // benar-benar mulai dari awal — tidak membawa state Hari 1/2/3.
+        if (GameState.Instance != null) GameState.Instance.Reset();
+
+        // Game ini single-scene (Gameplay). Kalau mainMenuSceneName kosong,
+        // sama dengan scene aktif, atau bukan scene yang ada di Build Settings,
+        // muat ulang scene aktif. MainMenu (komponen di scene) otomatis tampil
+        // lagi pada Awake/Start dan memutar BGM Menu via PlayBGM(BGMTrack.Menu).
+        string current = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
+        bool targetValid = !string.IsNullOrEmpty(mainMenuSceneName)
+                           && mainMenuSceneName != current
+                           && Application.CanStreamedLevelBeLoaded(mainMenuSceneName);
+
+        if (targetValid)
         {
             if (SceneLoader.Instance != null) SceneLoader.Instance.LoadScene(mainMenuSceneName);
             else UnityEngine.SceneManagement.SceneManager.LoadScene(mainMenuSceneName);
+        }
+        else
+        {
+            if (SceneLoader.Instance != null) SceneLoader.Instance.ReloadCurrentScene();
+            else UnityEngine.SceneManagement.SceneManager.LoadScene(current);
         }
     }
 
@@ -511,10 +591,13 @@ public class PauseMenu : MonoBehaviour
         var cGO = new GameObject("PauseMenuCanvas");
         canvas = cGO.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.ScreenSpaceOverlay;
-        canvas.sortingOrder = 800;
+        // 1100 = paling atas dari semua overlay (lencana 1050, prolog 1000, dialog 999,
+        // mobile 985, navbar 940) agar tombol pause SELALU menerima klik & tak tertutup.
+        canvas.sortingOrder = 1100;
         var scaler = cGO.AddComponent<CanvasScaler>();
         scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
-        scaler.referenceResolution = new Vector2(1080f, 1920f);
+        // Landscape 1920x1080 — samakan dengan canvas lain agar skala/posisi konsisten.
+        scaler.referenceResolution = new Vector2(1920f, 1080f);
         scaler.matchWidthOrHeight = 0.5f;
         cGO.AddComponent<GraphicRaycaster>();
 
@@ -561,11 +644,16 @@ public class PauseMenu : MonoBehaviour
                  new Vector2(12f, -100f), new Vector2(-12f, -28f), 44, titleColor,
                  TextAlignmentOptions.Center, true, titleText);
 
-        // Tips — blok teks rata kiri dengan jarak baris lega.
+        // Tips — blok teks rata kiri dengan jarak baris lega. Kotak diperluas ke
+        // bawah (hingga tepat di atas tombol) + auto-size agar teks panjang Hari 2
+        // (3 Kata Sakti) tidak meluber menutupi tombol LANJUTKAN.
         var tipsTmp = MakeText(panelRoot, "Tips", new Vector2(0f, 1f), new Vector2(1f, 1f),
-                 new Vector2(28f, -378f), new Vector2(-28f, -126f), 26, tipsColor,
+                 new Vector2(28f, -492f), new Vector2(-28f, -126f), 26, tipsColor,
                  TextAlignmentOptions.TopLeft, false, tipsText);
         tipsTmp.lineSpacing = 12f;
+        tipsTmp.enableAutoSizing = true;
+        tipsTmp.fontSizeMin = 16f;
+        tipsTmp.fontSizeMax = 26f;
 
         // Nomor darurat — terpusat, ikon emoji 📞 diganti bullet agar tak jadi kotak kosong.
         MakeText(panelRoot, "Emergency", new Vector2(0f, 1f), new Vector2(1f, 1f),
@@ -1082,9 +1170,16 @@ public class PauseMenu : MonoBehaviour
     [ContextMenu("▶ Apply Customization Sekarang")]
     public void ReapplyAllCustomization()
     {
-        SetText(titleTMPRef,     "Title",     titleText);
-        SetText(tipsTMPRef,      "Tips",      tipsText);
-        SetText(emergencyTMPRef, "Emergency", emergencyText);
+        // Hari 2: tampilkan konten 3 Kata Sakti sebagai isi panel JEDA.
+        bool kataSaktiHari2 = gunakanKontenKataSaktiHari2
+            && GameState.Instance != null && GameState.Instance.day == 2;
+        string isiTitle     = kataSaktiHari2 ? titleTextHari2     : titleText;
+        string isiTips      = kataSaktiHari2 ? tipsTextHari2      : tipsText;
+        string isiEmergency = kataSaktiHari2 ? emergencyTextHari2 : emergencyText;
+
+        SetText(titleTMPRef,     "Title",     isiTitle);
+        SetText(tipsTMPRef,      "Tips",      isiTips);
+        SetText(emergencyTMPRef, "Emergency", isiEmergency);
         if (btnResumeLabelRef != null) btnResumeLabelRef.text = resumeLabel;
         if (btnMenuLabelRef   != null) btnMenuLabelRef.text   = menuLabel;
         var bR = FindChild("BtnResume"); if (bR != null) { var l = bR.Find("Label"); if (l != null) { var x = l.GetComponent<TextMeshProUGUI>(); if (x != null) x.text = resumeLabel; } }

@@ -283,6 +283,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   forceShowOnDesktop: 0
   forceHide: 0
+  hormatiSafeArea: 1
   autoDetectByScreenSize: 1
   maxDiagonalInches: 8
   maxShortSidePixels: 900
@@ -453,8 +454,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 336527801
-  m_SortingLayer: 2
+  m_SortingLayerID: -883599925
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 1217519457885500660, guid: c4502c473b94d53428b9c5bfa07c934e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -581,6 +582,8 @@ MonoBehaviour:
   aktifkanJembatanLapor: 0
   jembatanPortraitRara: {fileID: 0}
   jembatanPortraitPria: {fileID: 0}
+  jembatanGunakanAnimasiKetik: 1
+  jembatanDetikPerHuruf: 0.018
   buatBackdropProcedural: 0
   backdropSortingOrder: -100
   warnaIntro: {r: 0.55, g: 0.78, b: 0.95, a: 1}
@@ -595,6 +598,7 @@ MonoBehaviour:
   bgAngkotSprite: {fileID: 0}
   bgQuizSprite: {fileID: 0}
   bgLaporSprite: {fileID: 0}
+  bgNarasiJembatanSprite: {fileID: 0}
   bgChatSimSprite: {fileID: 0}
   bgEduCardSprite: {fileID: 0}
   bgSpriteType: 0
@@ -610,7 +614,7 @@ MonoBehaviour:
   tampilkanFrameSinematik: 1
   labelFasePill: 1
   tampilkanMeteranBahaya: 0
-  tampilkanGlossaryKataSakti: 1
+  tampilkanGlossaryKataSakti: 0
   introJudul: 
   introNarasi: 
   introTombolTeks: 
@@ -679,18 +683,18 @@ MonoBehaviour:
   - pembicara: Rara
     teks: "\"Bismillah, aku pasti bisa!\nHaltenya udah dekat \u2014 ayo cepat!\""
     portrait: {fileID: 0}
-    latarFullscreen: {fileID: -8868803461578586678, guid: ec41554393752fc4e9f706976243d35f, type: 3}
+    latarFullscreen: {fileID: -7016700123000194612, guid: 0af20cca6e6f4744e9bcb407a5fcd9d9, type: 3}
   - pembicara: Rara
     teks: "\"Tapi\u2026 kok jalan ini sepi banget ya?\nAku harus tetap waspada.\""
     portrait: {fileID: 0}
-    latarFullscreen: {fileID: 77423184151155997, guid: 17819bcbeba26c148a9d0b38fe2705f1, type: 3}
+    latarFullscreen: {fileID: 7321662477809959804, guid: 2e4c60b9d451d1e4da792ed60db46e6e, type: 3}
   narasiLines:
   - "\"Bismillah, aku pasti bisa!\nHaltenya udah dekat \u2014 ayo cepat!\""
   - "\"Tapi\u2026 kok jalan ini sepi banget ya?\nAku harus tetap waspada.\""
   speakerName: Rara
   layout: {fileID: 0}
-  panelSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
-  panelSpritePath: sprites/UI day 1/8.png
+  panelSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
+  panelSpritePath: sprites/UI day 1/box dialog.png
   nameBannerSprite: {fileID: 0}
   portraitRara: {fileID: 0}
   portraitNarasi: {fileID: 0}
@@ -908,7 +912,7 @@ MonoBehaviour:
   statusKontak: online
   warnaHeader: {r: 0.05, g: 0.32, b: 0.27, a: 1}
   warnaTeksHeader: {r: 1, g: 1, b: 1, a: 1}
-  jamTampil: "06:45"
+  jamTampil: 06:45
   warnaChatBg: {r: 0.05, g: 0.12, b: 0.12, a: 1}
   warnaBubbleMasuk: {r: 0.2, g: 0.3, b: 0.35, a: 1}
   warnaTeksBubble: {r: 1, g: 1, b: 0.95, a: 1}
@@ -1882,10 +1886,17 @@ MonoBehaviour:
     choices:
     - label: Tidak, terima kasih. Saya jalan saja.
       category: AMAN
+      feedbackEdukasi: 
     - label: Em... siapa Om? Saya tidak kenal.
       category: RAGU
+      feedbackEdukasi: Ragu itu wajar, tapi jangan terpancing. Orang asing yang memaksa
+        mengajak pergi = TANDA BAHAYA. Tolak dengan TEGAS lalu menjauh ke tempat
+        ramai.
     - label: Boleh, Om! Kebetulan capek.
       category: BAHAYA
+      feedbackEdukasi: Jangan pernah ikut orang asing meski ditawari tumpangan! Banyak
+        pelaku berpura-pura baik. Kalau lelah, lebih aman jalan ke tempat ramai atau
+        hubungi orang tua.
   panelColor: {r: 0.2784314, g: 0.2784314, b: 0.2784314, a: 0}
   borderColor: {r: 1, g: 0.85, b: 0.3, a: 0}
   panelHeight: 220
@@ -1915,9 +1926,9 @@ MonoBehaviour:
   useLayoutAsset: 0
   liveEditLayout: 1
   previewPanelInPlay: 0
-  dialogBoxSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
+  dialogBoxSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
   nameBannerSprite: {fileID: 0}
-  boxDialogSpritePath: sprites/UI day 1/8.png
+  boxDialogSpritePath: sprites/UI day 1/box dialog.png
   panelCenterX: 0.5
   panelCenterY: 0.16
   panelWidthFrac: 0.972
@@ -2338,6 +2349,15 @@ MonoBehaviour:
   emergencyText: "\U0001F4DE Polisi: 110\n\U0001F4DE KPAI: 129"
   resumeLabel: LANJUTKAN
   menuLabel: MENU UTAMA
+  gunakanKontenKataSaktiHari2: 1
+  titleTextHari2: 3 KATA SAKTI MENJAGA DIRI
+  tipsTextHari2: "<b><color=#E84D3D>TIDAK</color></b> \u2014 Berani berkata tidak
+    saat ada yang membuatmu tak nyaman. Kamu berhak menolak; tubuhmu milikmu sendiri.\n\n<b><color=#F29D12>PERGI</color></b>
+    \u2014 Segera menjauh dari situasi bahaya. Cari tempat ramai atau orang dewasa
+    yang bisa dipercaya.\n\n<b><color=#26AD61>CERITA</color></b> \u2014 Ceritakan
+    ke orang dewasa yang kamu percaya: orang tua, guru, atau telepon KPAI 021-31901556.
+    Jangan simpan sendiri!"
+  emergencyTextHari2: 
   panelBgColor: {r: 0.1, g: 0.1, b: 0.15, a: 0.96}
   borderColor: {r: 1, g: 0.85, b: 0.1, a: 1}
   titleColor: {r: 1, g: 0.85, b: 0.1, a: 1}
@@ -2384,13 +2404,13 @@ MonoBehaviour:
   tintSpriteWithColor: 0
   overrideSpriteSize: 0
   panelSize: {x: 520, y: 700}
-  panelAnchoredPos: {x: 280, y: 380}
+  panelAnchoredPos: {x: 0, y: 0}
   panelScale: 1
   overlayStretchFullscreen: 1
   overlaySize: {x: 1920, y: 1080}
   resumeButtonScale: 1
   menuButtonScale: 1
-  dockBottomLeft: 1
+  dockBottomLeft: 0
   dockMargin: {x: 20, y: 20}
   overrideButtonLayout: 0
   resumeButtonAnchoredPos: {x: 0, y: -250}
@@ -2525,8 +2545,8 @@ MonoBehaviour:
   papanInfoFontSize: 22
   propsTambahan: []
   liveEditHalte: 1
-  panelSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
-  panelSpritePath: sprites/UI day 1/8.png
+  panelSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
+  panelSpritePath: sprites/UI day 1/box dialog.png
   panelTint: {r: 1, g: 1, b: 1, a: 1}
   portraitNarasi: {fileID: -7771728774132427043, guid: 6809b27ca40283248be0310e4d5f4ef1, type: 3}
   portraitRara: {fileID: -307426207498796367, guid: b337f726c99b2184ba032db933c4af66, type: 3}
@@ -2566,36 +2586,36 @@ MonoBehaviour:
   dialogIntro:
   - teks: Pagi itu Rara sampai di halte yang cukup ramai. Beberapa orang ikut menunggu
       angkot jurusan sekolah.
-    latarSprite: {fileID: -9166084717782916886, guid: 031ec425ab0a66641b6bc3d8bd845a94, type: 3}
+    latarSprite: {fileID: -5854831843953223616, guid: 8f78328cf35aa8b45bf1f01bb54a340d, type: 3}
     tandaBahaya: 0
     tandaBahayaTeks: 
   - teks: Rara berdiri di pinggir sambil sesekali melihat jam. Angkotnya belum datang
       juga.
-    latarSprite: {fileID: -4485321536226006897, guid: 2231939df502380419d50999cfe6e7b8, type: 3}
+    latarSprite: {fileID: 6632576726716559813, guid: 58f437b7ac691e7458f0cb3abc8dd95a, type: 3}
     tandaBahaya: 0
     tandaBahayaTeks: 
   - teks: Dari tadi, ada seorang pria asing bertopi yang terus memperhatikan Rara
       dari kejauhan...
-    latarSprite: {fileID: 2839294785017435275, guid: d4bc66ef44bfa9347bcd870d7cb287a2, type: 3}
+    latarSprite: {fileID: 5075009326368250917, guid: bba265e7f308a3c4d8a3fdf13011b06c, type: 3}
     tandaBahaya: 0
     tandaBahayaTeks: 
   - teks: Pelan-pelan, pria itu mendekat dan berdiri tepat di sebelah Rara.
-    latarSprite: {fileID: -4865884503035749218, guid: 702100b688d389f4c9074865c8e44ca0, type: 3}
+    latarSprite: {fileID: 987538331469431081, guid: 9983de7123e15574985687bc8f06bb59, type: 3}
     tandaBahaya: 0
     tandaBahayaTeks: 
   dialogAwal:
   - teks: Hai, cantik! Sendirian aja nih? Om dari tadi merhatiin kamu lho.
-    latarSprite: {fileID: 9220187793519253819, guid: a08a8d44cebc0cc44b9d1b0f248c652b, type: 3}
+    latarSprite: {fileID: -8788301321483184934, guid: a48e03c41b3ee60459b32e68b62b78bc, type: 3}
     tandaBahaya: 1
     tandaBahayaTeks: Orang asing tiba-tiba sok akrab & memperhatikanmu
   - teks: "Mau ke sekolah ya? Om kebetulan searah. Daripada nunggu angkot lama, bareng
       om aja yuk \u2014 gratis kok."
-    latarSprite: {fileID: 3421342021128756210, guid: c24fc0d0988a66641bf4c16d9a0c9f2a, type: 3}
+    latarSprite: {fileID: 5456103448145038035, guid: 6abbc8aca91862c49806b70a64eabb24, type: 3}
     tandaBahaya: 1
     tandaBahayaTeks: Memberi iming-iming / tumpangan gratis
   - teks: Eh, WA kamu berapa? Nanti om anter pulang sekolah ya. Rahasia aja, nggak
       usah bilang siapa-siapa.
-    latarSprite: {fileID: -7726510151329706208, guid: ecceb6ef2d61f094cb92cb6b8a235080, type: 3}
+    latarSprite: {fileID: 1046172270099367809, guid: d74bdae8aa7355f47945e9df364879c3, type: 3}
     tandaBahaya: 1
     tandaBahayaTeks: Minta data pribadi & mengajak menyimpan rahasia
   pilihanAman: "\u201CMaaf Om, saya nggak kenal Om. TOLONG jangan ganggu saya!\u201D
@@ -2607,26 +2627,26 @@ MonoBehaviour:
       di halte langsung menoleh dan ibu-ibu menghampirimu. Pria itu salah tingkah
       lalu pergi.\nIngat: nomor HP/WA itu DATA PRIBADI \u2014 jangan diberi ke orang
       asing!"
-    latarSprite: {fileID: 940904585648935168, guid: 23688e8a1f5938b41a4368bbb146f47c, type: 3}
+    latarSprite: {fileID: 2676982456256595718, guid: 0eb171f097958324b9210f7d9b348b31, type: 3}
     tandaBahaya: 0
     tandaBahayaTeks: 
   reaksiRagu:
     teks: "\u26A0 Kamu ragu-ragu menjawab. Pria itu makin maju dan terus memaksa
       minta nomormu.\nUntung angkot keburu datang dan kamu cepat naik. Lain kali,
       langsung TEGAS tolak ya!"
-    latarSprite: {fileID: 7132907415357354675, guid: ad8ca633496923b47922620bb015e585, type: 3}
+    latarSprite: {fileID: 2976984549678263596, guid: 73fe3a23a7ed77b4dabb0e9d3cfb924d, type: 3}
     tandaBahaya: 0
     tandaBahayaTeks: 
   reaksiBahaya:
     teks: "\u2716 GAWAT! Kamu memberi nomor WA-mu ke orang asing.\nMalamnya HP-mu
       dibanjiri chat aneh dari pria itu. Kamu kehilangan 1 nyawa.\nIngat: kasih sayang
       & hadiah dari orang asing = RED FLAG grooming!"
-    latarSprite: {fileID: 637440988520020479, guid: ee647dd71faf2b84988d03a4c74b67d0, type: 3}
+    latarSprite: {fileID: 5507443434965117980, guid: 79c455e01280f604b816bba9957a8032, type: 3}
     tandaBahaya: 0
     tandaBahayaTeks: 
-  latarReaksiAman: {fileID: 940904585648935168, guid: 23688e8a1f5938b41a4368bbb146f47c, type: 3}
-  latarReaksiRagu: {fileID: 0}
-  latarReaksiBahaya: {fileID: 0}
+  latarReaksiAman: {fileID: 2676982456256595718, guid: 0eb171f097958324b9210f7d9b348b31, type: 3}
+  latarReaksiRagu: {fileID: 2976984549678263596, guid: 73fe3a23a7ed77b4dabb0e9d3cfb924d, type: 3}
+  latarReaksiBahaya: {fileID: 5507443434965117980, guid: 79c455e01280f604b816bba9957a8032, type: 3}
   berikanBonusLaporSaatAman: 1
   kurangiNyawaSaatBahaya: 1
   aktifkanBlokir: 1
@@ -2645,6 +2665,27 @@ MonoBehaviour:
   badgeWarna: {r: 0.85, g: 0.18, b: 0.14, a: 0.95}
   badgeTeksWarna: {r: 1, g: 1, b: 1, a: 1}
   sortingOrder: 920
+  aktifkanVoiceMeter: 1
+  kategoriPemicu: AMAN
+  gunakanMikrofon: 0
+  sensitivitasMic: 12
+  ambangKuning: 0.5
+  ambangMerah: 0.8
+  tahanDetikMerah: 0.6
+  isiRate: 0.7
+  surutRate: 0.5
+  bonusTeriakKeras: 100
+  judulTeriak: "\U0001F5E3  TERIAK SEKUATNYA!"
+  instruksiTeriak: "TAHAN tombol & teriak \u201CJANGAN GANGGU SAYA!\u201D sampai
+    meter MERAH!"
+  teksTombolTeriak: TAHAN UNTUK TERIAK
+  labelNormal: Suara Normal
+  labelSedang: Suara Sedang
+  labelKeras: Suara KERAS
+  labelBerhasil: "\u2713  TERIAKAN BERHASIL!"
+  hijauWarna: {r: 0.16, g: 0.74, b: 0.4, a: 1}
+  kuningWarna: {r: 0.96, g: 0.78, b: 0.1, a: 1}
+  merahWarna: {r: 0.91, g: 0.26, b: 0.22, a: 1}
 --- !u!1 &605391900
 GameObject:
   m_ObjectHideFlags: 0
@@ -2911,7 +2952,7 @@ Transform:
   m_GameObject: {fileID: 648612905}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 40.32, y: 14.74, z: 0.27075157}
+  m_LocalPosition: {x: 40.32, y: 14.4, z: 0.27075157}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3138,7 +3179,6 @@ Transform:
   m_Children:
   - {fileID: 1345766914}
   - {fileID: 1608351061}
-  - {fileID: 1398656198}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &686988961
@@ -3565,7 +3605,7 @@ MonoBehaviour:
     warna: {r: 0.18, g: 0.62, b: 0.32, a: 1}
     posisi: {x: -500, y: -40}
     ukuran: {x: 300, y: 220}
-    latarSaatDipilih: {fileID: 0}
+    latarSaatDipilih: {fileID: -216634260699183385, guid: 1d93190a0a953954ab54a4b7368072d7, type: 3}
   - label: Tengah (di samping ibu-ibu)
     kategori: RAGU
     deskripsi: Ramai tapi terjepit di tengah, agak susah turun.
@@ -3579,7 +3619,7 @@ MonoBehaviour:
     warna: {r: 0.95, g: 0.62, b: 0.07, a: 1}
     posisi: {x: 0, y: -40}
     ukuran: {x: 300, y: 220}
-    latarSaatDipilih: {fileID: 0}
+    latarSaatDipilih: {fileID: -3322770215922140190, guid: ac91f12ceb495f246a6f7097510b22ad, type: 3}
   - label: Pojok Belakang (sepi)
     kategori: BAHAYA
     deskripsi: Sepi & gelap, ada pria asing yang dari tadi ngeliatin kamu.
@@ -3592,7 +3632,7 @@ MonoBehaviour:
     warna: {r: 0.91, g: 0.3, b: 0.24, a: 1}
     posisi: {x: 500, y: -40}
     ukuran: {x: 300, y: 220}
-    latarSaatDipilih: {fileID: 0}
+    latarSaatDipilih: {fileID: -191502802476031855, guid: 617b38f3b85d7334d89438e27311e5bf, type: 3}
   tampilkanCekPlat: 1
   platLabel: "\U0001F4DD Catat plat nomor angkot (B 1234 XYZ)"
   bonusPlat: 50
@@ -3609,7 +3649,7 @@ MonoBehaviour:
   platRowJarakBawah: 120
   lanjutUkuran: {x: 340, y: 68}
   lanjutJarakBawah: 40
-  bgFullscreenSprite: {fileID: 7615782642324610468, guid: df0f7a57c6e3e024eae5e422396f1ac1, type: 3}
+  bgFullscreenSprite: {fileID: 6644788909367321638, guid: e78dd34af5a6a3c4b85e8b60832666d6, type: 3}
   bgFullscreenPreserveAspect: 0
   bgReaksiAman: {fileID: 0}
   bgReaksiRagu: {fileID: 0}
@@ -3939,10 +3979,16 @@ MonoBehaviour:
     choices:
     - label: BALIK ARAH & lari ke jalan ramai sambil teriak "TOLONG!"
       category: AMAN
+      feedbackEdukasi: 
     - label: Diam, pura-pura tidak dengar sambil terus jalan
       category: RAGU
+      feedbackEdukasi: 'Diam saja membuat pelaku makin berani. Saat dipalak: BALIK
+        ARAH, lari ke tempat ramai, dan teriak minta tolong sekeras mungkin!'
     - label: Serahkan saja uang & HP biar selamat
       category: BAHAYA
+      feedbackEdukasi: 'Menyerahkan barang bukan solusi aman, pelaku bisa minta lebih.
+        Utamakan keselamatan: lari ke keramaian, teriak minta tolong, lalu lapor
+        ke orang dewasa atau polisi.'
   panelColor: {r: 0, g: 0, b: 0, a: 0.78}
   borderColor: {r: 1, g: 0.85, b: 0.3, a: 0}
   panelHeight: 220
@@ -3954,12 +4000,12 @@ MonoBehaviour:
   profileOnRight: 0
   speakerColor: {r: 1, g: 0.85, b: 0.3, a: 1}
   textColor: {r: 1, g: 1, b: 1, a: 1}
-  speakerFontSize: 26
-  textFontSize: 26
+  speakerFontSize: 30
+  textFontSize: 30
   typeSpeed: 0.0249
   continueHint: "\u25BC SPACE / Klik untuk lanjut"
   hintColor: {r: 1, g: 1, b: 1, a: 0.55}
-  hintFontSize: 16
+  hintFontSize: 18
   editHeadline: 
   editBody: 
   editProfile: {fileID: 0}
@@ -3972,9 +4018,9 @@ MonoBehaviour:
   useLayoutAsset: 0
   liveEditLayout: 1
   previewPanelInPlay: 0
-  dialogBoxSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
+  dialogBoxSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
   nameBannerSprite: {fileID: 0}
-  boxDialogSpritePath: sprites/UI day 1/8.png
+  boxDialogSpritePath: sprites/UI day 1/box dialog.png
   panelCenterX: 0.5
   panelCenterY: 0.16
   panelWidthFrac: 0.972
@@ -3984,7 +4030,7 @@ MonoBehaviour:
   portraitSizeW: 0.189
   portraitSizeH: 0.56
   portraitPreserveAspect: 0
-  bannerAnchorMin: {x: 0.03, y: 0.1}
+  bannerAnchorMin: {x: 0.03, y: 0.11}
   bannerAnchorMax: {x: 0.253, y: 0.333}
   textAnchorMin: {x: 0.31, y: 0.55}
   textAnchorMax: {x: 0.84, y: 0.76}
@@ -4249,12 +4295,12 @@ MonoBehaviour:
   useLayoutAsset: 0
   liveEditLayout: 1
   overlayBgSprite: {fileID: 3465286685962602723, guid: a143290067151e1428c2e4f650d21e19, type: 3}
-  boxDialogSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
+  boxDialogSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
   overlayBgSpritePath: sprites/UI day 1/6.png
-  boxDialogSpritePath: sprites/UI day 1/8.png
+  boxDialogSpritePath: sprites/UI day 1/box dialog.png
   nameBannerSprite: {fileID: 0}
-  portraitRara: {fileID: -307426207498796367, guid: b337f726c99b2184ba032db933c4af66, type: 3}
-  portraitNarasi: {fileID: -7771728774132427043, guid: 6809b27ca40283248be0310e4d5f4ef1, type: 3}
+  portraitRara: {fileID: 0}
+  portraitNarasi: {fileID: 0}
   panelCenterX: 0.5
   panelCenterY: 0.16
   panelWidthFrac: 0.972
@@ -4343,9 +4389,9 @@ MonoBehaviour:
   useLayoutAsset: 0
   liveEditLayout: 1
   previewPanelInPlay: 0
-  dialogBoxSprite: {fileID: 0}
+  dialogBoxSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
   nameBannerSprite: {fileID: 0}
-  boxDialogSpritePath: sprites/UI day 1/8.png
+  boxDialogSpritePath: sprites/UI day 1/box dialog.png
   panelCenterX: 0.5
   panelCenterY: 0.26
   panelWidthFrac: 0.94
@@ -4758,7 +4804,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1021030179
 Transform:
   m_ObjectHideFlags: 0
@@ -4768,7 +4814,7 @@ Transform:
   m_GameObject: {fileID: 1021030178}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 41.5, y: 13.66, z: 0.013367741}
+  m_LocalPosition: {x: 41.48, y: 13.75, z: 0.013367741}
   m_LocalScale: {x: 0.8320631, y: 0.8320631, z: 0.8320631}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5201,6 +5247,7 @@ MonoBehaviour:
     dilakukan orang lain ke tubuhmu?"
   vnLabelBoleh: "\u2713  BOLEH"
   vnLabelTidakBoleh: "\u2716  TIDAK BOLEH"
+  vnRingkasanLatarBelakang: {fileID: 0}
   waktuDetik: 15
   warnaTimer: {r: 1, g: 0.85, b: 0.3, a: 1}
   warnaTimerKritis: {r: 0.91, g: 0.3, b: 0.24, a: 1}
@@ -5209,21 +5256,27 @@ MonoBehaviour:
   - teks: Bahu
     jawabanBenar: AMAN
     alasan: 
+    latarBelakangDialog: {fileID: 0}
   - teks: Tangan
     jawabanBenar: AMAN
     alasan: 
+    latarBelakangDialog: {fileID: 0}
   - teks: Pipi
     jawabanBenar: AMAN
     alasan: 
+    latarBelakangDialog: {fileID: 0}
   - teks: Paha
     jawabanBenar: BAHAYA
     alasan: 
+    latarBelakangDialog: {fileID: 0}
   - teks: Perut
     jawabanBenar: BAHAYA
     alasan: 
+    latarBelakangDialog: {fileID: 0}
   - teks: Privat
     jawabanBenar: BAHAYA
     alasan: 
+    latarBelakangDialog: {fileID: 0}
   warnaZonaAman: {r: 0.1, g: 0.35, b: 0.22, a: 0.92}
   warnaZonaBahaya: {r: 0.4, g: 0.12, b: 0.12, a: 0.92}
   warnaBorderAman: {r: 0.45, g: 1, b: 0.65, a: 1}
@@ -5254,22 +5307,26 @@ MonoBehaviour:
   bonusAllBenar: 200
   tombolLanjutTeks: "\u25B6  Lanjut"
   warnaLanjut: {r: 0.18, g: 0.62, b: 0.32, a: 1}
-  bgFullscreenSprite: {fileID: 0}
+  bgFullscreenSprite: {fileID: -3041572006469940228, guid: 15f65649c3d5edd48895846e1140038e, type: 3}
   bgFullscreenPreserveAspect: 0
   narasiIntro:
   - pembicara: Narasi
     teks: Angkot terus melaju. Setelah kejadian tadi, Rara sudah pindah ke kursi
       lebih depan dan mencoba menenangkan napasnya.
+    latarBelakang: {fileID: 205346690734671178, guid: d259f1acb4205464a878501909e7879b, type: 3}
   - pembicara: Rara
     teks: "\"Untung aku tadi berani bersuara dan menjauh\u2026 tapi jantungku masih
       berdebar. Aku perlu mengalihkan pikiran sebentar.\""
+    latarBelakang: {fileID: -8560427625732031499, guid: 22ac599045e6f4c4b8c953cf6ca47cfb, type: 3}
   - pembicara: Narasi
     teks: "Rara mengeluarkan buku catatan PR Kesehatan dari tas. Kebetulan bab terakhirnya
       justru soal ini: \u201CKenali Batas Tubuhmu \u2014 Mana yang Boleh, Mana yang
       Tidak.\u201D"
+    latarBelakang: {fileID: -3041572006469940228, guid: 15f65649c3d5edd48895846e1140038e, type: 3}
   - pembicara: Rara
     teks: "\"Justru sekarang aku makin paham kenapa bab ini penting. Ayo aku pelajari
       baik-baik \u2014 siapa yang BOLEH dan TIDAK BOLEH menyentuhku.\""
+    latarBelakang: {fileID: -847378463913139771, guid: a33383d4fb1670e4cbd53a06d486c793, type: 3}
   narasiIntroAman: []
   narasiIntroRagu: []
   narasiIntroBahaya: []
@@ -5277,14 +5334,16 @@ MonoBehaviour:
   - pembicara: Narasi
     teks: "Angkot masih melaju menuju sekolah. Rara menutup buku catatannya \u2014
       kini ia lebih paham soal batas tubuhnya sendiri."
+    latarBelakang: {fileID: 3658575478555304099, guid: 3a10aa97a14f4c64ebe5989e388fb7e1, type: 3}
   - pembicara: Rara
     teks: '"Aku merasa lebih siap sekarang. Tapi aku tetap harus waspada sampai turun
       nanti."'
+    latarBelakang: {fileID: -1722425469356601906, guid: 65d5cd206d56a4e49828c8021aed68a0, type: 3}
   kecepatanKetikNarasi: 0.025
   delaySetelahKetikNarasi: 0.12
   bolehSkipKetikNarasi: 1
-  narasiBoxDialogSprite: {fileID: 0}
-  narasiBoxDialogSpritePath: sprites/UI day 1/8.png
+  narasiBoxDialogSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
+  narasiBoxDialogSpritePath: sprites/UI day 1/box dialog.png
   narasiNameBannerSprite: {fileID: 0}
   narasiPortraitRara: {fileID: 0}
   narasiPortraitNarasi: {fileID: 0}
@@ -5572,42 +5631,24 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slides:
   - backgroundColor: {r: 0.12, g: 0.14, b: 0.2, a: 1}
-    backgroundSprite: {fileID: 0}
+    backgroundSprite: {fileID: 7475898382159978542, guid: 648c8cc88ef7935469fee46e03ca4f3f, type: 3}
     illustration: {fileID: 0}
     title: 'Hari 3: Pulang Sekolah Saat Hujan'
-    text: 'Hujan deras mengguyur parkiran SMP.
-
-      Rara pulang sendirian sambil
-      menunggu ojol pesanannya.
-
-
-      Tapi orang asing yang kemarin mengiriminya
-
-      pesan
-      di HP tiba-tiba muncul langsung di depannya!'
+    text: '"Hari 3: Hujan di Parkiran": Hujan deras. Rara menuju parkiran. "Hei,
+      mau kuantar ojol?"'
     dialogSprite: {fileID: 0}
   - backgroundColor: {r: 0.18, g: 0.1, b: 0.12, a: 1}
-    backgroundSprite: {fileID: 0}
+    backgroundSprite: {fileID: -1420299480985945754, guid: d95a37d24c15ccd4fa59de6214ac67f4, type: 3}
     illustration: {fileID: 0}
     title: Si Bayangan Gelap
-    text: 'Ia menyamar jadi sopir ojol yang ramah
-
-      dan membujuk Rara agar mau
-      ikut naik.
-
-
-      "Ayo cepat, nanti kamu makin kehujanan!"
-
-      Padahal
-      Rara tidak pernah memesannya. Ini BAHAYA!'
+    text: '"Ancaman Grooming": Orang asing minta foto & rahasia. Ini GROOMING!'
     dialogSprite: {fileID: 0}
   - backgroundColor: {r: 0.1, g: 0.16, b: 0.14, a: 1}
-    backgroundSprite: {fileID: 0}
+    backgroundSprite: {fileID: 625546372236329482, guid: 1b62fd4654f6aff4b95194394fae5490, type: 3}
     illustration: {fileID: 0}
     title: Yang Perlu Rara Tahu
-    text: "\u25CF Jangan ikut orang asing walau ngaku ojol.\n\u25CF Cek dulu nama
-      & plat sebelum naik kendaraan apa pun.\n\u25CF Kalau dipaksa: BERSUARA KERAS
-      minta tolong!\n\u25CF Tekan PANIC BUTTON & lari ke orang dewasa terdekat."
+    text: 'Hadapi Si Bayangan Gelap": BERSUARA KERAS & tekan PANIC BUTTON! Minta
+      bantuan orang dewasa!'
     dialogSprite: {fileID: 0}
   globalDialogSprite: {fileID: 4113829005332862926, guid: 64f200f9fa47f254c8ef4d8a33f19e53, type: 3}
   panelPaddingH: 110
@@ -6044,11 +6085,11 @@ Transform:
   m_GameObject: {fileID: 1398656197}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -74.65447, y: 13.066747, z: 0.14457017}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 686459209}
+  m_Father: {fileID: 1897304800}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1398656199
 MonoBehaviour:
@@ -6066,7 +6107,7 @@ MonoBehaviour:
   statusKontak: online
   warnaHeader: {r: 0.05, g: 0.32, b: 0.27, a: 1}
   warnaTeksHeader: {r: 1, g: 1, b: 1, a: 1}
-  jamTampil: "06:45"
+  jamTampil: 06:45
   warnaChatBg: {r: 0.05, g: 0.12, b: 0.12, a: 1}
   warnaBubbleMasuk: {r: 0.2, g: 0.3, b: 0.35, a: 1}
   warnaTeksBubble: {r: 1, g: 1, b: 0.95, a: 1}
@@ -6404,39 +6445,46 @@ MonoBehaviour:
     text: '"Hei dek, bentar ya~!"'
     choices: []
   - speakerName: Rara (hati)
-    profile: {fileID: -307426207498796367, guid: b337f726c99b2184ba032db933c4af66, type: 3}
+    profile: {fileID: 0}
     text: Eh? Siapa ini? Rara nggak pernah lihat orang ini sebelumnya...
     choices: []
   - speakerName: Paman Baik
-    profile: {fileID: -1209331726834910066, guid: 9faab9d09b6eba44fb09370ec6e1e75c, type: 3}
+    profile: {fileID: 0}
     text: '"Mau permen nggak? Enak banget lho~
 
       Om punya banyak di warung,
       ikut bentar aja ya, deket kok! tuh warungya Om"'
     choices: []
   - speakerName: Rara (hati)
-    profile: {fileID: -621021955452869361, guid: 74e32d7b50454b44fa273c2384918263, type: 3}
+    profile: {fileID: 0}
     text: 'Tunggu... Rara nggak kenal orang ini sama sekali!
 
       Dia nawarin permen
       DAN mau ngajak Rara pergi... INI NGGAK BENER!'
     choices: []
   - speakerName: Paman Baik
-    profile: {fileID: -1209331726834910066, guid: 9faab9d09b6eba44fb09370ec6e1e75c, type: 3}
+    profile: {fileID: 0}
     text: '"Ayo dong, nggak usah malu-malu~ Sebentar aja kok!"'
     choices: []
   - speakerName: Rara
-    profile: {fileID: -621021955452869361, guid: 74e32d7b50454b44fa273c2384918263, type: 3}
+    profile: {fileID: 0}
     text: Gimana Rara harus merespons orang ini?
     choices:
     - label: '"NGGAK MAU! Aku nggak kenal Bapak!" (Lari ke tempat rame)'
       category: AMAN
+      feedbackEdukasi: 
     - label: '"Makasih Pak, tapi aku udah mau telat sekolah..."'
       category: RAGU
+      feedbackEdukasi: Alasan halus belum tentu cukup. Orang asing yang menawari
+        hadiah atau mengajak pergi = BAHAYA. Tolak dengan TEGAS dan langsung pergi
+        ke tempat ramai.
     - label: '"Boleh~ Om punya permen apa aja?"'
       category: BAHAYA
+      feedbackEdukasi: JANGAN tergiur permen atau hadiah dari orang asing! Itu cara
+        umum pelaku memancing anak. Selalu tolak dan cari orang dewasa yang kamu
+        percaya.
   - speakerName: Narasi
-    profile: {fileID: -7771728774132427043, guid: 6809b27ca40283248be0310e4d5f4ef1, type: 3}
+    profile: {fileID: 0}
     text: 'INGAT: Orang asing yang kasih hadiah atau ngajak pergi = TANDA BAHAYA!
 
       Selalu
@@ -6471,9 +6519,9 @@ MonoBehaviour:
   useLayoutAsset: 0
   liveEditLayout: 0
   previewPanelInPlay: 0
-  dialogBoxSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
+  dialogBoxSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
   nameBannerSprite: {fileID: 0}
-  boxDialogSpritePath: sprites/UI day 1/8.png
+  boxDialogSpritePath: sprites/UI day 1/box dialog.png
   panelCenterX: 0.5
   panelCenterY: 0.16
   panelWidthFrac: 0.972
@@ -6483,7 +6531,7 @@ MonoBehaviour:
   portraitSizeW: 0.189
   portraitSizeH: 0.56
   portraitPreserveAspect: 0
-  bannerAnchorMin: {x: 0.11, y: 0.11}
+  bannerAnchorMin: {x: 0.03, y: 0.11}
   bannerAnchorMax: {x: 0.253, y: 0.333}
   textAnchorMin: {x: 0.31, y: 0.55}
   textAnchorMax: {x: 0.84, y: 0.76}
@@ -6829,9 +6877,10 @@ MonoBehaviour:
   autoStart: 1
   modeVisualNovel: 1
   tampilkanOverlayJudul: 1
-  barisPertama: HARI 3
-  barisKedua: Hadapi Si Pengganggu
-  teksLokasi: "Parkiran SMP \u2014 Musim Hujan"
+  barisPertama: 
+  barisKedua: 
+  teksLokasi: 
+  spriteBackground: {fileID: -7532530524514247089, guid: 878fa132b1500a84eb92386f574c31f4, type: 3}
   warnaBackground: {r: 0, g: 0, b: 0.04, a: 0.92}
   warnaTeksJudul: {r: 0.95, g: 0.78, b: 0.1, a: 1}
   warnaTeksLokasi: {r: 1, g: 1, b: 1, a: 1}
@@ -6841,18 +6890,24 @@ MonoBehaviour:
   durasiTransisiOverlay: 0.5
   narasiPembuka: Hujan turun di parkiran SMP. Seorang kakak kelas berbadan besar
     menghadang langkah Rara sambil menyeringai...
+  narasiPembukaLatar: {fileID: -2119892185033388063, guid: 081b85a225242df43a5d8a9611e40ac5, type: 3}
   jalankanIntroPembuka: 1
   introBaris:
   - pembicara: Narasi
     teks: "\U0001F514 Bel pulang udah bunyi!\nTapi hujan deras banget hari ini...\nIbu
       nggak bisa jemput \u2014 Rara harus pulang sendiri."
+    latarBelakang: {fileID: 2272655550134216764, guid: 6a685b226c03e0643a18a057aba5bdd0, type: 3}
   - pembicara: Rara
     teks: "\"Yah... nggak apa-apa kok! \U0001F624\nAku udah pesen ojol lewat HP.\nTinggal
       jalan dikit ke parkiran deh.\""
+    latarBelakang: {fileID: 5006270658587043364, guid: af57c167a15618e4cb929b909bbd51fe, type: 3}
   - pembicara: Narasi
     teks: "Ayo temani Rara jalan ke parkiran!\nTAP layar atau TERIAK \u2014 makin
       keras teriak, makin cepat larinya! \U0001F3C3"
+    latarBelakang: {fileID: 4957353064270027203, guid: b1114d98c52363e41813f37072ab72d4, type: 3}
   jalankanJalanHujan: 1
+  jalanHujanLatar: {fileID: 7809452959315362820, guid: 4ca7f2ca187fab644af73d76109223c1, type: 3}
+  jalanSampaiLatar: {fileID: 3720759618738296611, guid: 6edbf5b78a1304547b2461c9f5db2be0, type: 3}
   jalanInstruksi: "\u2794 Jalan ke parkiran sekolah \u2014 TAP layar atau TERIAK
     biar lari! \U0001F3C3"
   jalanJarakMeter: 60
@@ -6870,12 +6925,14 @@ MonoBehaviour:
   - Mau jemput? Gratis kok, kasihan kamu basah!
   - "Cepat balas dong sayang \U0001F60D \U0001F4F7 Mana foto kamu?"
   chatTimerDetik: 6
+  chatAgresifLatar: {fileID: -6154610160813948671, guid: 57dae11d024268b4eacc791585771369, type: 3}
   chatAgresif: {fileID: 0}
   jalankanOjolPalsu: 1
   ojolNarasi: Di tepi jalan yang basah, sebuah ojek online berhenti. Pengemudinya
     melambai menawarkan tumpangan gratis ke sekolah.
   ojolNamaSpeaker: Ojek Online (?)
   ojolUcapan: '"Naik gratis aja, cepet sampai!"'
+  ojolLatarBelakang: {fileID: 8469701688131100735, guid: 6309241998caca84982062be626365be, type: 3}
   ojolPilihan:
   - label: "\U0001F4F8 Foto plat dulu, lalu tolak naik"
     kategori: AMAN
@@ -6883,17 +6940,20 @@ MonoBehaviour:
     bonusPoin: 100
     reaksi: "\u2713 Cerdas! Kamu foto plat sebagai bukti, lalu menolak dengan sopan.
       Jangan naik kendaraan orang asing."
+    latarReaksi: {fileID: 0}
   - label: '"Makasih, saya jalan kaki saja."'
     kategori: AMAN
     damage: 40
     bonusPoin: 0
     reaksi: "\u2713 Bagus, kamu menolak dengan tegas dan tetap waspada."
+    latarReaksi: {fileID: 0}
   - label: Naik saja, mumpung gratis
     kategori: BAHAYA
     damage: 40
     bonusPoin: 0
     reaksi: "\u2716 Bahaya! Jangan pernah naik kendaraan orang asing meski gratis.
       Kamu kehilangan 1 nyawa."
+    latarReaksi: {fileID: 0}
   ojolPlatPesanan: B 1234 XYZ
   ojolPlatAngkot: D 9087 KZ
   ojolBonusCekPlat: 100
@@ -6915,6 +6975,7 @@ MonoBehaviour:
       panicButton: 0
       hasil: 0
       warna: {r: 0.15, g: 0.68, b: 0.38, a: 1}
+      latarReaksi: {fileID: -7345409446623022714, guid: 2a5b97da3df3b8d489b2036aac35b268, type: 3}
     - label: '"E-emm... nggak usah deh..." (suara pelan)'
       kategori: RAGU
       reaksi: "\u26A0 Kurang tegas. Lain kali bersuara lebih lantang ya!"
@@ -6924,6 +6985,7 @@ MonoBehaviour:
       panicButton: 0
       hasil: 0
       warna: {r: 0.95, g: 0.61, b: 0.07, a: 1}
+      latarReaksi: {fileID: 0}
     - label: (diam, bingung mau gimana...)
       kategori: BAHAYA
       reaksi: "\u2716 DIAM ITU BAHAYA! Pelaku makin berani. Kamu kehilangan 1 nyawa."
@@ -6933,6 +6995,8 @@ MonoBehaviour:
       panicButton: 0
       hasil: 0
       warna: {r: 0.5, g: 0.2, b: 0.2, a: 1}
+      latarReaksi: {fileID: 324832361743115031, guid: 4cfc757a84fd5134f8eb90f22f102b7e, type: 3}
+    latarBelakang: {fileID: 6356932832111591747, guid: 7232d496d022a644c9cd84de902f303f, type: 3}
   - ucapanBoss: '"Sssst! Jangan teriak-teriak, nanti kamu yang dimarahin orang. Diam
       aja ya~"'
     pilihan:
@@ -6945,6 +7009,7 @@ MonoBehaviour:
       panicButton: 0
       hasil: 0
       warna: {r: 0.15, g: 0.68, b: 0.38, a: 1}
+      latarReaksi: {fileID: -8529018380199680317, guid: 68d643e7f5ea7a941ad4615be9fc89bf, type: 3}
     - label: '"T-tolong..." (hampir nggak kedengeran)'
       kategori: RAGU
       reaksi: "\u26A0 Suaramu kepelanan. TERIAK sekuat tenaga lain kali!"
@@ -6954,6 +7019,7 @@ MonoBehaviour:
       panicButton: 0
       hasil: 0
       warna: {r: 0.95, g: 0.61, b: 0.07, a: 1}
+      latarReaksi: {fileID: 0}
     - label: (beku di tempat, nggak bisa ngomong...)
       kategori: BAHAYA
       reaksi: "\u2716 Rara beku ketakutan. Pelaku makin mendesak. Kehilangan 1 nyawa."
@@ -6963,6 +7029,8 @@ MonoBehaviour:
       panicButton: 0
       hasil: 0
       warna: {r: 0.5, g: 0.2, b: 0.2, a: 1}
+      latarReaksi: {fileID: 0}
+    latarBelakang: {fileID: -2253496785789648786, guid: 944e15fcf13a5314882452d56e7b1dcf, type: 3}
   - ucapanBoss: '"Haha, emangnya siapa yang bakal percaya sama kamu? Nggak ada! Diam
       aja~"'
     pilihan:
@@ -6975,6 +7043,7 @@ MonoBehaviour:
       panicButton: 0
       hasil: 0
       warna: {r: 0.15, g: 0.68, b: 0.38, a: 1}
+      latarReaksi: {fileID: 4924217068742499391, guid: 279d6ccaf78cc604ca0006cfc5c3e37e, type: 3}
     - label: '"Emangnya... kenapa sih?" (masih ragu-ragu)'
       kategori: RAGU
       reaksi: "\u26A0 Jangan terpancing. Tetap tegas menolak ya!"
@@ -6984,6 +7053,7 @@ MonoBehaviour:
       panicButton: 0
       hasil: 0
       warna: {r: 0.95, g: 0.61, b: 0.07, a: 1}
+      latarReaksi: {fileID: 0}
     - label: (nangis diem-diem, nggak berani berbuat apa-apa)
       kategori: BAHAYA
       reaksi: "\u2716 Rara terlalu takut. Pelaku menang sesaat. Kehilangan 1 nyawa."
@@ -6993,6 +7063,8 @@ MonoBehaviour:
       panicButton: 0
       hasil: 0
       warna: {r: 0.5, g: 0.2, b: 0.2, a: 1}
+      latarReaksi: {fileID: 0}
+    latarBelakang: {fileID: -3742260545516824905, guid: 2cadd10d58fb7824fa32fb224afdadc4, type: 3}
   - ucapanBoss: '"Ini rahasia kita berdua ya. Kalau kamu ngadu, kamu sendiri yang
       bakal kena masalah!"'
     pilihan:
@@ -7005,6 +7077,7 @@ MonoBehaviour:
       panicButton: 0
       hasil: 0
       warna: {r: 0.15, g: 0.68, b: 0.38, a: 1}
+      latarReaksi: {fileID: 5262053036873401106, guid: b0ee62934c9e99349b76918d7949bded, type: 3}
     - label: '"Aku nggak tau harus ngapain..." (bingung banget)'
       kategori: RAGU
       reaksi: "\u26A0 Ingat: kamu boleh cerita ke orang dewasa yang dipercaya!"
@@ -7014,6 +7087,7 @@ MonoBehaviour:
       panicButton: 0
       hasil: 0
       warna: {r: 0.95, g: 0.61, b: 0.07, a: 1}
+      latarReaksi: {fileID: 0}
     - label: '"Mungkin... emang salah aku ya..." (mulai pasrah)'
       kategori: BAHAYA
       reaksi: "\u2716 Ini BUKAN salahmu! Jangan pasrah. Kehilangan 1 nyawa."
@@ -7023,7 +7097,10 @@ MonoBehaviour:
       panicButton: 0
       hasil: 0
       warna: {r: 0.5, g: 0.2, b: 0.2, a: 1}
+      latarReaksi: {fileID: 0}
+    latarBelakang: {fileID: 3904615935235552147, guid: 818434fe996f2c54c8d8535d73e18902, type: 3}
   konfrontasiUcapan: "\"Cepat dong! \U0001F620\""
+  konfrontasiLatarBelakang: {fileID: -4029320252234379514, guid: 05a30e05356841a4686ec9a897845d6c, type: 3}
   konfrontasiPilihan:
   - label: Diam saja (takut)
     kategori: BAHAYA
@@ -7035,6 +7112,7 @@ MonoBehaviour:
     panicButton: 0
     hasil: 0
     warna: {r: 0.5, g: 0.2, b: 0.2, a: 1}
+    latarReaksi: {fileID: -4394285431726822069, guid: fadd3a600c06253448b982404bd996cc, type: 3}
   - label: '"Makasih..." (ragu, suara pelan)'
     kategori: RAGU
     reaksi: "\u26A0 Kamu lolos, tapi terlalu ragu. Lain kali tolak dengan TEGAS,
@@ -7045,6 +7123,7 @@ MonoBehaviour:
     panicButton: 0
     hasil: 1
     warna: {r: 0.95, g: 0.61, b: 0.07, a: 1}
+    latarReaksi: {fileID: 0}
   - label: '"JANGAN DEKAT!" (TERIAK keras)'
     kategori: AMAN
     reaksi: "\u2713 HEBAT! Teriakanmu membuat dia kabur ketakutan. Kamu menjaga dirimu
@@ -7055,6 +7134,7 @@ MonoBehaviour:
     panicButton: 0
     hasil: 1
     warna: {r: 0.15, g: 0.68, b: 0.38, a: 1}
+    latarReaksi: {fileID: -5313993047957939806, guid: 05d8281aa65f49c4091b4ae9454bcb5d, type: 3}
   - label: "\U0001F6A8 PANIC BUTTON \u2014 lari & lapor satpam"
     kategori: LAPOR
     reaksi: "\u2713 LAPOR SUKSES! Satpam & guru datang, pria itu ditangkap. Kamu
@@ -7065,15 +7145,21 @@ MonoBehaviour:
     panicButton: 1
     hasil: 3
     warna: {r: 0.2, g: 0.62, b: 0.86, a: 1}
+    latarReaksi: {fileID: -7918139301468240726, guid: 6d7cb7513560d9746a12f600dd1ac70b, type: 3}
   voiceTimeoutDetik: 5
+  spriteTeriak: {fileID: 0}
+  teriakLatarBelakang: {fileID: 7098984372282767239, guid: 55ac4bf6ac5baa5419efc8e643607277, type: 3}
+  spriteTeriakUkuran: {x: 420, y: 520}
   panicLabel: "\U0001F6A8 PANIC BUTTON"
   panicNarasi: "\U0001F694 POLISI & SATPAM DATANG! Pria asing itu langsung ditangkap."
   panicAnimasiDurasi: 2.2
   achievementLapor: Pahlawan Diri Sendiri
   endingAmanNarasi: Rara berhasil menjaga dirinya dan sampai di sekolah dengan selamat.
     Hari ini ia jadi pahlawan!
+  endingAmanLatar: {fileID: 3360361735423547342, guid: bb3b8941381221c41890248bc7fa2467, type: 3}
   endingTraumaNarasi: "Rara terlalu takut untuk bertindak dan situasinya jadi berbahaya.
     Jangan menyerah \u2014 ayo pelajari lagi cara menjaga diri!"
+  endingTraumaLatar: {fileID: 6794081858117707393, guid: 1e191241c347a4149bc7b56dffaef0df, type: 3}
   endingTraumaJudul: "\U0001F494  GAME OVER"
   buatBackdrop: 1
   warnaBackdrop: {r: 0.1, g: 0.12, b: 0.18, a: 1}
@@ -7085,6 +7171,7 @@ MonoBehaviour:
   bossWarnaFallback: {r: 0.35, g: 0.1, b: 0.12, a: 1}
   bossMentalMax: 100
   gayaHalteDialog: {fileID: 0}
+  boxDialogSprite: {fileID: 0}
   portraitNarasi: {fileID: 0}
   portraitBoss: {fileID: 0}
   portraitRara: {fileID: 0}
@@ -7100,16 +7187,19 @@ MonoBehaviour:
       damage: 40
       bonusPoin: 0
       reaksi: "\u2713 Tegas! Si Bully kaget kamu berani menolak."
+      latarReaksi: {fileID: 0}
     - label: '"Eh... aku nggak bawa uang kok..."'
       kategori: RAGU
       damage: 20
       bonusPoin: 0
       reaksi: "\u26A0 Kurang tegas. Dia masih coba menekanmu."
+      latarReaksi: {fileID: 0}
     - label: Diam & serahkan uang jajan
       kategori: BAHAYA
       damage: 0
       bonusPoin: 0
       reaksi: "\u2716 Dia makin pede. Kamu kehilangan 1 nyawa."
+      latarReaksi: {fileID: 0}
   - namaRonde: "Ronde 2 \u2014 Ancaman"
     ucapanBully: '"Awas ya, kalau berani ngadu, kamu bakal nyesel!"'
     pilihan:
@@ -7118,16 +7208,19 @@ MonoBehaviour:
       damage: 40
       bonusPoin: 0
       reaksi: "\u2713 Mantap! Nyali Si Bully makin ciut."
+      latarReaksi: {fileID: 0}
     - label: '"I-iya deh, aku nggak ngadu..."'
       kategori: RAGU
       damage: 20
       bonusPoin: 0
       reaksi: "\u26A0 Dia merasa kamu bisa ditakut-takuti."
+      latarReaksi: {fileID: 0}
     - label: Menangis & lari sembunyi sendirian
       kategori: BAHAYA
       damage: 0
       bonusPoin: 0
       reaksi: "\u2716 Kamu makin terpojok. Kehilangan 1 nyawa."
+      latarReaksi: {fileID: 0}
   - namaRonde: "Ronde 3 \u2014 Cari Bantuan"
     ucapanBully: '"Mau apa kamu? Di sini cuma ada kita berdua!"'
     pilihan:
@@ -7136,22 +7229,25 @@ MonoBehaviour:
       damage: 50
       bonusPoin: 0
       reaksi: "\u2713 Hebat! Satpam datang. Si Bully kabur!"
+      latarReaksi: {fileID: 0}
     - label: '"Aku... aku tunggu temanku aja deh."'
       kategori: RAGU
       damage: 20
       bonusPoin: 0
       reaksi: "\u26A0 Lumayan, tapi kamu masih ragu cari bantuan."
+      latarReaksi: {fileID: 0}
     - label: Ikut saja ke tempat sepi
       kategori: BAHAYA
       damage: 0
       bonusPoin: 0
       reaksi: "\u2716 BAHAYA besar! Kamu kehilangan 1 nyawa."
+      latarReaksi: {fileID: 0}
   narasiBossKalah: Satpam dan guru piket datang! Si Bully langsung kabur ketakutan.
     Rara berhasil menjaga dirinya dengan berani dan cerdas.
   achievementMenang: Penakluk Si Bully
   eduJudul: "\U0001F4DA  KARTU EDUKASI \u2014 HARI 3"
   eduWarnaJudul: {r: 1, g: 0.85, b: 0.3, a: 1}
-  eduLatarSprite: {fileID: 0}
+  eduLatarSprite: {fileID: 2453971899653100909, guid: 9676d926479d11e4aabcedbf3f893494, type: 3}
   eduLatarWarna: {r: 0, g: 0, b: 0, a: 0.82}
   eduIsi: "\U0001F6E1 Menghadapi Perundungan (Bullying):\n\u2022 Tetap tenang & berani
     berkata \"TIDAK\" dengan tegas.\n\u2022 Jangan menyerahkan barang karena takut
@@ -7497,9 +7593,10 @@ MonoBehaviour:
   holdDuration: 4
   sfxUnlock: {fileID: 0}
   sortingOrder: 1050
-  tampilkanMenuPersisten: 1
+  tampilkanMenuPersisten: 0
   tombolMenuSize: {x: 84, y: 84}
   tombolMenuMargin: {x: 24, y: 90}
+  hormatiSafeArea: 1
   tombolMenuWarna: {r: 0.96, g: 0.65, b: 0.1, a: 0.95}
   menuPanelWarna: {r: 0.1, g: 0.08, b: 0.04, a: 0.97}
   menuJudul: "\U0001F3C6 LENCANA KAMU"
@@ -7552,10 +7649,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tampilkanMenu: 1
-  judulGame: RARA
-  subJudul: Jaga Dirimu!
+  judulGame: BERANI
+  subJudul: Body Education and Rights Awareness Network Interactive
   versiTeks: v1.0
-  latarSprite: {fileID: 0}
+  latarSprite: {fileID: 4918714862608618839, guid: 5580b5a17bad5364bb37adfc4e55895c, type: 3}
   latarWarnaAtas: {r: 0.09, g: 0.16, b: 0.31, a: 1}
   latarWarnaBawah: {r: 0.05, g: 0.09, b: 0.18, a: 1}
   warnaJudul: {r: 1, g: 0.85, b: 0.3, a: 1}
@@ -7838,14 +7935,14 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slides:
   - backgroundColor: {r: 0.69411767, g: 0.69411767, b: 0.69411767, a: 0}
-    backgroundSprite: {fileID: 4531911217713922426, guid: d1704ca67c0f7404883afd10bff6c314, type: 3}
+    backgroundSprite: {fileID: -3488003289054300884, guid: 13747e5be51e6eb4b9470c8f4b7992ac, type: 3}
     illustration: {fileID: 0}
     title: 'Hari 1: Jalan Kaki ke Sekolah'
     text: Pagi hari di sebuah jalan menuju sekolah. Rara, gadis 13 tahun berbaju
       ungu, bersiap berangkat ke SMP Harapan. "Hati-hati di jalan, Rara!" kata Ibu.
     dialogSprite: {fileID: 0}
   - backgroundColor: {r: 0.36, g: 0.63, b: 0.78, a: 0}
-    backgroundSprite: {fileID: 2637961653979121079, guid: 0b448fd6f28bbfb48a2498ceb040c12a, type: 3}
+    backgroundSprite: {fileID: -232070390949327782, guid: c90103ef72149624bb8e996f937662af, type: 3}
     illustration: {fileID: 0}
     title: Kenali Batas
     text: Di luar rumah, banyak orang lalu-lalang. Nggak semua orang asing bisa dipercaya!
@@ -7853,7 +7950,7 @@ MonoBehaviour:
       nyaman.
     dialogSprite: {fileID: 0}
   - backgroundColor: {r: 1, g: 1, b: 1, a: 0}
-    backgroundSprite: {fileID: 4171274831981721143, guid: 20ade8e839844d64eb1d9a74d69b4a26, type: 3}
+    backgroundSprite: {fileID: -7833834552866419639, guid: 87b19167c27a5c74bb3b7924bbae0e72, type: 3}
     illustration: {fileID: 0}
     title: Panduan Bermain
     text: "\u2190 \u2192 : Gerakkan Rara ke kiri / kanan, Shift + \u2190 \u2192 :
@@ -7929,6 +8026,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   forceShowOnDesktop: 1
   forceHide: 0
+  hormatiSafeArea: 1
   autoDetectByScreenSize: 1
   maxDiagonalInches: 8
   maxShortSidePixels: 900
@@ -8262,6 +8360,7 @@ Transform:
   - {fileID: 1983514267}
   - {fileID: 1920133116}
   - {fileID: 686988962}
+  - {fileID: 1398656198}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1897304801
@@ -8342,7 +8441,7 @@ MonoBehaviour:
   kecepatanKetik: 0.025
   bolehSkipKetik: 1
   modeVisualNovel: 1
-  vnPanelSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
+  vnPanelSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
   vnPanelTint: {r: 1, g: 1, b: 1, a: 1}
   portraitNarasi: {fileID: -7771728774132427043, guid: 6809b27ca40283248be0310e4d5f4ef1, type: 3}
   portraitRara: {fileID: -307426207498796367, guid: b337f726c99b2184ba032db933c4af66, type: 3}
@@ -8353,7 +8452,7 @@ MonoBehaviour:
   vnBoxAnchorMax: {x: 0.986, y: 0.3055}
   vnPortraitAnchorMin: {x: 0.0455, y: 0.304}
   vnPortraitAnchorMax: {x: 0.2345, y: 0.864}
-  vnNamaAnchorMin: {x: 0.11, y: 0.11}
+  vnNamaAnchorMin: {x: 0.03, y: 0.11}
   vnNamaAnchorMax: {x: 0.253, y: 0.333}
   vnTeksAnchorMin: {x: 0.31, y: 0.55}
   vnTeksAnchorMax: {x: 0.84, y: 0.76}
@@ -8367,72 +8466,72 @@ MonoBehaviour:
       melihat seluruh isi angkot.
     gambar: {fileID: 0}
     tintGambar: {r: 1, g: 1, b: 1, a: 1}
-    latarSprite: {fileID: 0}
+    latarSprite: {fileID: -7411493256031655803, guid: d6fb1f53bf99cc940aa044494afcec55, type: 3}
   - speaker: Narasi
     narasi: Seorang pria asing yang tadi duduk di bangku belakang berdiri dan pindah,
       ikut merapat di sebelah Rara.
     gambar: {fileID: 0}
     tintGambar: {r: 1, g: 1, b: 1, a: 1}
-    latarSprite: {fileID: 0}
+    latarSprite: {fileID: -6933486151633370969, guid: 68fe8fa3c4f6ca64db0cbbc6a1ee6433, type: 3}
   - speaker: Pria Asing
     narasi: Sekolah di mana, dek? Sini deket om aja, biar nggak desak-desakan.
     gambar: {fileID: 0}
     tintGambar: {r: 1, g: 1, b: 1, a: 1}
-    latarSprite: {fileID: 0}
+    latarSprite: {fileID: -1869740371117246580, guid: aa0baabfad153de499182489c77a989f, type: 3}
   - speaker: Narasi
     narasi: "Tangan pria itu menyentuh bahu Rara! Tapi Pak Supir ada tepat di depan
       \u2014 Rara tahu ia bisa segera minta tolong."
     gambar: {fileID: 0}
     tintGambar: {r: 1, g: 1, b: 1, a: 1}
-    latarSprite: {fileID: 0}
+    latarSprite: {fileID: 5863046750962480556, guid: fdb8199a778971447a14eb75b9e4e4d3, type: 3}
   panelIntroRagu:
   - speaker: Narasi
     narasi: Rara duduk berdesakan di tengah, terhimpit di antara ibu-ibu yang membawa
       belanjaan.
     gambar: {fileID: 0}
     tintGambar: {r: 1, g: 1, b: 1, a: 1}
-    latarSprite: {fileID: 0}
+    latarSprite: {fileID: -6648975094569848518, guid: a5bbc4726535da147b83ed82984d530b, type: 3}
   - speaker: Narasi
     narasi: Dari bangku belakang, seorang pria asing memaksakan diri duduk di sela
       sempit, merapat ke sisi Rara.
     gambar: {fileID: 0}
     tintGambar: {r: 1, g: 1, b: 1, a: 1}
-    latarSprite: {fileID: 0}
+    latarSprite: {fileID: -2042959868181606280, guid: b20362ec648bfdd4691b654bc142dead, type: 3}
   - speaker: Pria Asing
     narasi: Geser dikit dong, dek. Biar om bisa duduk dekat kamu.
     gambar: {fileID: 0}
     tintGambar: {r: 1, g: 1, b: 1, a: 1}
-    latarSprite: {fileID: 0}
+    latarSprite: {fileID: 5315013776672538971, guid: e8db023058ae7044a92c0e7b6f855c89, type: 3}
   - speaker: Narasi
     narasi: Tangan pria itu menyentuh bahu Rara! Ibu-ibu di sekitar mulai melirik,
       tapi Rara terjepit dan susah bergerak.
     gambar: {fileID: 0}
     tintGambar: {r: 1, g: 1, b: 1, a: 1}
-    latarSprite: {fileID: 0}
+    latarSprite: {fileID: -7689920678912819038, guid: a342b0602bfcafb4aa276e95a4b5089d, type: 3}
   panelIntroBahaya:
   - speaker: Narasi
     narasi: Rara duduk sendirian di pojok belakang yang sepi. Tak ada penumpang lain
       di dekatnya.
     gambar: {fileID: 0}
     tintGambar: {r: 1, g: 1, b: 1, a: 1}
-    latarSprite: {fileID: 0}
+    latarSprite: {fileID: 5850224563387442347, guid: 850d10521c40720459fc697fecc6bbab, type: 3}
   - speaker: Narasi
     narasi: Pria asing yang sejak tadi memperhatikan Rara kini duduk persis di sebelahnya.
       Tak ada seorang pun yang melihat.
     gambar: {fileID: 0}
     tintGambar: {r: 1, g: 1, b: 1, a: 1}
-    latarSprite: {fileID: 0}
-  - speaker: Pria Asing
-    narasi: Tenang, dek... om temani kamu sampai sekolah ya. Deket-deket om aja.
-    gambar: {fileID: 0}
-    tintGambar: {r: 1, g: 1, b: 1, a: 1}
-    latarSprite: {fileID: 0}
+    latarSprite: {fileID: 7243133491323498955, guid: 609eb95e0dc402b4ea31947b7ecb9870, type: 3}
   - speaker: Narasi
     narasi: "Tangan pria itu langsung menyentuh bahu Rara! Pojok ini jauh dari Pak
       Supir \u2014 Rara harus berani bertindak sendiri."
     gambar: {fileID: 0}
     tintGambar: {r: 1, g: 1, b: 1, a: 1}
-    latarSprite: {fileID: 0}
+    latarSprite: {fileID: 1278920308032690373, guid: 40f182bf36d111a448903cf9d7f2603e, type: 3}
+  - speaker: Pria Asing
+    narasi: Tenang, dek... om temani kamu sampai sekolah ya. Deket-deket om aja.
+    gambar: {fileID: 0}
+    tintGambar: {r: 1, g: 1, b: 1, a: 1}
+    latarSprite: {fileID: 3471350065484837915, guid: feff723dc68ace740930ab9eafe75896, type: 3}
   judulPilihan: Bahumu disentuh! Apa yang Rara lakukan?
   warnaAman: {r: 0.15, g: 0.68, b: 0.38, a: 1}
   warnaRagu: {r: 0.95, g: 0.62, b: 0.07, a: 1}
@@ -8444,7 +8543,7 @@ MonoBehaviour:
       TIDAK!\nSemua penumpang menoleh ke arah pria itu. Sekarang lanjut: PERGI (pindah)
       & CERITA (lapor Pak Supir)."
     gambarReaksi: {fileID: 0}
-    latarReaksi: {fileID: 0}
+    latarReaksi: {fileID: -9191950684967478411, guid: 8269cc81795eff1498041c11c7f51e04, type: 3}
     kurangiNyawa: 0
     lanjutLapor: 1
   - label: Geser menjauh diam-diam
@@ -8453,7 +8552,7 @@ MonoBehaviour:
       saja belum cukup. Ingat 3 kata sakti: TIDAK (bersuara tegas) \u2014 PERGI (pindah)
       \u2014 CERITA (lapor Pak Supir)!"
     gambarReaksi: {fileID: 0}
-    latarReaksi: {fileID: 0}
+    latarReaksi: {fileID: 4633351786137793223, guid: da187c543f28a084ea1cc48803658267, type: 3}
     kurangiNyawa: 0
     lanjutLapor: 0
   - label: Diam saja karena takut
@@ -8462,7 +8561,7 @@ MonoBehaviour:
       1 nyawa.\nDiam bukan salahmu \u2014 tapi kamu BISA melindungi diri. Lakukan
       3 kata sakti: TIDAK \u2014 PERGI \u2014 CERITA (lapor Pak Supir)!"
     gambarReaksi: {fileID: 0}
-    latarReaksi: {fileID: 0}
+    latarReaksi: {fileID: 5982054583029589115, guid: 74f36bf0ccc5e2f469c6e73480042595, type: 3}
     kurangiNyawa: 1
     lanjutLapor: 0
   panelLapor:
@@ -8471,19 +8570,19 @@ MonoBehaviour:
       pria itu. (Itu kata sakti kedua: PERGI.)'
     gambar: {fileID: 0}
     tintGambar: {r: 1, g: 1, b: 1, a: 1}
-    latarSprite: {fileID: 0}
+    latarSprite: {fileID: 2522362200696882848, guid: 80001744e40dc894eaf546bc1206fecf, type: 3}
   - speaker: Rara
     narasi: "Aku sudah bersuara dan menjauh. Tapi dia masih satu angkot denganku
       \u2014 aku harus tetap siaga sampai turun."
     gambar: {fileID: 0}
     tintGambar: {r: 1, g: 1, b: 1, a: 1}
-    latarSprite: {fileID: 0}
+    latarSprite: {fileID: -3018959765559948573, guid: 387740b62e27cb74da755e868d5bbc4a, type: 3}
   panelSampaiSekolah: []
   tombolLanjutTeks: "\u25B6  Lanjut"
   warnaLanjut: {r: 0.2, g: 0.62, b: 0.86, a: 1}
   aktifkanVoiceMeter: 1
   kategoriPemicu: AMAN
-  gunakanMikrofon: 0
+  gunakanMikrofon: 1
   sensitivitasMic: 12
   ambangKuning: 0.5
   ambangMerah: 0.8
@@ -8731,8 +8830,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 336527801
-  m_SortingLayer: 2
+  m_SortingLayerID: -883599925
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: 1217519457885500660, guid: c4502c473b94d53428b9c5bfa07c934e, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -8898,7 +8997,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   slides:
   - backgroundColor: {r: 0.91, g: 0.72, b: 0.43, a: 0}
-    backgroundSprite: {fileID: -6423173607572281017, guid: 924b469313a626e45ac6488049074597, type: 3}
+    backgroundSprite: {fileID: -771712450127645301, guid: 4f6e3aa12b5f4444c89cd0b039cbfa8e, type: 3}
     illustration: {fileID: 0}
     title: 'Hari 2: Naik Angkot ke Sekolah'
     text: 'Siang hari. Rara menunggu angkot di halte untuk berangkat ke sekolah.
@@ -8907,14 +9006,14 @@ MonoBehaviour:
       angkot yang ramai penumpang, ya!" pesan Ibu sebelum berangkat.'
     dialogSprite: {fileID: 0}
   - backgroundColor: {r: 0.78, g: 0.47, b: 0.25, a: 0}
-    backgroundSprite: {fileID: 69702660939866224, guid: f3ec38fe0a9f5cb49916a8b726c170fe, type: 3}
+    backgroundSprite: {fileID: 371752947975569338, guid: 26c142391111e6641b5772c15f4055c0, type: 3}
     illustration: {fileID: 0}
     title: Batas Tubuh & Dunia Digital
     text: Di dalam angkot, ada penumpang yang berperilaku mencurigakan. Selain itu,
       HP Rara tiba-tiba menerima pesan dari nomor tak dikenal.
     dialogSprite: {fileID: 0}
   - backgroundColor: {r: 0.55, g: 0.37, b: 0.24, a: 0}
-    backgroundSprite: {fileID: -2680967194326662338, guid: 996351a161b83ba4ead9de5281d5963b, type: 3}
+    backgroundSprite: {fileID: 1328657904472760768, guid: 52799330135485c409d8f6bf7ee4adbd, type: 3}
     illustration: {fileID: 0}
     title: Yang Perlu Rara Tahu
     text: "\u25CF Tubuhmu adalah milikmu \u2014 tidak ada yang boleh menyentuh sembarangan.\n\u25CF
@@ -9611,16 +9710,23 @@ MonoBehaviour:
   deskripsiWarna: {r: 1, g: 1, b: 0.92, a: 0.95}
   deskripsiUkuran: 22
   tampilkanNarasiPembuka: 1
-  vnPanelSprite: {fileID: 8288426215254106694, guid: 0ccc85ef2be40fa4897dd6cb20e3e829, type: 3}
+  vnPanelSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
   vnPortraitNarasi: {fileID: -7771728774132427043, guid: 6809b27ca40283248be0310e4d5f4ef1, type: 3}
   vnPortraitRara: {fileID: -307426207498796367, guid: b337f726c99b2184ba032db933c4af66, type: 3}
   vnPortraitPria: {fileID: 0}
-  vnLatarSprite: {fileID: 0}
+  vnLatarSprite: {fileID: 6052365454412321436, guid: dfd2d65f63fde224f9636367b0d74ffc, type: 3}
+  vnLatarPerBaris:
+  - {fileID: 6052365454412321436, guid: dfd2d65f63fde224f9636367b0d74ffc, type: 3}
+  - {fileID: -2595013401966585686, guid: 9109ba43fbace4642af0646d02ab7020, type: 3}
+  - {fileID: -2752389556691614933, guid: fe6020f4e12281f4dbd31708c32c80d9, type: 3}
+  - {fileID: 4300292956719983036, guid: c42530d43e7308a439c6d54e0dc1eb98, type: 3}
+  - {fileID: -2898693556219010228, guid: e5aeb5c23956a3d4fad96346b3ab1e7d, type: 3}
+  - {fileID: 1689560514380081012, guid: fb5910ce28252bb41956f326c884d326, type: 3}
   vnBoxAnchorMin: {x: 0.014, y: 0.0145}
   vnBoxAnchorMax: {x: 0.986, y: 0.3055}
   vnPortraitAnchorMin: {x: 0.0455, y: 0.304}
   vnPortraitAnchorMax: {x: 0.2345, y: 0.864}
-  vnNamaAnchorMin: {x: 0.11, y: 0.11}
+  vnNamaAnchorMin: {x: 0.03, y: 0.11}
   vnNamaAnchorMax: {x: 0.253, y: 0.333}
   vnTeksAnchorMin: {x: 0.31, y: 0.55}
   vnTeksAnchorMax: {x: 0.84, y: 0.76}
@@ -9632,6 +9738,9 @@ MonoBehaviour:
   vnTeksUkuran: 28
   vnPortraitPreserveAspect: 1
   vnHintTeks: "\u25BC  Ketuk / SPACE untuk lanjut"
+  vnAnimasiKetik: 1
+  vnKecepatanKetik: 0.02
+  vnBolehSkipKetik: 1
   waktuWindow: 20
   durasiTahan: 1.5
   teriakLabel: "\U0001F50A  TAHAN: TERIAK!"

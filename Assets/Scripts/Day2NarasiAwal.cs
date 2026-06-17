@@ -506,7 +506,7 @@ public class Day2NarasiAwal : MonoBehaviour
             if (_portImg != null)
             {
                 _portImg.sprite  = portrait;
-                _portImg.enabled = (portrait != null);
+                _portImg.enabled = false; // potret/sprite profil disembunyikan dari box dialog
                 if (portrait == null) _portImg.color = portraitFallbackWarna;
                 else                  _portImg.color = Color.white;
             }
@@ -653,6 +653,7 @@ public class Day2NarasiAwal : MonoBehaviour
         _portImg = portGO.AddComponent<Image>();
         _portImg.preserveAspect = portraitPreserveAspect;
         _portImg.color          = portraitFallbackWarna;
+        _portImg.enabled        = false; // potret/sprite profil disembunyikan dari box dialog
 
         // ── Banner nama (anchor 0–1 panel) ────────────────────────────────
         var bannerGO = new GameObject("BannerNama");

@@ -29,12 +29,13 @@ public class MainMenu : MonoBehaviour
     public bool tampilkanMenu = true;
 
     [Header("Identitas Game")]
-    public string judulGame = "RARA";
-    public string subJudul  = "Jaga Dirimu!";
+    public string judulGame = "BERANI";
+    public string subJudul  = "Body Education and Rights \nAwareness Network \nInteractive";
     public string versiTeks = "v1.0";
 
     [Header("Latar")]
-    [Tooltip("Sprite latar penuh layar (opsional). Kosong = gradien warna.")]
+    [Tooltip("Sprite latar penuh layar (opsional). Kosong = gradien warna.\n" +
+             "Isi field ini di Inspector untuk MENGGANTI latar belakang menu.")]
     public Sprite latarSprite;
     public Color latarWarnaAtas  = new Color(0.09f, 0.16f, 0.31f, 1f);
     public Color latarWarnaBawah = new Color(0.05f, 0.09f, 0.18f, 1f);
@@ -129,31 +130,39 @@ public class MainMenu : MonoBehaviour
         bgImg.raycastTarget = true; // blok klik ke layer di bawah
 
         // ── Kartu judul ──────────────────────────────────────────────────────
-        // Pakai anchor PECAHAN (proporsional terhadap tinggi layar) supaya tata
-        // letak tetap seimbang di berbagai rasio, bukan offset piksel tetap.
+        // Tata letak RATA TENGAH layar (judul, subjudul, dan stack tombol semua
+        // di-center horizontal). Anchor pakai pecahan tinggi/lebar layar agar
+        // tetap proporsional di berbagai rasio.
         var judul = MakeText(_root.transform, "Judul", judulGame, 120, warnaJudul, FontStyles.Bold);
+        judul.alignment = TextAlignmentOptions.Center;
         var jRT = judul.rectTransform;
-        jRT.anchorMin = jRT.anchorMax = new Vector2(0.5f, 0.82f);
+        jRT.anchorMin = jRT.anchorMax = new Vector2(0.5f, 0.84f);
         jRT.pivot     = new Vector2(0.5f, 0.5f);
-        jRT.anchoredPosition = Vector2.zero;
-        jRT.sizeDelta = new Vector2(1100f, 180f);
+        jRT.anchoredPosition = new Vector2(0f, 0f);
+        jRT.sizeDelta = new Vector2(900f, 170f);
 
-        var sub = MakeText(_root.transform, "SubJudul", subJudul, 54, warnaSubJudul, FontStyles.Bold);
+        var sub = MakeText(_root.transform, "SubJudul", subJudul, 42, warnaSubJudul, FontStyles.Bold);
+        sub.alignment = TextAlignmentOptions.Center;
         var sRT = sub.rectTransform;
-        sRT.anchorMin = sRT.anchorMax = new Vector2(0.5f, 0.70f);
+        sRT.anchorMin = sRT.anchorMax = new Vector2(0.5f, 0.72f);
         sRT.pivot     = new Vector2(0.5f, 0.5f);
-        sRT.anchoredPosition = Vector2.zero;
-        sRT.sizeDelta = new Vector2(1000f, 90f);
+        sRT.anchoredPosition = new Vector2(0f, 0f);
+        sRT.sizeDelta = new Vector2(1100f, 100f);
+        // Subtitle bisa berupa nama panjang (mis. kepanjangan BERANI) → auto-shrink
+        // ke ukuran yang muat dalam 2 baris.
+        sub.enableAutoSizing = true;
+        sub.fontSizeMin = 20f;
+        sub.fontSizeMax = 42f;
 
         // ── Tombol-tombol ───────────────────────────────────────────────────
-        // Dibungkus dalam container ber-VerticalLayoutGroup yang terpusat dengan
-        // tinggi otomatis (ContentSizeFitter). Jarak antar tombol selalu rata dan
-        // seluruh blok dijamin muat & seimbang di semua rasio layar.
+        // Dibungkus dalam container ber-VerticalLayoutGroup yang rata tengah dengan
+        // tinggi otomatis (ContentSizeFitter). Stack ditaruh sedikit di bawah
+        // subtitle supaya tidak saling tumpuk meski subtitle wrap menjadi 2 baris.
         var stack = NewUI("TombolStack", _root.transform);
         var stRT = stack.GetComponent<RectTransform>();
         stRT.anchorMin = stRT.anchorMax = new Vector2(0.5f, 0.5f);
         stRT.pivot     = new Vector2(0.5f, 0.5f);
-        stRT.anchoredPosition = new Vector2(0f, -90f);
+        stRT.anchoredPosition = new Vector2(0f, -130f);
         stRT.sizeDelta = new Vector2(460f, 0f);
 
         var vlg = stack.AddComponent<VerticalLayoutGroup>();
@@ -236,21 +245,21 @@ public class MainMenu : MonoBehaviour
     void BukaKontrol()
     {
         if (AudioManager.Instance != null) AudioManager.Instance.Click();
-        var card = BukaModal("\uD83C\uDFAE  CARA BERMAIN", 760f, 640f);
+        var card = BukaModal("\uD83C\uDFAE  CARA BERMAIN", 760f, 720f);
 
         string isi =
-            "<b>Komputer (Keyboard):</b>\n" +
-            "\u2022 <b>A / D</b> atau <b>\u2190 / \u2192</b>  \u2014  jalan\n" +
-            "\u2022 <b>Shift</b>  \u2014  lari\n" +
-            "\u2022 <b>Spasi</b> (tahan)  \u2014  TERIAK minta tolong\n" +
-            "\u2022 <b>Spasi / Klik</b>  \u2014  lanjut dialog\n" +
-            "\u2022 <b>Esc / P</b>  \u2014  jeda (pause)\n\n" +
-            "<b>HP / Tablet (Sentuh):</b>\n" +
-            "\u2022 Tombol panah kiri-bawah  \u2014  jalan\n" +
-            "\u2022 Tombol <b>LARI</b> & <b>TERIAK</b> kanan-bawah\n" +
-            "\u2022 Ketuk tombol pilihan untuk menjawab\n\n" +
-            "<b>Tujuanmu:</b>\n" +
-            "Jaga 3 hati \u2764, kumpulkan skor dengan memilih tindakan " +
+            "<b>KOMPUTER (Keyboard)</b>\n" +
+            "<b>Jalan</b>  :  A / D\n" +
+            "<b>Lari</b>  :  Shift\n" +
+            "<b>Teriak minta tolong</b>  :  Spasi (tahan)\n" +
+            "<b>Lanjut dialog</b>  :  Spasi / Klik\n" +
+            "<b>Jeda (pause)</b>  :  Esc / P\n\n" +
+            "<b>HP / Tablet (Sentuh)</b>\n" +
+            "<b>Jalan</b>  :  tombol panah kiri-bawah\n" +
+            "<b>Lari & Teriak</b>  :  tombol kanan-bawah\n" +
+            "<b>Menjawab</b>  :  ketuk tombol pilihan\n\n" +
+            "<b>Tujuanmu</b>\n" +
+            "Jaga 3 hati, kumpulkan skor dengan memilih tindakan " +
             "<color=#26AD61>AMAN</color>, dan belajar cara melindungi diri " +
             "dari situasi berbahaya. Berani <color=#F29D12>TERIAK</color> dan " +
             "<color=#339FDB>LAPOR</color> kalau merasa tidak aman!";
@@ -258,10 +267,16 @@ public class MainMenu : MonoBehaviour
         var teks = MakeText(card.transform, "Isi", isi, 26,
                             new Color(0.93f, 0.95f, 1f, 1f), FontStyles.Normal);
         teks.alignment = TextAlignmentOptions.TopLeft;
+        teks.lineSpacing = 14f;
+        // Auto-shrink agar seluruh isi selalu muat & tidak menimpa tombol TUTUP.
+        teks.enableAutoSizing = true;
+        teks.fontSizeMin = 18f;
+        teks.fontSizeMax = 26f;
         var tRT = teks.rectTransform;
         tRT.anchorMin = new Vector2(0f, 0f);
         tRT.anchorMax = new Vector2(1f, 1f);
-        tRT.offsetMin = new Vector2(44f, 96f);
+        // Batas bawah dinaikkan ke 130 supaya teks berhenti di atas tombol TUTUP.
+        tRT.offsetMin = new Vector2(44f, 130f);
         tRT.offsetMax = new Vector2(-44f, -96f);
 
         TombolTutup(card);
@@ -273,7 +288,7 @@ public class MainMenu : MonoBehaviour
     void BukaPengaturan()
     {
         if (AudioManager.Instance != null) AudioManager.Instance.Click();
-        var card = BukaModal("\u2699  PENGATURAN", 640f, 600f);
+        var card = BukaModal("\u2699  PENGATURAN", 640f, 700f);
 
         float y = -110f;
         LabelSeksi(card, "\uD83D\uDD0A  Volume", ref y);
@@ -301,25 +316,32 @@ public class MainMenu : MonoBehaviour
     void BukaTentang()
     {
         if (AudioManager.Instance != null) AudioManager.Instance.Click();
-        var card = BukaModal("\u2139  TENTANG", 700f, 520f);
+        var card = BukaModal("\u2139  TENTANG", 700f, 700f);
 
         string isi =
-            "<b>RARA: Jaga Dirimu!</b>\n\n" +
+            "<b>BERANI</b>\n" +
+            "<b>Body Education and Rights Awareness Network Interactive</b>\n\n" +
             "Game edukasi untuk mengenali situasi berbahaya " +
             "(orang asing, perundungan, pelecehan) dan belajar " +
             "mengambil keputusan yang tepat untuk melindungi diri.\n\n" +
             "Ingat 3 KATA SAKTI:\n" +
-            "<color=#F29D12><b>TIDAK!  \u2014  PERGI!  \u2014  CERITA!</b></color>\n\n" +
-            "\uD83C\uDD98  Nomor Darurat:\n" +
-            "Polisi 110   \u2022   Hotline Anak 129   \u2022   KPAI 021-31901556";
+            "<color=#F29D12><b>TIDAK!   PERGI!   CERITA!</b></color>\n\n" +
+            "Nomor Darurat:\n" +
+            "Polisi 110   /   Hotline Anak 129   /   KPAI 021-31901556";
 
         var teks = MakeText(card.transform, "Isi", isi, 26,
                             new Color(0.93f, 0.95f, 1f, 1f), FontStyles.Normal);
         teks.alignment = TextAlignmentOptions.Top;
+        teks.lineSpacing = 12f;
+        // Auto-shrink agar seluruh isi selalu muat & tidak menimpa tombol TUTUP.
+        teks.enableAutoSizing = true;
+        teks.fontSizeMin = 18f;
+        teks.fontSizeMax = 26f;
         var tRT = teks.rectTransform;
         tRT.anchorMin = new Vector2(0f, 0f);
         tRT.anchorMax = new Vector2(1f, 1f);
-        tRT.offsetMin = new Vector2(44f, 96f);
+        // Batas bawah dinaikkan ke 130 supaya teks berhenti di atas tombol TUTUP.
+        tRT.offsetMin = new Vector2(44f, 130f);
         tRT.offsetMax = new Vector2(-44f, -96f);
 
         TombolTutup(card);
@@ -612,7 +634,7 @@ public class MainMenu : MonoBehaviour
         tmp.color     = warna;
         tmp.fontStyle = gaya;
         tmp.alignment = TextAlignmentOptions.Center;
-        tmp.enableWordWrapping = true;
+        tmp.textWrappingMode = TextWrappingModes.Normal;
         tmp.raycastTarget = false;
         if (fontAsset != null) tmp.font = fontAsset;
         return tmp;

@@ -154,11 +154,16 @@ public class PrologScreen : MonoBehaviour
     /// pada urutan Awake/Start antar MonoBehaviour.
     public static bool prologDone = false;
 
+    /// True selama layar prolog sedang ditampilkan. Dibaca UI lain (mis.
+    /// tombol lencana AchievementPopup) agar menyembunyikan diri saat prolog tampil.
+    public static bool SedangTampil = false;
+
     // ══════════════════════════════════════════════════════════════════════
     void Start()
     {
         // Reset flag setiap kali scene dimuat ulang
         prologDone = false;
+        SedangTampil = false;
 
 #if UNITY_EDITOR
         // Pastikan sprite dialog ter-assign meski lupa di Inspector
@@ -180,6 +185,7 @@ public class PrologScreen : MonoBehaviour
 
         BuildUI();
         ShowSlide(0);
+        SedangTampil = true;
     }
 
     void Update()
@@ -291,6 +297,7 @@ public class PrologScreen : MonoBehaviour
 
         // Set flag SEBELUM invoke — Day1Controller memantau flag ini via WaitUntil
         prologDone = true;
+        SedangTampil = false;
 
         onPrologEnd?.Invoke();
 

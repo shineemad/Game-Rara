@@ -55,6 +55,11 @@ public class VoiceMeter : MonoBehaviour
     public int  sampleRate    = 22050;
     [Tooltip("Jumlah sampel yang dibaca per frame untuk hitung RMS")]
     public int  sampleWindow  = 512;
+    [Tooltip("Penguat (gain) sinyal mikrofon. Naikkan bila teriak ke mic tidak terdeteksi\n" +
+             "(voice-driven kurang sensitif). 1 = tanpa penguat. Default 4 supaya teriak\n" +
+             "asli mudah mencapai zona MERAH (Loud).")]
+    [Range(1f, 20f)]
+    public float gainMic = 4f;
 
     [Header("Smoothing (0 = lambat, 1 = instan)")]
     [Range(0.01f, 1f)]
@@ -257,7 +262,7 @@ public class VoiceMeter : MonoBehaviour
 
         float sumKuadrat = 0f;
         foreach (float s in sampel) sumKuadrat += s * s;
-        return Mathf.Sqrt(sumKuadrat / sampel.Length);
+        return Mathf.Sqrt(sumKuadrat / sampel.Length) * gainMic;   // dikuatkan agar teriak mencapai zona MERAH
     }
 
     // ══════════════════════════════════════════════════════════════════════

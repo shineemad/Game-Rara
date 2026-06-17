@@ -35,6 +35,10 @@ public class NpcDialog : MonoBehaviour
         public string label    = "Pilihan...";
         [Tooltip("Kategori: AMAN | RAGU | BAHAYA")]
         public string category = "AMAN";
+        [TextArea(2, 5)]
+        [Tooltip("Dialog edukasi yang muncul HANYA jika pilihan ini SALAH (kategori RAGU/BAHAYA).\n" +
+                 "Kosongkan untuk tidak menampilkan edukasi.")]
+        public string feedbackEdukasi = "";
         /// Callback saat dipilih — set via kode (tidak muncul di Inspector)
         [System.NonSerialized] public System.Action onSelect;
     }
@@ -205,6 +209,8 @@ public class NpcDialog : MonoBehaviour
     private bool             _choiceProcessed;  // guard double-fire pilihan
     private bool             _ignoreNextAdvance;// blokir Advance() 1 frame setelah klik pilihan
     private System.Action    _playLinesCallback;// callback dari PlayLines()
+    private bool             _showingEdukasi;   // sedang menampilkan dialog edukasi pilihan salah
+    private string           _edukasiText = ""; // teks edukasi yang sedang diketik
     // Sprite yang sedang ditampilkan — PRIVATE, hanya diubah ShowLine().
     // Tidak ikut OnValidate sehingga Inspector tidak bisa menimpanya.
     private Sprite           _displayedProfile;
@@ -494,6 +500,7 @@ public class NpcDialog : MonoBehaviour
         _pendingChoices    = null;
         _choiceProcessed   = false;
         _ignoreNextAdvance = false;
+        _showingEdukasi    = false;
         if (choicesPanel != null) { Destroy(choicesPanel); choicesPanel = null; }
         currentIndex = 0;
         isPlaying    = true;
@@ -533,6 +540,27 @@ public class NpcDialog : MonoBehaviour
 
         // Panel pilihan aktif — harus klik tombol, bukan SPACE/klik sembarang
         if (choicesPanel != null && choicesPanel.activeSelf) return;
+
+        // SFX klik untuk setiap ketukan lanjut yang sah (skip ketik / maju baris).
+        AudioManager.Instance?.Click();
+
+        // Mode edukasi (pilihan salah): kotak sedang menampilkan narasi tambahan.
+        // Klik pertama = selesaikan ketikan, klik berikutnya = lanjut ke baris setelah pilihan.
+        if (_showingEdukasi)
+        {
+            if (isTyping)
+            {
+                if (typingCo != null) StopCoroutine(typingCo);
+                isTyping     = false;
+                textTMP.text = _edukasiText;
+                return;
+            }
+            _showingEdukasi = false;
+            currentIndex++;
+            if (currentIndex >= lines.Length) EndDialog();
+            else                              ShowLine(currentIndex);
+            return;
+        }
 
         if (isTyping)
         {
@@ -637,6 +665,7 @@ public class NpcDialog : MonoBehaviour
         _choiceButtons   = null;
         _voiceAmanButton = null;
         _voiceHoldTimer  = 0f;
+        _showingEdukasi  = false;
         if (choicesPanel != null) { Destroy(choicesPanel); choicesPanel = null; }
         panelRoot.SetActive(false);
         SetPlayerFrozen(false);
@@ -889,10 +918,22 @@ public class NpcDialog : MonoBehaviour
         else if (GameState.Instance != null)
         {
             // Fallback built-in: untuk dialog Inspector tanpa callback kustom
+            // SFX per kategori (AMAN/RAGU/BAHAYA) — callback kustom punya SFX sendiri.
+            AudioManager.Instance?.PlayKategori(c.category);
             GameState.Instance.AddChoice(GameState.Instance.day, c.label, c.category);
             if (c.category == "BAHAYA")
                 GameState.Instance.LoseLife();
             HUDManager.Instance?.Refresh();
+        }
+
+        // Dialog edukasi khusus pilihan SALAH (RAGU/BAHAYA): tampil di kotak yang
+        // sama sebelum melanjutkan ke baris berikutnya. currentIndex sengaja TIDAK
+        // dinaikkan di sini agar Advance() berikutnya melanjutkan ke baris setelah pilihan.
+        if (!string.IsNullOrEmpty(c.feedbackEdukasi) &&
+            (c.category == "RAGU" || c.category == "BAHAYA"))
+        {
+            TampilkanEdukasi(c.feedbackEdukasi);
+            return;
         }
 
         currentIndex++;
@@ -900,6 +941,20 @@ public class NpcDialog : MonoBehaviour
             EndDialog();
         else
             ShowLine(currentIndex);
+    }
+
+    // Tampilkan satu baris narasi edukasi (akibat pilihan salah) di kotak dialog.
+    void TampilkanEdukasi(string teks)
+    {
+        _showingEdukasi = true;
+        _edukasiText    = teks;
+        speakerTMP.text = "Narasi";
+        editHeadline    = "Narasi";
+        editBody        = teks;
+        _pendingChoices = null;
+        if (hintTMP != null) hintTMP.gameObject.SetActive(true);
+        if (typingCo != null) StopCoroutine(typingCo);
+        typingCo = StartCoroutine(TypeText(teks));
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -1095,7 +1150,7 @@ public class NpcDialog : MonoBehaviour
             Debug.LogWarning("[NpcDialog] profileImg NULL — UI belum dibangun? Panggil Play() dulu.");
             return;
         }
-        profileImg.enabled = true; // selalu aktif
+        profileImg.enabled = false; // potret/sprite profil disembunyikan dari box dialog
         profileImg.preserveAspect = portraitPreserveAspect;   // terapkan setiap ganti sprite
         if (spr != null)
         {
@@ -1251,6 +1306,7 @@ public class NpcDialog : MonoBehaviour
         profileImg = profileGO.AddComponent<Image>();
         profileImg.preserveAspect = portraitPreserveAspect;   // baca dari Inspector
         profileImg.raycastTarget  = false;
+        profileImg.enabled        = false; // potret/sprite profil disembunyikan dari box dialog
 
         if (hasBox)
         {

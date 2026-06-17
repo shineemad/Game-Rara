@@ -181,6 +181,9 @@ public class Day1SummaryScreen : MonoBehaviour
     public string lanjutSceneName = "Day2";
 
     // ── runtime ───────────────────────────────────────────────────────────
+    // TRUE selama layar ringkasan Hari 1 tampil → dipakai PauseMenu untuk
+    // menyembunyikan tombol pause (sama seperti saat prolog/intro tampil).
+    public static bool SedangTampil = false;
     private bool       _tampil;
     private GameObject _canvasGO;
     private Sprite     _roundedRectSprite;
@@ -195,6 +198,7 @@ public class Day1SummaryScreen : MonoBehaviour
     void OnDestroy()
     {
         if (Instance == this) Instance = null;
+        SedangTampil = false;
     }
 
     void Start()
@@ -223,6 +227,7 @@ public class Day1SummaryScreen : MonoBehaviour
         if (_canvasGO != null) Destroy(_canvasGO);
         _canvasGO = null;
         _tampil   = false;
+        SedangTampil = false; // tampilkan kembali tombol pause
 
         if (freezePlayerSaatTampil)
         {
@@ -244,8 +249,12 @@ public class Day1SummaryScreen : MonoBehaviour
             if (d1 != null) d1.FreezePlayer();
         }
 
+        SedangTampil = true; // sembunyikan tombol pause selama ringkasan tampil
+
         if (sfxMuncul != null)
             AudioManager.Instance?.sfxSource?.PlayOneShot(sfxMuncul);
+        else
+            AudioManager.Instance?.PlayMunculKartu(); // pakai SFX AudioManager (seperti Hari 2)
 
         BuildUI();
 
@@ -802,7 +811,7 @@ public class Day1SummaryScreen : MonoBehaviour
         if (sfxKlikUlangi != null)
             AudioManager.Instance?.sfxSource?.PlayOneShot(sfxKlikUlangi);
         else
-            AudioManager.Instance?.Click();
+            AudioManager.Instance?.PlayKlikUlangi();
 
         Tutup();
 
@@ -836,7 +845,7 @@ public class Day1SummaryScreen : MonoBehaviour
         if (sfxKlikLanjut != null)
             AudioManager.Instance?.sfxSource?.PlayOneShot(sfxKlikLanjut);
         else
-            AudioManager.Instance?.Click();
+            AudioManager.Instance?.PlayKlikLanjut();
 
         Tutup();
 

@@ -296,6 +296,17 @@ public class MobileControls : MonoBehaviour
 
     void UpdateVisibility()
     {
+        // ── Hari 2 & 3 TIDAK butuh tombol controller (angkot & boss berbasis
+        // UI/dialog). Hancurkan canvas SEGERA (tiap frame) begitu bukan Hari 1,
+        // tanpa menunggu screenCheckInterval — supaya tombol tak sempat nongol. ──
+        if (canvas != null && GameState.Instance != null && GameState.Instance.day != 1)
+        {
+            Destroy(canvas.gameObject);
+            canvas = null;
+            leftHeld = rightHeld = runHeld = shoutBtnHeld = false;
+            return;
+        }
+
         // ── Cek ukuran layar berkala (untuk editor resize / orientation change) ──
         if (screenCheckInterval > 0f)
         {
