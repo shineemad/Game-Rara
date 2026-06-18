@@ -690,11 +690,9 @@ public class Day2Controller : MonoBehaviour
         var teksTmp = OvBuatTMP(boxGO.transform, "Teks", tMin, tMax, "", teksFs, teksCol, false);
         teksTmp.alignment = TextAlignmentOptions.TopLeft;
 
-        // ── Hint pojok kanan-bawah panel ──
-        OvBuatTMP(boxGO.transform, "Hint",
-            new Vector2(0.67f, 0.07f), new Vector2(0.97f, 0.19f),
-            "\u25BC  Ketuk lanjut", 16, new Color(1f, 1f, 1f, 0.55f), false)
-            .alignment = TextAlignmentOptions.MidlineRight;
+        // ── Tombol LANJUT (HANYA tombol ini yang melanjutkan dialog) ──
+        var tombolLanjut = TombolLanjutVN.Pasang(boxGO.transform, null,
+            "LANJUT  \u25B6", new Vector2(0.70f, 0.06f), new Vector2(0.975f, 0.26f));
 
         foreach (var b in baris)
         {
@@ -717,11 +715,12 @@ public class Day2Controller : MonoBehaviour
                 teksTmp.text = b.teks;
 
             bool lanjut = false; float timer = 0f;
+            tombolLanjut.Reset();
             while (!lanjut)
             {
                 timer += Time.deltaTime;
                 if (timer >= 0.25f &&
-                    (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
+                    (tombolLanjut.Konsumsi() || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
                     lanjut = true;
                 yield return null;
             }
@@ -741,14 +740,15 @@ public class Day2Controller : MonoBehaviour
         tmp.text = "";
         for (int i = 0; i < teks.Length; i++)
         {
-            // Klik/SPACE/ENTER saat mengetik = langsung tampil penuh.
-            if (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
+            // SPACE/ENTER saat mengetik = langsung tampil penuh (klik diabaikan).
+            if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
             {
                 tmp.text = teks;
                 yield break;
             }
 
             tmp.text += teks[i];
+            if (teks[i] != ' ') AudioManager.Instance?.PlayKetikHuruf();
             yield return new WaitForSeconds(detikPerHuruf);
         }
     }
@@ -779,20 +779,21 @@ public class Day2Controller : MonoBehaviour
             new Vector2(0.14f, 0.38f), new Vector2(0.86f, 0.62f),
             "", 34, Color.white, false);
 
-        OvBuatTMP(cGO.transform, "Hint",
-            new Vector2(0.2f, 0.27f), new Vector2(0.8f, 0.34f),
-            "\u25B6  Klik / tap untuk lanjut", 22, new Color(1f, 1f, 1f, 0.5f), false);
+        // ── Tombol LANJUT (HANYA tombol ini yang melanjutkan narasi) ──
+        var tombolLanjut = TombolLanjutVN.Pasang(cGO.transform, null,
+            "LANJUT  \u25B6", new Vector2(0.70f, 0.20f), new Vector2(0.88f, 0.30f));
 
         foreach (var t in baris)
         {
             tmp.text = t;
             bool lanjut = false;
             float timer = 0f;
+            tombolLanjut.Reset();
             while (!lanjut)
             {
                 timer += Time.deltaTime;
                 if (timer >= 0.25f &&
-                    (Input.GetMouseButtonDown(0) || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
+                    (tombolLanjut.Konsumsi() || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return)))
                     lanjut = true;
                 yield return null;
             }

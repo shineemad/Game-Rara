@@ -98,7 +98,7 @@ public class AngkotSentuhScene : MonoBehaviour
     public int   namaUkuran       = 26;
     public int   teksUkuran       = 26;
     [Tooltip("Teks hint pojok kanan-bawah.")]
-    public string hintTeks = "\u25BC  Klik / SPACE untuk lanjut";
+    public string hintTeks = "";
 
     [Header("Animasi Mengetik")]
     [Range(0f, 0.15f)] public float kecepatanKetik = 0.025f;
@@ -279,6 +279,7 @@ public class AngkotSentuhScene : MonoBehaviour
     private TextMeshProUGUI _namaTxt;
     private TextMeshProUGUI _narasiTxt;
     private TextMeshProUGUI _hintTxt;
+    private TombolLanjutVN _tombolLanjut;
     private GameObject _pilihanRow;
     private GameObject _lanjutBtn;
     private Sprite     _rounded;
@@ -412,16 +413,11 @@ public class AngkotSentuhScene : MonoBehaviour
         hrt.anchorMin = new Vector2(0f, 0f); hrt.anchorMax = new Vector2(1f, 0f);
         hrt.pivot = new Vector2(1f, 0f);
         hrt.offsetMin = new Vector2(34f, 10f); hrt.offsetMax = new Vector2(-34f, 40f);
+        _hintTxt.text = "";
 
-        // Tombol "lanjut transparan" full layar untuk klik maju (di belakang tombol pilihan)
-        var clickGO = new GameObject("ClickArea");
-        clickGO.transform.SetParent(boxGO.transform, false);
-        var clickImg = clickGO.AddComponent<Image>();
-        clickImg.color = new Color(0,0,0,0);
-        Stretch(clickImg.rectTransform);
-        var clickBtn = clickGO.AddComponent<Button>();
-        clickBtn.transition = Selectable.Transition.None;
-        clickBtn.onClick.AddListener(() => _lanjutDitekan = true);
+        // Tombol LANJUT (HANYA tombol ini yang melanjutkan; klik di luar diabaikan)
+        _tombolLanjut = TombolLanjutVN.Pasang(boxGO.transform, null, "LANJUT  \u25B6");
+        _tombolLanjut.GetComponent<Button>().onClick.AddListener(() => _lanjutDitekan = true);
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -483,16 +479,11 @@ public class AngkotSentuhScene : MonoBehaviour
         var hrt = _hintTxt.rectTransform;
         hrt.anchorMin = new Vector2(0.65f, 0.182f); hrt.anchorMax = new Vector2(0.946f, 0.302f);
         hrt.offsetMin = hrt.offsetMax = Vector2.zero;
+        _hintTxt.text = "";
 
-        // Area klik penuh box untuk maju
-        var clickGO = new GameObject("ClickArea");
-        clickGO.transform.SetParent(_dialogBoxGO.transform, false);
-        var clickImg = clickGO.AddComponent<Image>();
-        clickImg.color = new Color(0,0,0,0);
-        Stretch(clickImg.rectTransform);
-        var clickBtn = clickGO.AddComponent<Button>();
-        clickBtn.transition = Selectable.Transition.None;
-        clickBtn.onClick.AddListener(() => _lanjutDitekan = true);
+        // Tombol LANJUT (HANYA tombol ini yang melanjutkan; klik di luar diabaikan)
+        _tombolLanjut = TombolLanjutVN.Pasang(_dialogBoxGO.transform, null, "LANJUT  \u25B6");
+        _tombolLanjut.GetComponent<Button>().onClick.AddListener(() => _lanjutDitekan = true);
     }
 
     // Pilih portrait sesuai pembicara (mode VN). Kosong = sembunyikan.
@@ -608,6 +599,7 @@ public class AngkotSentuhScene : MonoBehaviour
         SetPortrait(p.speaker);
         _namaTxt.text = string.IsNullOrEmpty(p.speaker) ? "" : p.speaker.ToUpper();
         if (_hintTxt != null) _hintTxt.gameObject.SetActive(true);
+        if (_tombolLanjut != null) _tombolLanjut.gameObject.SetActive(true);
 
         // ketik teks
         _lanjutDitekan = false;
@@ -618,7 +610,9 @@ public class AngkotSentuhScene : MonoBehaviour
         // tunggu sampai selesai ketik + klik untuk lanjut
         while (!(_lanjutDitekan && _ketikSelesai))
         {
-            bool klik = _lanjutDitekan || Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0);
+            // Maju HANYA lewat area/tombol lanjut (ClickArea kotak dialog) atau Space.
+            // Klik sembarang di layar (di luar kotak dialog) TIDAK memajukan game.
+            bool klik = _lanjutDitekan || Input.GetKeyDown(KeyCode.Space);
             if (klik)
             {
                 if (!_ketikSelesai && bolehSkipKetik)
@@ -645,6 +639,7 @@ public class AngkotSentuhScene : MonoBehaviour
         for (int i = 0; i < teks.Length; i++)
         {
             _narasiTxt.text += teks[i];
+            if (teks[i] != ' ') AudioManager.Instance?.PlayKetikHuruf();
             yield return new WaitForSeconds(kecepatanKetik);
         }
         _ketikSelesai = true;
@@ -659,6 +654,7 @@ public class AngkotSentuhScene : MonoBehaviour
         if (_ketikCo != null) StopCoroutine(_ketikCo);
         _narasiTxt.text = judulPilihan;
         if (_hintTxt != null) _hintTxt.gameObject.SetActive(false);
+        if (_tombolLanjut != null) _tombolLanjut.gameObject.SetActive(false);
 
         // baris tombol pilihan
         _pilihanRow = new GameObject("PilihanRow");
@@ -702,6 +698,7 @@ public class AngkotSentuhScene : MonoBehaviour
     IEnumerator TampilkanTombolLanjut()
     {
         if (_hintTxt != null) _hintTxt.gameObject.SetActive(false);
+        if (_tombolLanjut != null) _tombolLanjut.gameObject.SetActive(false);
         bool lanjut = false;
         _lanjutBtn = BuatTombol(_canvasGO.transform, tombolLanjutTeks, warnaLanjut, () => lanjut = true);
         var rt = _lanjutBtn.GetComponent<RectTransform>();
@@ -725,6 +722,7 @@ public class AngkotSentuhScene : MonoBehaviour
         // sembunyikan elemen narasi utama selama mini-game
         if (gambarTeriak != null) SetGambar(gambarTeriak, Color.white);
         if (_hintTxt != null) _hintTxt.gameObject.SetActive(false);
+        if (_tombolLanjut != null) _tombolLanjut.gameObject.SetActive(false);
         _holdTeriak = false;
 
         // Sembunyikan kotak dialog VN supaya layar teriak bersih & fokus
@@ -863,9 +861,16 @@ public class AngkotSentuhScene : MonoBehaviour
         TambahTrigger(et, EventTriggerType.PointerUp,   () => _holdTeriak = false);
         TambahTrigger(et, EventTriggerType.PointerExit, () => _holdTeriak = false);
 
-        // mulai mikrofon kalau diaktifkan & tersedia
+        // Sumber suara VOICE-DRIVEN: utamakan VoiceMeter global (mic + izin +
+        // smoothing + fallback sudah dikelola terpusat & auto-spawn). Ini membuat
+        // meter benar-benar digerakkan suara mikrofon, konsisten dengan HalteDialog.
+        var voice = VoiceMeter.Instance;
+        bool voiceDriven = voice != null;
+
+        // Legacy: hanya pakai mic sendiri kalau VoiceMeter tidak tersedia DAN
+        // gunakanMikrofon di-ON (hindari konflik dua Microphone.Start di device sama).
         bool micAktif = false;
-        if (gunakanMikrofon && Microphone.devices != null && Microphone.devices.Length > 0)
+        if (!voiceDriven && gunakanMikrofon && Microphone.devices != null && Microphone.devices.Length > 0)
         {
             try
             {
@@ -876,7 +881,7 @@ public class AngkotSentuhScene : MonoBehaviour
             catch { micAktif = false; }
         }
         // Instruksi adaptif: Voice-Driven via mic, atau tahan tombol kalau mic tak ada.
-        ins.text = micAktif
+        ins.text = (voiceDriven || micAktif)
             ? "TERIAK \u201CJANGAN PEGANG SAYA!\u201D ke mikrofon sampai meter MERAH! (boleh tahan tombol)"
             : instruksiTeriak;
 
@@ -885,14 +890,24 @@ public class AngkotSentuhScene : MonoBehaviour
         while (waktuMerah < tahanDetikMerah)
         {
             float dt = Time.deltaTime;
-            if (micAktif)
+            // Tombol TAHAN / Space / klik selalu aktif sebagai pendukung & fallback,
+            // walau mic sedang membaca suara (mendorong meter ke penuh).
+            bool hold = _holdTeriak || Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0);
+
+            if (voiceDriven)
+            {
+                float lTarget = LevelDariVoiceMeter(voice);
+                if (hold) lTarget = Mathf.Max(lTarget, 1f);
+                level = Mathf.Lerp(level, lTarget, 1f - Mathf.Exp(-9f * dt));
+            }
+            else if (micAktif)
             {
                 float l = BacaLoudnessMic();
+                if (hold) l = Mathf.Max(l, 1f);
                 level = Mathf.Lerp(level, l, 1f - Mathf.Exp(-9f * dt));
             }
             else
             {
-                bool hold = _holdTeriak || Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0);
                 level += (hold ? isiRate : -surutRate) * dt;
             }
             level = Mathf.Clamp01(level);
@@ -1028,6 +1043,22 @@ public class AngkotSentuhScene : MonoBehaviour
         for (int i = 0; i < window; i++) sum += samples[i] * samples[i];
         float rms = Mathf.Sqrt(sum / window);
         return Mathf.Clamp01(rms * sensitivitasMic);
+    }
+
+    // Petakan level VoiceMeter global (threshold-relatif) ke skala meter ini
+    // (ambangKuning / ambangMerah) supaya zona Normal/Sedang/KERAS konsisten
+    // dengan suara mikrofon nyata. Mirror HalteDialog.LevelDariVoiceMeter.
+    float LevelDariVoiceMeter(VoiceMeter vm)
+    {
+        if (vm == null) return 0f;
+        float n = vm.NormalizedLevel;
+        if (n >= vm.thresholdLoud)
+            return Mathf.Lerp(ambangMerah, 1f, Mathf.InverseLerp(vm.thresholdLoud, 1f, n));
+        if (n >= vm.thresholdMedium)
+            return Mathf.Lerp(ambangKuning, ambangMerah, Mathf.InverseLerp(vm.thresholdMedium, vm.thresholdLoud, n));
+        if (n >= vm.thresholdNormal)
+            return Mathf.Lerp(0f, ambangKuning, Mathf.InverseLerp(vm.thresholdNormal, vm.thresholdMedium, n));
+        return 0f;
     }
 
     static void TambahTrigger(EventTrigger et, EventTriggerType tipe, Action aksi)

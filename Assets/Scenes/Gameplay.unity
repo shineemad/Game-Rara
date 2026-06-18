@@ -262,6 +262,7 @@ GameObject:
   m_Component:
   - component: {fileID: 32142767}
   - component: {fileID: 32142766}
+  - component: {fileID: 32142768}
   m_Layer: 0
   m_Name: mobileControl
   m_TagString: Untagged
@@ -320,6 +321,38 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &32142768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 32142765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 92cb4d522c9b2894688e3d0d2d6d4d49, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  teksOverride: 
+  font: {fileID: 0}
+  warnaTeks: {r: 0.95, g: 0.91, b: 0.78, a: 1}
+  gayaTeks: 1
+  fontMin: 16
+  fontMax: 24
+  jarakHuruf: 4
+  paddingTeksKiriBawah: {x: 22, y: 14}
+  paddingTeksKananAtas: {x: 22, y: 14}
+  sprite: {fileID: 0}
+  warnaIsi: {r: 1, g: 1, b: 1, a: 0}
+  pakaiOutline: 0
+  warnaOutline: {r: 0.55, g: 0.5, b: 0.36, a: 0.45}
+  jarakOutline: {x: 0.91, y: -1}
+  warnaSorot: {r: 1, g: 0.98, b: 0.88, a: 1}
+  warnaTekan: {r: 0.85, g: 0.82, b: 0.7, a: 1}
+  lebar: 300.9
+  tinggi: 116.5
+  marginKanan: 4
+  marginBawah: 30.9
 --- !u!1 &54444360
 GameObject:
   m_ObjectHideFlags: 0
@@ -729,7 +762,7 @@ MonoBehaviour:
   ukuranHint: 18
   kecepatanKetik: 0.025
   delaySetelahKetik: 0.15
-  teksHintLanjut: "\u25BC SPACE / Klik untuk lanjut"
+  teksHintLanjut: 
   bgSpritePath: sprites/UI day 2/BG day 2.png
 --- !u!1 &170856211
 GameObject:
@@ -1465,7 +1498,7 @@ Transform:
   m_GameObject: {fileID: 396292393}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.82, y: 0.26, z: -0.0252}
+  m_LocalPosition: {x: -4.82, y: 0.11, z: -0.0252}
   m_LocalScale: {x: 0.11685194, y: 0.11330549, z: 0.11330549}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1911,7 +1944,7 @@ MonoBehaviour:
   speakerFontSize: 32
   textFontSize: 26
   typeSpeed: 0.025
-  continueHint: "\u25BC SPACE / Klik untuk lanjut"
+  continueHint: 
   hintColor: {r: 1, g: 1, b: 1, a: 0.55}
   hintFontSize: 16
   editHeadline: 
@@ -2575,7 +2608,7 @@ MonoBehaviour:
   boxTextFontSize: 26
   boxHintFontSize: 16
   boxNamaUppercase: 1
-  boxHintText: "\u25BC SPACE / Klik untuk lanjut"
+  boxHintText: 
   kecepatanKetik: 0.025
   delaySetelahKetik: 0.1
   bolehSkipKetik: 1
@@ -2952,7 +2985,7 @@ Transform:
   m_GameObject: {fileID: 648612905}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 40.32, y: 14.4, z: 0.27075157}
+  m_LocalPosition: {x: 40.17, y: 14.37, z: 0.27075157}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -3656,7 +3689,7 @@ MonoBehaviour:
   bgReaksiBahaya: {fileID: 0}
   fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   kecepatanKetik: 0.02
-  hintLanjutTeks: "\u25BC  Klik untuk lanjut"
+  hintLanjutTeks: 
   hintLanjutWarna: {r: 1, g: 1, b: 1, a: 0.55}
   tampilkanBoxDialog: 1
   boxDialogSprite: {fileID: 0}
@@ -3867,10 +3900,10 @@ MonoBehaviour:
   playerTarget: {fileID: 396292394}
   triggerDistance: 4.53
   stopDistance: 1.35
-  stopSide: 21
+  stopSide: 0
   jarakBerhentiDariRara: 5.5
   jagaJarakMundur: 0
-  stopPoint: {fileID: 881222454}
+  stopPoint: {fileID: 0}
   frontOffset: 16.78
   shadowEnabled: 1
   shadowColor: {r: 0, g: 0, b: 0, a: 0.35}
@@ -4003,7 +4036,7 @@ MonoBehaviour:
   speakerFontSize: 30
   textFontSize: 30
   typeSpeed: 0.0249
-  continueHint: "\u25BC SPACE / Klik untuk lanjut"
+  continueHint: 
   hintColor: {r: 1, g: 1, b: 1, a: 0.55}
   hintFontSize: 18
   editHeadline: 
@@ -4374,7 +4407,7 @@ MonoBehaviour:
   speakerFontSize: 32
   textFontSize: 26
   typeSpeed: 0.025
-  continueHint: "\u25BC SPACE / Klik untuk lanjut"
+  continueHint: 
   hintColor: {r: 1, g: 1, b: 1, a: 0.55}
   hintFontSize: 16
   editHeadline: 
@@ -4804,7 +4837,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &1021030179
 Transform:
   m_ObjectHideFlags: 0
@@ -4814,7 +4847,7 @@ Transform:
   m_GameObject: {fileID: 1021030178}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 41.48, y: 13.75, z: 0.013367741}
+  m_LocalPosition: {x: 41.57, y: 13.86, z: 0.013367741}
   m_LocalScale: {x: 0.8320631, y: 0.8320631, z: 0.8320631}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5359,7 +5392,7 @@ MonoBehaviour:
   narasiUkuranNama: 30
   narasiUkuranTeks: 30
   narasiUkuranHint: 18
-  narasiTeksHint: "\u25BC SPACE / Klik untuk lanjut"
+  narasiTeksHint: 
   narasiPanelCenterX: 0.5
   narasiPanelCenterY: 0.16
   narasiPanelWidthFrac: 0.972
@@ -5677,7 +5710,7 @@ MonoBehaviour:
   btnWidth: 0.165
   btnHeight: 0.049
   btnBgColor: {r: 0.15294118, g: 0.09803922, b: 0, a: 0.65882355}
-  hintText: "\u25BC  SPACE / KLIK"
+  hintText: LANJUT
   hintAlign: 514
   advanceOnKeyboard: 1
   advanceOnMouseClick: 1
@@ -6504,7 +6537,7 @@ MonoBehaviour:
   speakerFontSize: 26
   textFontSize: 26
   typeSpeed: 0.0249
-  continueHint: "\u25BC SPACE / Klik untuk lanjut"
+  continueHint: 
   hintColor: {r: 1, g: 1, b: 1, a: 0.55}
   hintFontSize: 16
   editHeadline: 
@@ -7812,6 +7845,7 @@ MonoBehaviour:
   subtitleFormat: 'Skor Hari 1   |   Nyawa tersisa: {NYAWA}/{MAXNYAWA}'
   warnaSubtitle: {r: 1, g: 0.85, b: 0.25, a: 1}
   ukuranSubtitle: 22
+  tampilkanBintang: 1
   tampilkanBar: 1
   targetSkor: 300
   barBackgroundSprite: {fileID: 0}
@@ -8437,7 +8471,7 @@ MonoBehaviour:
   teksWarna: {r: 1, g: 1, b: 1, a: 1}
   namaUkuran: 26
   teksUkuran: 26
-  hintTeks: "\u25BC  Klik / SPACE untuk lanjut"
+  hintTeks: 
   kecepatanKetik: 0.025
   bolehSkipKetik: 1
   modeVisualNovel: 1
@@ -9186,6 +9220,7 @@ MonoBehaviour:
   subtitleFormat: 'Skor Hari 2   |   Nyawa tersisa: {NYAWA}/{MAXNYAWA}'
   warnaSubtitle: {r: 1, g: 0.85, b: 0.25, a: 1}
   ukuranSubtitle: 22
+  tampilkanBintang: 1
   tampilkanBar: 1
   targetSkor: 600
   barBackgroundColor: {r: 0.08, g: 0.25, b: 0.13, a: 1}
@@ -9737,7 +9772,7 @@ MonoBehaviour:
   vnTeksWarna: {r: 1, g: 1, b: 1, a: 1}
   vnTeksUkuran: 28
   vnPortraitPreserveAspect: 1
-  vnHintTeks: "\u25BC  Ketuk / SPACE untuk lanjut"
+  vnHintTeks: 
   vnAnimasiKetik: 1
   vnKecepatanKetik: 0.02
   vnBolehSkipKetik: 1
@@ -9889,7 +9924,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 318459ff34fea264b984a5afc84745a7, type: 3}
   - {fileID: 8300000, guid: 7377a6f2c808ed5459c61d2bed99dc4b, type: 3}
   - {fileID: 8300000, guid: 3555868f90092ff48b9ed3f8148457e6, type: 3}
-  sfxClick: {fileID: 8300000, guid: 4b2f91fe3768faf498efc47367389623, type: 3}
+  sfxClick: {fileID: 8300000, guid: 2d6dd392470b698459ac214b534b1404, type: 3}
   sfxCorrect: {fileID: 8300000, guid: c9289a4b388536a4588c7afe87d09b35, type: 3}
   sfxWrong: {fileID: 8300000, guid: 666ce0e77fdbec546bc45ac98f97e09d, type: 3}
   sfxBossHit: {fileID: 8300000, guid: 91daa1ec29de49c46ad0fa1f9a34d4f1, type: 3}
@@ -9903,6 +9938,7 @@ MonoBehaviour:
   sfxAchievement: {fileID: 8300000, guid: a183eec01f489134ca5ec0cc90cce020, type: 3}
   sfxChatMasuk: {fileID: 8300000, guid: 89cc2758df8041a4d8da9a916cf813b4, type: 3}
   sfxChatKetik: {fileID: 8300000, guid: 4b4ddb63aecb22a4d9de861be77d9366, type: 3}
+  sfxKetik: {fileID: 0}
   sfxAngkot: {fileID: 8300000, guid: 86eca3073980038429af33fe91727b0c, type: 3}
   sfxPeluit: {fileID: 8300000, guid: f347b65e86a7e364ea892c5d40d9106a, type: 3}
   sfxLangkah: {fileID: 0}

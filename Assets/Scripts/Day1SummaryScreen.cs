@@ -62,6 +62,10 @@ public class Day1SummaryScreen : MonoBehaviour
     public Color  warnaSubtitle  = new Color(1f, 0.85f, 0.25f, 1f);
     public int    ukuranSubtitle = 22;
 
+    [Header("Rating Bintang")]
+    [Tooltip("Tampilkan rating bintang 1-3 di bawah subtitle (ala game umumnya).")]
+    public bool tampilkanBintang = true;
+
     [Header("Progress Bar Skor")]
     [Tooltip("Tampilkan progress bar skor di bawah subtitle.")]
     public bool tampilkanBar = true;
@@ -379,8 +383,18 @@ public class Day1SummaryScreen : MonoBehaviour
         srt.offsetMax = new Vector2(-40f, -115f);
         subTmp.alignment = TextAlignmentOptions.Center;
 
-        // ── PROGRESS BAR SKOR ────────────────────────────────────────────
+        // ── RATING BINTANG ───────────────────────────────────────────────
         float barTopY = -170f;
+        if (tampilkanBintang)
+        {
+            int bintang = RatingBintang.HitungBintang(curScore, targetSkor);
+            RatingBintang.Bangun(kartu.transform, bintang,
+                new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(0f, barTopY), 50f, 16f, this);
+            barTopY -= 74f;
+        }
+
+        // ── PROGRESS BAR SKOR ────────────────────────────────────────────
         if (tampilkanBar)
         {
             BuatBarSkor(kartu.transform, curScore, barTopY);

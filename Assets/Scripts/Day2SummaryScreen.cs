@@ -41,6 +41,10 @@ public class Day2SummaryScreen : MonoBehaviour
     public Color  warnaSubtitle  = new Color(1f, 0.85f, 0.25f, 1f);
     public int    ukuranSubtitle = 22;
 
+    [Header("Rating Bintang")]
+    [Tooltip("Tampilkan rating bintang 1-3 di bawah subtitle (ala game umumnya).")]
+    public bool tampilkanBintang = true;
+
     [Header("Progress Bar Skor")]
     public bool tampilkanBar = true;
     public int  targetSkor = 3500;
@@ -263,8 +267,18 @@ public class Day2SummaryScreen : MonoBehaviour
         srt.offsetMin = new Vector2(40f, -155f); srt.offsetMax = new Vector2(-40f, -115f);
         subTmp.alignment = TextAlignmentOptions.Center;
 
-        // Bar skor
+        // Rating bintang
         float topY = -170f;
+        if (tampilkanBintang)
+        {
+            int bintang = RatingBintang.HitungBintang(curScore, targetSkor);
+            RatingBintang.Bangun(kartu.transform, bintang,
+                new Vector2(0.5f, 1f), new Vector2(0.5f, 1f), new Vector2(0.5f, 1f),
+                new Vector2(0f, topY), 50f, 16f, this);
+            topY -= 74f;
+        }
+
+        // Bar skor
         if (tampilkanBar)
         {
             BuatBarSkor(kartu.transform, curScore, topY);

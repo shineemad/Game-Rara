@@ -126,7 +126,7 @@ public class Day3PrologScreen : MonoBehaviour
     public Color btnBgColor = new Color(0.05f, 0.08f, 0.10f, 0.92f);
 
     [Header("Tombol LANJUT — Teks")]
-    public string hintText = "\u25bc  SPACE / KLIK UNTUK LANJUT";
+    public string hintText = "LANJUT";
     public TextAlignmentOptions hintAlign = TextAlignmentOptions.Center;
 
     [Header("Kontrol Input")]
@@ -195,8 +195,8 @@ public class Day3PrologScreen : MonoBehaviour
             return;
         }
 
-        if (advanceOnMouseClick && Input.GetMouseButtonDown(0))
-            NextSlide();
+        // Klik di mana saja TIDAK lagi memajukan slide — gunakan tombol LANJUT.
+        // (advanceOnMouseClick sengaja diabaikan agar klik di luar tombol tidak melompati slide.)
     }
 
     // ══════════════════════════════════════════════════════════════════════

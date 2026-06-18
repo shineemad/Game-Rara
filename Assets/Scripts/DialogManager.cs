@@ -177,6 +177,7 @@ public class DialogManager : MonoBehaviour
         {
             shown++;
             dialogText.maxVisibleCharacters = shown;
+            AudioManager.Instance?.PlayKetikHuruf();
             yield return new WaitForSecondsRealtime(typeSpeed);
         }
 

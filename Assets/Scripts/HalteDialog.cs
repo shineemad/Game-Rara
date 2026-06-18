@@ -176,7 +176,7 @@ public class HalteDialog : MonoBehaviour
     [Tooltip("Speaker name di-render UPPERCASE (sesuai Day1Intro 'NARASI').")]
     public bool   boxNamaUppercase = true;
     [Tooltip("Teks hint pojok kanan-bawah panel.")]
-    public string boxHintText = "\u25BC SPACE / Klik untuk lanjut";
+    public string boxHintText = "";
 
     [Header("Animasi Mengetik (Typewriter)")]
     [Tooltip("Detik per karakter saat teks diketik. 0 = langsung penuh (skip animasi).")]
@@ -315,6 +315,7 @@ public class HalteDialog : MonoBehaviour
     private TextMeshProUGUI _dialogText;
     private TextMeshProUGUI _speakerText;
     private TextMeshProUGUI _hintText;
+    private TombolLanjutVN  _tombolLanjut;
     private Image            _portraitImg;
     private GameObject _pilihanRowGO;
     private Sprite     _roundedSprite;
@@ -637,6 +638,12 @@ public class HalteDialog : MonoBehaviour
         hrt.offsetMin = hrt.offsetMax = Vector2.zero;
         _bxHintRT = hrt;
 
+        // ── Tombol LANJUT: HANYA tombol ini yang melanjutkan dialog ──
+        // (klik di luar tombol tidak lagi melanjutkan)
+        _hintText.text = "";
+        _tombolLanjut = TombolLanjutVN.Pasang(_dialogBoxGO.transform, null,
+            "LANJUT  \u25B6", new Vector2(0.80f, 0.08f), new Vector2(0.99f, 0.42f));
+
         // ── Row pilihan: di-parent ke Canvas, posisi di ATAS panel ──
         _pilihanRowGO = new GameObject("PilihanRow");
         _pilihanRowGO.transform.SetParent(_canvasGO.transform, false);
@@ -836,6 +843,7 @@ public class HalteDialog : MonoBehaviour
                 break;
             }
             _dialogText.text += _teksLengkapAktif[i];
+            if (_teksLengkapAktif[i] != ' ') AudioManager.Instance?.PlayKetikHuruf();
             yield return new WaitForSeconds(kecepatanKetik);
         }
         _ketikSelesai = true;
@@ -846,10 +854,12 @@ public class HalteDialog : MonoBehaviour
 
     IEnumerator TungguTap()
     {
-        // Tekan saat sedang mengetik = skip; tekan setelah selesai = lanjut.
+        // Hanya tombol LANJUT (atau SPACE/ENTER di keyboard) yang melanjutkan.
+        // Klik di luar tombol diabaikan.
+        _tombolLanjut?.Reset();
         while (true)
         {
-            bool ditekan = Input.GetMouseButtonDown(0)
+            bool ditekan = (_tombolLanjut != null && _tombolLanjut.Konsumsi())
                         || Input.GetKeyDown(KeyCode.Space)
                         || Input.GetKeyDown(KeyCode.Return)
                         || Input.GetKeyDown(KeyCode.KeypadEnter);
@@ -1570,7 +1580,8 @@ public class HalteDialog : MonoBehaviour
         {
             _hintText.fontSize = boxHintFontSize;
             _hintText.color    = boxHintColor;
-            _hintText.text     = boxHintText;
+            // Hint teks 'SPACE/Klik untuk lanjut' dihilangkan — pakai tombol LANJUT.
+            _hintText.text     = "";
         }
 
         if (_bxChoicesRT != null)

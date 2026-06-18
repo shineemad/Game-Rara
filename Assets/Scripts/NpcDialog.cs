@@ -88,7 +88,7 @@ public class NpcDialog : MonoBehaviour
     public float  typeSpeed        = 0.025f;
 
     [Header("Petunjuk Lanjut")]
-    public string continueHint     = "▼ SPACE / Klik untuk lanjut";
+    public string continueHint     = "";
     public Color  hintColor        = new Color(1f, 1f, 1f, 0.55f);
     public int    hintFontSize     = 16;
 
@@ -190,9 +190,18 @@ public class NpcDialog : MonoBehaviour
     [Tooltip("Dipanggil saat seluruh dialog selesai")]
     public UnityEngine.Events.UnityEvent onDialogEnd;
 
+    /// <summary>
+    /// Dipanggil saat pemain memilih satu pilihan dialog.
+    /// Parameter = kategori pilihan ("AMAN" | "RAGU" | "BAHAYA").
+    /// Subscribe via kode, mis. di <see cref="PamanBaik"/> untuk memicu
+    /// reaksi NPC (jalan menjauh, dll).
+    /// </summary>
+    public System.Action<string> OnPilihanDipilih;
+
     // ── runtime state ────────────────────────────────────────────────────
     private Canvas           canvas;
     private GameObject       panelRoot;
+    private TombolLanjutVN   tombolLanjut;
     private Image            profileImg;
     private TextMeshProUGUI  speakerTMP;
     private TextMeshProUGUI  textTMP;
@@ -372,7 +381,7 @@ public class NpcDialog : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space) ||
             Input.GetKeyDown(KeyCode.Return) ||
             Input.GetKeyDown(KeyCode.KeypadEnter) ||
-            Input.GetMouseButtonDown(0))
+            (tombolLanjut != null && tombolLanjut.Konsumsi()))
         {
             Advance();
         }
@@ -651,6 +660,7 @@ public class NpcDialog : MonoBehaviour
         foreach (char c in full)
         {
             textTMP.text += c;
+            if (c != ' ') AudioManager.Instance?.PlayKetikHuruf();
             yield return new WaitForSeconds(typeSpeed);
         }
         isTyping = false;
@@ -909,6 +919,12 @@ public class NpcDialog : MonoBehaviour
         if (choicesPanel != null) { Destroy(choicesPanel); choicesPanel = null; }
         if (hintTMP != null) hintTMP.gameObject.SetActive(true);
 
+        // Beritahu listener (mis. PamanBaik) bahwa pemain baru memilih sesuatu.
+        // Dipanggil SEBELUM onSelect/skor sehingga reaksi NPC bisa langsung berjalan
+        // bersamaan dengan dialog feedback edukasi.
+        try { OnPilihanDipilih?.Invoke(c.category); }
+        catch (System.Exception e) { Debug.LogError("[NpcDialog] OnPilihanDipilih error: " + e); }
+
         // Jika onSelect sudah diisi via kode (mis. BangunEncounterLines),
         // biarkan callback itu yang mengurus skor & nyawa — jangan duplikat di sini.
         if (c.onSelect != null)
@@ -1035,7 +1051,8 @@ public class NpcDialog : MonoBehaviour
             ApplyFontFor(hintTMP, hintFontAsset);
             hintTMP.color    = hintColor;
             hintTMP.fontSize = hintFontSize;
-            hintTMP.text     = continueHint;
+            // Hint teks 'SPACE/Klik untuk lanjut' dihilangkan — pakai tombol LANJUT.
+            hintTMP.text     = "";
         }
 
         // Konten teks aktif (headline di banner, isi kalimat)
@@ -1464,6 +1481,11 @@ public class NpcDialog : MonoBehaviour
         }
 
         panelRoot.SetActive(false);
+        // ── Tombol LANJUT: HANYA tombol ini yang melanjutkan dialog ──
+        // (klik di luar tombol tidak lagi melanjutkan)
+        if (hintTMP != null) hintTMP.text = "";
+        tombolLanjut = TombolLanjutVN.Pasang(panelRoot.transform, null,
+            "LANJUT  \u25B6", new Vector2(0.70f, 0.06f), new Vector2(0.975f, 0.26f));
         Debug.Log("[NpcDialog] UI berhasil dibuat. Canvas: NpcDialogCanvas");
     }
 

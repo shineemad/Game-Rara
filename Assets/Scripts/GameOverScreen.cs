@@ -124,6 +124,17 @@ public class GameOverScreen : MonoBehaviour
         IsShowing = false;
         GameState.Instance?.Reset();
 
+        // Reset flag statis yang TIDAK ikut ter-reset saat scene dimuat ulang,
+        // supaya alur benar-benar mulai dari awal (MainMenu → Prolog → Hari 1).
+        // - prologDone: MainMenu menonaktifkan komponen PrologScreen sebelum Start()-nya
+        //   jalan, jadi PrologScreen.Start() (yang me-reset flag) tidak pernah dipanggil.
+        //   Tanpa reset ini, Day1Intro mengira prolog sudah selesai lalu Hari 1 langsung
+        //   jalan di belakang menu.
+        // - SkipKeDay: pastikan tidak melompat ke Hari 2/3 dari sesi sebelumnya.
+        PrologScreen.prologDone   = false;
+        PrologScreen.SedangTampil = false;
+        DayTransitionResumeFlag.SkipKeDay = 0;
+
         // Kembalikan kontrol mobile (singleton persisten — disembunyikan saat Game Over).
         if (MobileControls.Instance != null) MobileControls.Instance.forceHide = false;
 

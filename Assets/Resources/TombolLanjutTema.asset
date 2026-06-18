@@ -1,0 +1,34 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 35d569a7ca03c17419e3ffb67b4bc97d, type: 3}
+  m_Name: TombolLanjutTema
+  m_EditorClassIdentifier: 
+  teksOverride: 
+  font: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
+  warnaTeks: {r: 1, g: 0.93, b: 0.7, a: 1}
+  gayaTeks: 1
+  fontMin: 16
+  fontMax: 24
+  jarakHuruf: 4
+  paddingTeksKiriBawah: {x: 22, y: 14}
+  paddingTeksKananAtas: {x: 22, y: 14}
+  sprite: {fileID: 0}
+  warnaIsi: {r: 1, g: 1, b: 1, a: 0}
+  pakaiOutline: 0
+  warnaOutline: {r: 0.95, g: 0.72, b: 0.18, a: 0.95}
+  jarakOutline: {x: 2, y: -2}
+  warnaSorot: {r: 1, g: 0.86, b: 0.4, a: 1}
+  warnaTekan: {r: 0.85, g: 0.62, b: 0.14, a: 1}
+  lebar: 300
+  tinggi: 72
+  marginKanan: 36
+  marginBawah: 28

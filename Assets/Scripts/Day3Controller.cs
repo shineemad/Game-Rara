@@ -603,6 +603,7 @@ public class Day3Controller : MonoBehaviour
     private TextMeshProUGUI _ucapanText;
     private TextMeshProUGUI _namaUcapanText;   // banner nama pembicara (gaya box dialog Day 2)
     private TextMeshProUGUI _hintLanjutText;   // hint "klik untuk lanjut" (gaya Day 2)
+    private TombolLanjutVN  _tombolLanjutUcapan; // tombol LANJUT box ucapan
     private Image      _portraitUcapanImg;     // portrait di bingkai kiri box (gaya Halte)
     private TextMeshProUGUI _reaksiText;
     private Image      _reaksiBox;             // box latar di belakang teks reaksi (gaya box dialog)
@@ -2054,13 +2055,18 @@ public class Day3Controller : MonoBehaviour
         ucRt.offsetMin = new Vector2(4f, 4f); ucRt.offsetMax = new Vector2(-4f, -4f);
 
         // Hint "klik untuk lanjut" (kanan-bawah box) — gaya Halte
-        _hintLanjutText = BuatTeks(box.transform, "HintLanjut", "▼ SPACE / Klik untuk lanjut", 18, new Color(1f, 1f, 1f, 0.55f), FontStyles.Italic);
+        _hintLanjutText = BuatTeks(box.transform, "HintLanjut", "", 18, new Color(1f, 1f, 1f, 0.55f), FontStyles.Italic);
         _hintLanjutText.alignment = TextAlignmentOptions.MidlineRight;
         var hintRt = _hintLanjutText.rectTransform;
         hintRt.anchorMin = new Vector2(hCX - hW * 0.5f, hCY - hH * 0.5f);
         hintRt.anchorMax = new Vector2(hCX + hW * 0.5f, hCY + hH * 0.5f);
         hintRt.offsetMin = hintRt.offsetMax = Vector2.zero;
         _hintLanjutText.gameObject.SetActive(false);
+
+        // ── Tombol LANJUT: HANYA tombol ini yang melanjutkan dialog ──
+        // (klik di luar tombol tidak lagi melanjutkan)
+        _tombolLanjutUcapan = TombolLanjutVN.Pasang(box.transform, null,
+            "LANJUT  \u25B6", new Vector2(0.80f, 0.06f), new Vector2(0.99f, 0.40f));
 
         // Reaksi (di ATAS kotak ucapan) — TANPA sprite box dialog. Hanya teks reaksi
         // yang ditampilkan (latar transparan), sesuai permintaan menghapus box dialog.
@@ -2211,6 +2217,7 @@ public class Day3Controller : MonoBehaviour
         foreach (char c in teks)
         {
             _reaksiText.text += c;
+            if (c != ' ') AudioManager.Instance?.PlayKetikHuruf();
             yield return new WaitForSeconds(0.018f);
         }
     }
@@ -2237,10 +2244,12 @@ public class Day3Controller : MonoBehaviour
         // Beri 1 frame jeda supaya klik yang men-skip typewriter tidak
         // langsung dianggap sebagai klik lanjut.
         yield return null;
+        // Hanya tombol LANJUT (atau SPACE/ENTER) yang melanjutkan; klik di luar diabaikan.
+        _tombolLanjutUcapan?.Reset();
         bool lanjut = false;
         while (!lanjut)
         {
-            if (Input.GetMouseButtonDown(0) ||
+            if ((_tombolLanjutUcapan != null && _tombolLanjutUcapan.Konsumsi()) ||
                 Input.GetKeyDown(KeyCode.Space) ||
                 Input.GetKeyDown(KeyCode.Return) ||
                 Input.GetKeyDown(KeyCode.KeypadEnter))
@@ -2380,7 +2389,7 @@ public class Day3Controller : MonoBehaviour
         skorPil.type   = Image.Type.Sliced;
         skorPil.raycastTarget = false;
         var spRt = skorPil.rectTransform;
-        spRt.anchorMin = new Vector2(0.22f, 0.820f); spRt.anchorMax = new Vector2(0.78f, 0.895f);
+        spRt.anchorMin = new Vector2(0.22f, 0.835f); spRt.anchorMax = new Vector2(0.78f, 0.900f);
         spRt.offsetMin = Vector2.zero; spRt.offsetMax = Vector2.zero;
         var spOutline = skorPil.gameObject.AddComponent<Outline>();
         spOutline.effectColor    = new Color(0.95f, 0.72f, 0.18f, 0.6f);
@@ -2394,6 +2403,17 @@ public class Day3Controller : MonoBehaviour
         skorText.textWrappingMode = TextWrappingModes.NoWrap;
         Stretch(skorText.rectTransform, 16f, 4f);
 
+        // ── RATING BINTANG (1-3) — sistem poin ala game umumnya. ──
+        // Ending TERBAIK = 3 bintang; Trauma = 1; selain itu dari skor (max 1000).
+        int bintangD3 = laporSukses ? 3
+                      : trauma ? 1
+                      : skor >= 800 ? 3
+                      : skor >= 500 ? 2
+                      : 1;
+        RatingBintang.Bangun(cardT, bintangD3,
+            new Vector2(0.5f, 0.805f), new Vector2(0.5f, 0.805f), new Vector2(0.5f, 0.5f),
+            Vector2.zero, 50f, 16f, this);
+
         // ── Tangga TINGKAT ENDING (3 tingkat) — perjelas hasil pemain berada
         //    di tingkat mana & tingkat terbaik yang bisa diraih. ──
         var tierText = BuatTeks(cardT, "TierLadder", TeksTierLadder(),
@@ -2402,7 +2422,7 @@ public class Day3Controller : MonoBehaviour
         tierText.enableAutoSizing = true; tierText.fontSizeMin = 13; tierText.fontSizeMax = 22;
         tierText.textWrappingMode = TextWrappingModes.NoWrap;
         var tierRt = tierText.rectTransform;
-        tierRt.anchorMin = new Vector2(0.04f, 0.758f); tierRt.anchorMax = new Vector2(0.96f, 0.812f);
+        tierRt.anchorMin = new Vector2(0.04f, 0.748f); tierRt.anchorMax = new Vector2(0.96f, 0.778f);
         tierRt.offsetMin = Vector2.zero; tierRt.offsetMax = Vector2.zero;
 
         // Ringkasan dibagi menjadi 3 SEKSI berpanel terpisah agar rapih dan

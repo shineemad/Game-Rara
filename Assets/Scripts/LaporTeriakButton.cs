@@ -81,7 +81,7 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
     [Tooltip("Jaga aspek rasio portrait (cegah gepeng).")]
     public bool  vnPortraitPreserveAspect = true;
     [Tooltip("Teks hint lanjut di pojok box.")]
-    public string vnHintTeks = "\u25BC  Ketuk / SPACE untuk lanjut";
+    public string vnHintTeks = "";
 
     [Header("Animasi Ketik VN")]
     [Tooltip("ON = teks narasi pembuka VN muncul per-huruf (typewriter).")]
@@ -344,24 +344,18 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         hRT.anchorMin = vnHintAnchorMin;
         hRT.anchorMax = vnHintAnchorMax;
         hRT.offsetMin = hRT.offsetMax = Vector2.zero;
+        // Hint teks 'Ketuk/SPACE untuk lanjut' dihilangkan — pakai tombol LANJUT.
+        hintTmp.text = "";
 
-        // ── Klik area penuh untuk maju ──
-        var clickGO = new GameObject("ClickArea");
-        clickGO.transform.SetParent(cGO.transform, false);
-        var clickImg = clickGO.AddComponent<Image>();
-        clickImg.color = new Color(0,0,0,0);
-        var clickRT = clickGO.GetComponent<RectTransform>();
-        clickRT.anchorMin = Vector2.zero; clickRT.anchorMax = Vector2.one;
-        clickRT.offsetMin = Vector2.zero; clickRT.offsetMax = Vector2.zero;
+        // ── Tombol LANJUT: HANYA tombol ini yang melanjutkan (klik di luar diabaikan) ──
         bool lanjutDiminta = false;
-        var clickBtn = clickGO.AddComponent<Button>();
-        clickBtn.transition = Selectable.Transition.None;
-        clickBtn.onClick.AddListener(() => lanjutDiminta = true);
+        var tombolLanjut = TombolLanjutVN.Pasang(cGO.transform, null,
+            "LANJUT  \u25B6", new Vector2(0.70f, 0.06f), new Vector2(0.975f, 0.20f));
+        tombolLanjut.GetComponent<Button>().onClick.AddListener(() => lanjutDiminta = true);
 
         bool AdaInputLanjut()
         {
             return lanjutDiminta
-                || Input.GetMouseButtonDown(0)
                 || Input.GetKeyDown(KeyCode.Space)
                 || Input.GetKeyDown(KeyCode.Return);
         }

@@ -174,7 +174,7 @@ public class Day2NarasiAwal : MonoBehaviour
     [Header("── TYPEWRITER ──")]
     public float  kecepatanKetik    = 0.025f;
     public float  delaySetelahKetik = 0.15f;
-    public string teksHintLanjut    = "▼ SPACE / Klik untuk lanjut";
+    public string teksHintLanjut    = "";
 
     [Header("── SPRITE PATH (untuk auto-build) ──")]
     [Tooltip("Path BG day 2 (relatif Assets/) untuk tombol klik kanan auto-build.")]
@@ -187,6 +187,7 @@ public class Day2NarasiAwal : MonoBehaviour
     private GameObject      _canvasGO;
     private TextMeshProUGUI _teksDialog;
     private TextMeshProUGUI _teksHint;
+    private TombolLanjutVN  _tombolLanjut;
     private TextMeshProUGUI _namaTMP;
     private Image           _portImg;
     private Image           _bgFullscreenImg;
@@ -545,6 +546,7 @@ public class Day2NarasiAwal : MonoBehaviour
             {
                 if (_skipKetik) { _teksDialog.text = teks; break; }
                 _teksDialog.text += teks[i];
+                if (teks[i] != ' ') AudioManager.Instance?.PlayKetikHuruf();
                 yield return new WaitForSeconds(kecepatanKetik);
             }
         }
@@ -554,13 +556,16 @@ public class Day2NarasiAwal : MonoBehaviour
 
     IEnumerator TungguLanjut()
     {
+        // Hanya tombol LANJUT (atau SPACE/ENTER) yang melanjutkan; klik di luar diabaikan.
+        _tombolLanjut?.Reset();
         bool lanjut = false;
         while (!lanjut)
         {
-            if (Input.GetMouseButtonDown(0) ||
-                Input.GetKeyDown(KeyCode.Space) ||
-                Input.GetKeyDown(KeyCode.Return) ||
-                Input.GetKeyDown(KeyCode.KeypadEnter))
+            bool ditekan = (_tombolLanjut != null && _tombolLanjut.Konsumsi())
+                        || Input.GetKeyDown(KeyCode.Space)
+                        || Input.GetKeyDown(KeyCode.Return)
+                        || Input.GetKeyDown(KeyCode.KeypadEnter);
+            if (ditekan)
             {
                 if (!_ketikSelesai) _skipKetik = true;
                 else                lanjut     = true;
@@ -695,6 +700,11 @@ public class Day2NarasiAwal : MonoBehaviour
             teksHintLanjut, ukuranHint, warnaHintLanjut, false);
         _teksHint.alignment = TextAlignmentOptions.MidlineRight;
         _teksHint.gameObject.SetActive(false);
+
+        // ── Tombol LANJUT: HANYA tombol ini yang melanjutkan narasi ──
+        // (klik di luar tombol tidak lagi melanjutkan)
+        _tombolLanjut = TombolLanjutVN.Pasang(panelGO.transform, null,
+            "LANJUT  \u25B6", new Vector2(0.70f, 0.06f), new Vector2(0.975f, 0.26f));
     }
 
     // ── Helper buat TMP UGUI (sama tanda tangan dengan Day1Intro.BuatTMP) ──

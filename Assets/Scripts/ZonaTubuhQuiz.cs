@@ -232,7 +232,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
     public int    narasiUkuranNama  = 30;
     public int    narasiUkuranTeks  = 30;
     public int    narasiUkuranHint  = 18;
-    public string narasiTeksHint    = "\u25BC SPACE / Klik untuk lanjut";
+    public string narasiTeksHint    = "";
 
     [Header("Narasi Intro \u2014 Anchor Box (mirror Day 1 Intro)")]
     [Range(0f, 1f)] public float narasiPanelCenterX    = 0.5f;
@@ -315,6 +315,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
     private TextMeshProUGUI _narasiNamaTMP;
     private TextMeshProUGUI _narasiTeksTMP;
     private TextMeshProUGUI _narasiHintTMP;
+    private TombolLanjutVN  _narasiTombolLanjut;
     private Image           _narasiBgImg;
     private Image           _narasiPortraitImg;
     private bool _ketikSelesai;
@@ -779,6 +780,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
             {
                 if (bolehSkipKetikNarasi && _skipKetik) { _narasiTeksTMP.text = teks; break; }
                 _narasiTeksTMP.text += teks[i];
+                if (teks[i] != ' ') AudioManager.Instance?.PlayKetikHuruf();
                 yield return new WaitForSeconds(kecepatanKetikNarasi);
             }
         }
@@ -789,9 +791,11 @@ public class ZonaTubuhQuiz : MonoBehaviour
 
     IEnumerator TungguTapNarasi()
     {
+        // Hanya tombol LANJUT (atau SPACE/ENTER) yang melanjutkan; klik di luar diabaikan.
+        _narasiTombolLanjut?.Reset();
         while (true)
         {
-            bool ditekan = Input.GetMouseButtonDown(0)
+            bool ditekan = (_narasiTombolLanjut != null && _narasiTombolLanjut.Konsumsi())
                         || Input.GetKeyDown(KeyCode.Space)
                         || Input.GetKeyDown(KeyCode.Return)
                         || Input.GetKeyDown(KeyCode.KeypadEnter);
@@ -940,6 +944,11 @@ public class ZonaTubuhQuiz : MonoBehaviour
             narasiHintCenterY + narasiHintSizeH * 0.5f);
         hrt.offsetMin = hrt.offsetMax = Vector2.zero;
         _narasiHintTMP.gameObject.SetActive(false);
+
+        // ── Tombol LANJUT: HANYA tombol ini yang melanjutkan narasi ──
+        // (klik di luar tombol tidak lagi melanjutkan)
+        _narasiTombolLanjut = TombolLanjutVN.Pasang(panel.transform, null,
+            "LANJUT  \u25B6", new Vector2(0.70f, 0.06f), new Vector2(0.975f, 0.26f));
     }
 
     /// <summary>Pilih portrait berdasarkan nama pembicara (mirror Day1Intro/Day2NarasiAwal).</summary>

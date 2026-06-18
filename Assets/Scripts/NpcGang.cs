@@ -85,7 +85,14 @@ public class NpcGang : MonoBehaviour
     public float kecepatanPergi = 3.5f;
     [Tooltip("Jarak horizontal dari Rara saat NPC dianggap sudah cukup jauh dan di-nonaktifkan.")]
     public float jarakHilangSetelahPergi = 14f;
-
+    [Header("Reaksi Pilihan Dialog Rara")]
+    [Tooltip("Centang agar NPC gang LANGSUNG mundur (leaving mode) saat Rara memilih AMAN —\n" +
+             "tanpa menunggu dialog edukasi selesai. Efek: gang takut & buru-buru pergi.")]
+    public bool aktifPergiAman = true;
+    [Tooltip("Centang agar NPC gang mendekat sedikit ke Rara saat Rara memilih BAHAYA (intimidasi).")]
+    public bool aktifMendekatBahaya = true;
+    [Tooltip("Jarak (unit dunia) NPC maju ke Rara saat BAHAYA dipilih.")]
+    public float jarakMendekatBahaya = 0.6f;
     // ── internal ──────────────────────────────────────────────────────────
     private SpriteRenderer sr;
     private float          frameTimer;
@@ -109,6 +116,9 @@ public class NpcGang : MonoBehaviour
     // Saat true, UpdateMoveState diabaikan; NPC berjalan terus ke kiri
     // dengan kecepatanPergi sampai cukup jauh, lalu di-SetActive(false).
     private bool           _leavingMode = false;
+    // Mode "mendekat Rara" (reaksi BAHAYA): NPC maju sedikit lalu berhenti.
+    private bool           _mendekatRara;
+    private float          _xTargetMendekat;
 
     // ══════════════════════════════════════════════════════════════════════
     void Awake()
@@ -152,6 +162,13 @@ public class NpcGang : MonoBehaviour
             dialog.onDialogEnd.RemoveListener(day1Controller.ResumePlayer);
             dialog.onDialogEnd.RemoveListener(OnGangDialogEnd);
             dialog.onDialogEnd.AddListener(OnGangDialogEnd);
+        }
+
+        // Subscribe ke event pilihan dialog: AMAN → langsung mundur, BAHAYA → mendekat.
+        if (dialog != null)
+        {
+            dialog.OnPilihanDipilih -= HandlePilihanDialog;
+            dialog.OnPilihanDipilih += HandlePilihanDialog;
         }
 
         // Pastikan dialog memakai style Day1Intro saat runtime juga (bukan hanya saat klik ContextMenu)
@@ -233,6 +250,9 @@ public class NpcGang : MonoBehaviour
     {
         if (dialog == null || playerTarget == null) return;
 
+        // Mode leaving / mendekat-BAHAYA: jangan picu dialog ulang.
+        if (_leavingMode || _mendekatRara) return;
+
         // Sudah pernah dipicu dan hanya sekali? tidak perlu cek lagi
         if (dialogTriggered && dialogOnceOnly) return;
 
@@ -290,11 +310,52 @@ public class NpcGang : MonoBehaviour
 
         // Aktifkan mode pergi ke kiri menjauh dari Rara
         if (perigiKeKiriSetelahDialog)
+            AktifkanLeavingMode();
+    }
+
+    // ── Reaksi pilihan dialog: AMAN → langsung mundur; BAHAYA → mendekat ────
+    void HandlePilihanDialog(string kategori)
+    {
+        if (_leavingMode) return;
+
+        if (kategori == "AMAN" && aktifPergiAman)
         {
-            _leavingMode = true;
-            direction    = -1f;   // hadap & jalan ke kiri
-            isMoving     = true;
+            // Gang ketakutan — langsung mundur tanpa menunggu dialog edukasi selesai.
+            AktifkanLeavingMode();
         }
+        else if (kategori == "BAHAYA" && aktifMendekatBahaya && playerTarget != null)
+        {
+            MendekatRara();
+        }
+    }
+
+    void AktifkanLeavingMode()
+    {
+        if (_leavingMode) return;
+        _leavingMode  = true;
+        _mendekatRara = false; // batalkan mendekat jika sedang aktif
+        direction     = -1f;   // hadap & jalan ke kiri
+        isMoving      = true;
+    }
+
+    /// <summary>
+    /// Aktifkan mode "mendekat Rara": NPC gang maju sedikit ke arah Rara
+    /// (efek intimidasi) sejauh <see cref="jarakMendekatBahaya"/>.
+    /// Tidak melakukan apa pun jika sudah dalam mode leaving.
+    /// </summary>
+    public void MendekatRara()
+    {
+        if (_leavingMode || _mendekatRara || playerTarget == null) return;
+        _mendekatRara = true;
+
+        float arah = (playerTarget.position.x - transform.position.x) >= 0f ? 1f : -1f;
+        _xTargetMendekat = transform.position.x + arah * jarakMendekatBahaya;
+    }
+
+    void OnDestroy()
+    {
+        if (dialog != null)
+            dialog.OnPilihanDipilih -= HandlePilihanDialog;
     }
 
     // ── Sync setting shadow tiap frame agar perubahan Inspector langsung tampil ──
@@ -329,6 +390,24 @@ public class NpcGang : MonoBehaviour
                 {
                     gameObject.SetActive(false);
                 }
+            }
+            return;
+        }
+
+        // Mode mendekat (reaksi BAHAYA): NPC maju sedikit ke arah Rara lalu berhenti.
+        if (_mendekatRara)
+        {
+            moveTarget = new Vector2(_xTargetMendekat, transform.position.y);
+            float sisa = Mathf.Abs(transform.position.x - _xTargetMendekat);
+            if (sisa > stopDistance)
+            {
+                isMoving  = true;
+                direction = (_xTargetMendekat > transform.position.x) ? 1f : -1f;
+            }
+            else
+            {
+                isMoving      = false;
+                _mendekatRara = false; // selesai langkah mendekat — tetap berdiri intimidasi
             }
             return;
         }
@@ -548,7 +627,7 @@ public class NpcGang : MonoBehaviour
         d.hintFontSize    = 16;
         d.typeSpeed       = 0.025f;
         d.showBannerBg    = false;
-        d.continueHint    = "▼ SPACE / KLIK UNTUK LANJUT";
+        d.continueHint    = "";
 
         // Pastikan banner nama TIDAK pakai sprite (tanpa kotak coklat)
         d.nameBannerSprite = null;
@@ -842,7 +921,7 @@ public class NpcGang : MonoBehaviour
         d.hintFontSize    = 16;
         d.typeSpeed       = 0.025f;
         d.showBannerBg    = false;
-        d.continueHint    = "▼ SPACE / KLIK UNTUK LANJUT";
+        d.continueHint    = "";
 
         // ── 3. Posisi & ukuran panel (match Day1Intro narasiPembuka) ──
         d.panelCenterX    = 0.50f;

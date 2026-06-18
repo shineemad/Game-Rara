@@ -246,8 +246,8 @@ public class Day2PrologScreen : MonoBehaviour
             return;
         }
 
-        if (advanceOnMouseClick && Input.GetMouseButtonDown(0))
-            NextSlide();
+        // Klik di mana saja TIDAK lagi memajukan slide — gunakan tombol LANJUT.
+        // (advanceOnMouseClick sengaja diabaikan agar klik di luar tombol tidak melompati slide.)
     }
 
     // ══════════════════════════════════════════════════════════════════════

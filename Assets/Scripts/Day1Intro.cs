@@ -908,6 +908,12 @@ public class Day1Intro : MonoBehaviour
             warnaHintDlg, false);
         tmpHint.alignment = TextAlignmentOptions.MidlineRight;
 
+        // ── Tombol LANJUT: HANYA tombol ini yang melanjutkan narasi ──
+        // (klik di luar tombol tidak lagi melanjutkan)
+        tmpHint.text = "";
+        var tombolLanjut = TombolLanjutVN.Pasang(panelGO.transform, null,
+            "LANJUT  \u25B6", new Vector2(0.70f, 0.06f), new Vector2(0.975f, 0.26f));
+
         // ── Simpan referensi untuk live-edit (OnValidate / ApplyLayout) ────────────
         _panelRT  = panelRT;
         _portRT   = portRT;
@@ -960,10 +966,10 @@ public class Day1Intro : MonoBehaviour
                     () => selesaiKetik = true,
                     () => skipTyping));
 
-                // Tunggu ketik selesai ATAU user menekan skip
+                // Tunggu ketik selesai ATAU user menekan skip (keyboard saja)
                 while (!selesaiKetik)
                 {
-                    if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
+                    if (Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
                     {
                         skipTyping   = true;       // sinyal stop ke coroutine
                         tmpTeks.text = fullText;   // langsung tampilkan semua
@@ -974,13 +980,14 @@ public class Day1Intro : MonoBehaviour
                 }
             }
 
-            // Tunggu klik/SPACE untuk lanjut ke baris berikutnya
+            // Tunggu tombol LANJUT (atau SPACE/ENTER) untuk lanjut ke baris berikutnya
             bool lanjut = false;
             // Jangan langsung lanjut di frame yang sama dengan skip ketik
             yield return null;
+            tombolLanjut.Reset();
             while (!lanjut)
             {
-                if (Input.GetKeyDown(KeyCode.Space) || Input.GetMouseButtonDown(0))
+                if (tombolLanjut.Konsumsi() || Input.GetKeyDown(KeyCode.Space) || Input.GetKeyDown(KeyCode.Return))
                     lanjut = true;
                 yield return null;
             }
@@ -1004,6 +1011,7 @@ public class Day1Intro : MonoBehaviour
         {
             if (shouldSkip()) break;
             target.text += c;
+            if (c != ' ') AudioManager.Instance?.PlayKetikHuruf();
             yield return new WaitForSeconds(kecepatanKetik);
         }
         target.text = fullText; // pastikan semua teks tampil

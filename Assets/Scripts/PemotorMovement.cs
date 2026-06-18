@@ -95,6 +95,11 @@ public class PemotorMovement : MonoBehaviour
     [Tooltip("Tahan motor di fase Berhenti sampai dialog selesai (tidak pergi walau Rara jalan).")]
     public bool tahanSampaiDialogSelesai = true;
 
+    [Header("Reaksi Pilihan Dialog Rara")]
+    [Tooltip("Centang agar motor LANGSUNG masuk fase Pergi (gas pergi menjauh) saat Rara memilih AMAN —\n" +
+             "tidak perlu menunggu Rara mulai jalan kembali.")]
+    public bool aktifPergiAman = true;
+
     // ══════════════════════════════════════════════════════════════════════
     // AUDIO (opsional)
     // ══════════════════════════════════════════════════════════════════════
@@ -168,6 +173,38 @@ public class PemotorMovement : MonoBehaviour
         bergerak  = moveOnStart && Mathf.Abs(speed) > 0.001f;
         speedAsli = Mathf.Abs(speed);
         ResetKlaksonTimer();
+
+        // Subscribe ke event pilihan dialog (mis. "AMAN" → motor gas pergi).
+        if (npcDialog != null)
+        {
+            npcDialog.OnPilihanDipilih -= HandlePilihanDialog;
+            npcDialog.OnPilihanDipilih += HandlePilihanDialog;
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (npcDialog != null)
+            npcDialog.OnPilihanDipilih -= HandlePilihanDialog;
+    }
+
+    // ── Reaksi pilihan dialog: AMAN → motor langsung masuk fase Pergi ─────────────
+    void HandlePilihanDialog(string kategori)
+    {
+        if (!aktifPergiAman) return;
+        if (mode != Mode.HampiriRara) return;
+        if (fase != FaseHampiri.Mendekat && fase != FaseHampiri.Berhenti) return;
+
+        // Hitung arah pergi = menjauh dari Rara (kalau Rara tidak ada → pakai arah saat ini)
+        float dxNow = (player != null) ? (player.position.x - transform.position.x) : 0f;
+        arahPergi   = (dxNow >= 0f) ? -1f : +1f;
+
+        float kec = (speedAsli > 0.001f) ? speedAsli : Mathf.Abs(speed);
+        if (kec < 0.001f) kec = 4f; // fallback minimal supaya motor benar-benar jalan
+
+        speed    = kec * arahPergi;
+        bergerak = true;
+        fase     = FaseHampiri.Pergi;
     }
 
     void Update()

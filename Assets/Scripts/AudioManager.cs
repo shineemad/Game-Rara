@@ -47,6 +47,8 @@ public class AudioManager : MonoBehaviour
     public AudioClip sfxChatMasuk;
     [Tooltip("Bunyi 'tik' saat bubble chat selesai diketik / muncul. Kosong = pakai sfxChatMasuk.")]
     public AudioClip sfxChatKetik;
+    [Tooltip("Bunyi ketik per huruf saat dialog mengetik (typewriter). Kosong = pakai sfxChatKetik.")]
+    public AudioClip sfxKetik;
     [Tooltip("Suara mesin/klakson angkot pendek saat naik angkot.")]
     public AudioClip sfxAngkot;
     [Tooltip("Bunyi peluit / teriak nyaring untuk efek tombol TERIAK. Kosong = pakai sfxLapor.")]
@@ -210,6 +212,20 @@ public class AudioManager : MonoBehaviour
     public void PlayAngkot()    => PlaySFX(sfxAngkot);
     public void PlayPeluit()    => PlaySFX(sfxPeluit != null ? sfxPeluit : sfxLapor);
     public void PlayLangkah()   => PlaySFX(sfxLangkah);
+
+    // ── Bunyi ketik dialog (typewriter) ───────────────────────────────────
+    // Dipanggil per huruf saat dialog mengetik. Di-throttle supaya tidak
+    // terdengar seperti senapan mesin & volume dikecilkan agar halus.
+    float _ketikTerakhir = -99f;
+    public void PlayKetikHuruf()
+    {
+        if (Time.unscaledTime - _ketikTerakhir < 0.045f) return;
+        _ketikTerakhir = Time.unscaledTime;
+        AudioClip c = sfxKetik != null ? sfxKetik
+                    : (sfxChatKetik != null ? sfxChatKetik
+                    : (sfxChatMasuk != null ? sfxChatMasuk : sfxClick));
+        if (c != null) sfxSource.PlayOneShot(c, 0.5f);
+    }
 
     // ── Umum Tambahan (Nyawa, Game Over, Tegang) ──────────────────────────
     public void PlayKehilanganNyawa() => PlaySFX(sfxKehilanganNyawa);

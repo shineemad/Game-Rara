@@ -68,6 +68,22 @@ public class PamanBaik : MonoBehaviour
     [Tooltip("Jeda kecil sebelum dialog muncul setelah tiba (detik)")]
     public float dialogDelay = 0.2f;
 
+    [Header("Reaksi Saat Rara Pilih AMAN (Hijau)")]
+    [Tooltip("Centang agar Paman otomatis jalan menjauh dari Rara saat pemain memilih respons AMAN.")]
+    public bool aktifPergiAman = true;
+    [Tooltip("Jarak (unit dunia) yang ditempuh paman untuk pergi menjauh dari Rara.")]
+    public float jarakMenjauh  = 12f;
+    [Tooltip("Pengali kecepatan saat paman pergi menjauh (1 = sama dengan walkSpeed).")]
+    public float kecepatanMenjauhMul = 1.2f;
+    [Tooltip("Sembunyikan GameObject paman setelah sampai tujuan menjauh.")]
+    public bool sembunyikanSetelahMenjauh = true;
+
+    [Header("Reaksi Saat Rara Pilih BAHAYA (Merah)")]
+    [Tooltip("Centang agar Paman maju sedikit ke arah Rara (intimidasi) saat pemain memilih respons BAHAYA.")]
+    public bool aktifMendekatBahaya = true;
+    [Tooltip("Jarak (unit dunia) Paman maju ke arah Rara saat BAHAYA dipilih.")]
+    public float jarakMendekatBahaya = 0.6f;
+
     // ── internal ──────────────────────────────────────────────────────────
     private SpriteRenderer sr;
     private float          frameTimer;
@@ -81,6 +97,13 @@ public class PamanBaik : MonoBehaviour
     private float          arriveTimer;
     // Referensi ke Day1Controller untuk freeze/resume karakter saat dialog
     private Day1Controller day1Controller;
+    // Status "pergi menjauh dari Rara" — di-set oleh JalanMenjauh()
+    private bool           _pergiMenjauh;
+    private float          _arahMenjauh;          // +1 = kanan, -1 = kiri
+    private float          _xTargetMenjauh;
+    // Status "mendekat Rara" (reaksi BAHAYA) — di-set oleh MendekatRara()
+    private bool           _mendekatRara;
+    private float          _xTargetMendekat;
 
     // ══════════════════════════════════════════════════════════════════════
     void Awake()
@@ -114,6 +137,13 @@ public class PamanBaik : MonoBehaviour
             // Hapus listener lama dulu agar tidak double-subscribe
             dialog.onDialogEnd.RemoveListener(day1Controller.ResumePlayer);
             dialog.onDialogEnd.AddListener(day1Controller.ResumePlayer);
+        }
+
+        // Subscribe ke event pilihan dialog: jika Rara memilih AMAN, paman pergi menjauh.
+        if (dialog != null)
+        {
+            dialog.OnPilihanDipilih -= HandlePilihanDialog; // hindari double
+            dialog.OnPilihanDipilih += HandlePilihanDialog;
         }
 
         // Setup shadow di Start agar sr.sprite & sorting layer sudah siap
@@ -191,6 +221,10 @@ public class PamanBaik : MonoBehaviour
     {
         if (dialog == null || playerTarget == null) return;
 
+        // Sedang pergi menjauh? jangan mainkan dialog lagi.
+        if (_pergiMenjauh) return;
+        // Sedang mendekat Rara (reaksi BAHAYA)? jangan picu dialog tambahan.
+        if (_mendekatRara) return;
         // Sudah pernah dipicu dan hanya sekali? tidak perlu cek lagi
         if (dialogTriggered && dialogOnceOnly) return;
 
@@ -251,6 +285,42 @@ public class PamanBaik : MonoBehaviour
             return;
         }
 
+        // ── Mode "mendekat Rara" (reaksi BAHAYA): override target maju ke Rara ──
+        if (_mendekatRara)
+        {
+            moveTarget = new Vector2(_xTargetMendekat, transform.position.y);
+            float sisa = Mathf.Abs(transform.position.x - _xTargetMendekat);
+            if (sisa > stopDistance)
+            {
+                isMoving  = true;
+                direction = (_xTargetMendekat > transform.position.x) ? 1f : -1f;
+            }
+            else
+            {
+                isMoving      = false;
+                _mendekatRara = false; // selesai langkah mendekat — tetap berdiri intimidasi
+            }
+            return;
+        }
+
+        // ── Mode "pergi menjauh": override target ke titik jauh dari Rara ──
+        if (_pergiMenjauh)
+        {
+            moveTarget = new Vector2(_xTargetMenjauh, transform.position.y);
+            float sisa = Mathf.Abs(transform.position.x - _xTargetMenjauh);
+            if (sisa > stopDistance)
+            {
+                isMoving  = true;
+                direction = _arahMenjauh;
+            }
+            else
+            {
+                isMoving = false;
+                if (sembunyikanSetelahMenjauh) gameObject.SetActive(false);
+            }
+            return;
+        }
+
         if (stopPoint != null)
         {
             // Mode stopPoint: paman berjalan ke titik yang sudah ditentukan.
@@ -291,6 +361,57 @@ public class PamanBaik : MonoBehaviour
                 isMoving = false;
             }
         }
+    }
+
+    // ── Reaksi pilihan dialog: AMAN → menjauh, BAHAYA → mendekat ──────
+    void HandlePilihanDialog(string kategori)
+    {
+        if (kategori == "AMAN" && aktifPergiAman)        JalanMenjauh();
+        else if (kategori == "BAHAYA" && aktifMendekatBahaya) MendekatRara();
+    }
+
+    /// <summary>
+    /// Aktifkan mode "pergi menjauh": Paman jalan ke arah berlawanan dari Rara
+    /// (jika Paman di kanan Rara → ke kanan; di kiri Rara → ke kiri) sejauh
+    /// <see cref="jarakMenjauh"/>. Dialog tidak akan diputar lagi.
+    /// </summary>
+    public void JalanMenjauh()
+    {
+        if (_pergiMenjauh) return;
+        _mendekatRara = false; // batalkan mendekat jika berjalan
+        _pergiMenjauh = true;
+
+        // Arah berlawanan dari posisi Rara: paman menjauh, bukan mendekat.
+        if (playerTarget != null)
+            _arahMenjauh = (transform.position.x >= playerTarget.position.x) ? 1f : -1f;
+        else
+            _arahMenjauh = (direction != 0f) ? Mathf.Sign(direction) : 1f;
+
+        _xTargetMenjauh = transform.position.x + _arahMenjauh * jarakMenjauh;
+
+        // Matikan trigger dialog ulang
+        dialogTriggered = true;
+        hasArrived      = true;
+    }
+
+    /// <summary>
+    /// Aktifkan mode "mendekat Rara": Paman maju sedikit ke arah Rara
+    /// (efek intimidasi) sejauh <see cref="jarakMendekatBahaya"/>.
+    /// Tidak melakukan apa pun jika sudah dalam mode pergi-menjauh.
+    /// </summary>
+    public void MendekatRara()
+    {
+        if (_pergiMenjauh || _mendekatRara || playerTarget == null) return;
+        _mendekatRara = true;
+
+        float arah = (playerTarget.position.x - transform.position.x) >= 0f ? 1f : -1f;
+        _xTargetMendekat = transform.position.x + arah * jarakMendekatBahaya;
+    }
+
+    void OnDestroy()
+    {
+        if (dialog != null)
+            dialog.OnPilihanDipilih -= HandlePilihanDialog;
     }
 
     // ── Animasi looping ───────────────────────────────────────────────────
@@ -341,11 +462,16 @@ public class PamanBaik : MonoBehaviour
     {
         if (!isMoving || walkSpeed <= 0f) return;
 
+        // Saat pergi menjauh, paman bisa lebih cepat agar terlihat "meninggalkan" Rara.
+        float kecepatanAktif = _pergiMenjauh
+            ? walkSpeed * Mathf.Max(0.1f, kecepatanMenjauhMul)
+            : walkSpeed;
+
         if (playerTarget != null)
         {
             // Gerak 2D serong ke moveTarget
             Vector2 toTarget = moveTarget - (Vector2)transform.position;
-            Vector2 step     = toTarget.normalized * walkSpeed * Time.deltaTime;
+            Vector2 step     = toTarget.normalized * kecepatanAktif * Time.deltaTime;
 
             // Jangan overshoot: clamp step agar tidak melewati target
             if (step.magnitude > toTarget.magnitude)
@@ -356,7 +482,7 @@ public class PamanBaik : MonoBehaviour
         else
         {
             // Tidak ada target → jalan lurus (patrol)
-            transform.position += new Vector3(direction * walkSpeed * Time.deltaTime, 0f, 0f);
+            transform.position += new Vector3(direction * kecepatanAktif * Time.deltaTime, 0f, 0f);
 
             if (patrolMode)
             {

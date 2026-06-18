@@ -168,7 +168,7 @@ public class AngkotSeatPicker : MonoBehaviour
     [Tooltip("Kecepatan typewriter per huruf (detik). 0 = langsung tampil penuh.")]
     public float kecepatanKetik = 0.02f;
     [Tooltip("Teks petunjuk lanjut yang tampil di bawah narasi reaksi.")]
-    public string hintLanjutTeks = "\u25BC  Klik untuk lanjut";
+    public string hintLanjutTeks = "";
     public Color  hintLanjutWarna = new Color(1f, 1f, 1f, 0.55f);
 
     [Header("Box Dialog Narasi Reaksi")]
@@ -336,6 +336,8 @@ public class AngkotSeatPicker : MonoBehaviour
         hrt.pivot     = new Vector2(0.5f, 0f);
         hrt.offsetMin = new Vector2(40f, 18f);
         hrt.offsetMax = new Vector2(-40f, 55f);
+        // Hint teks 'Klik untuk lanjut' dihilangkan sesuai permintaan.
+        _hintText.text = "";
         _hintText.gameObject.SetActive(false);
 
         // Baris "Catat plat nomor angkot" DIHAPUS dari tampilan (sesuai permintaan).
@@ -647,6 +649,7 @@ public class AngkotSeatPicker : MonoBehaviour
             {
                 if (_skipKetik) { _reaksiText.text = teks; break; }
                 _reaksiText.text += teks[i];
+                if (teks[i] != ' ') AudioManager.Instance?.PlayKetikHuruf();
                 yield return new WaitForSeconds(kecepatanKetik);
             }
         }
