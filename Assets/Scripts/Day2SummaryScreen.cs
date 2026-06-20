@@ -223,7 +223,7 @@ public class Day2SummaryScreen : MonoBehaviour
         var kRT = kartu.GetComponent<RectTransform>();
         kRT.anchorMin = new Vector2(0.5f, 0.5f); kRT.anchorMax = new Vector2(0.5f, 0.5f);
         kRT.pivot = new Vector2(0.5f, 0.5f);
-        kRT.sizeDelta = new Vector2(1280f, 880f);
+        kRT.sizeDelta = new Vector2(1280f, 980f);
 
         if (borderSprite != null)
         {
@@ -352,18 +352,55 @@ public class Day2SummaryScreen : MonoBehaviour
         jRT.offsetMin = new Vector2(20f, -50f); jRT.offsetMax = new Vector2(-20f, -10f);
         jud.alignment = TextAlignmentOptions.Center;
 
-        // List
+        // ── ScrollRect (viewport + content) ─────────────────────────────
+        // Konten bisa lebih panjang dari panel (banyak pilihan + refleksi);
+        // ScrollRect membuat ringkasan tetap rapi & bisa di-scroll, bukan
+        // menumpuk teks satu sama lain.
         float footerH = tampilkanFooter ? 70f : 0f;
-        var list = new GameObject("List");
-        list.transform.SetParent(panel.transform, false);
+        var scrollGO = new GameObject("ScrollArea");
+        scrollGO.transform.SetParent(panel.transform, false);
+        var sRT = scrollGO.AddComponent<RectTransform>();
+        sRT.anchorMin = new Vector2(0f, 0f); sRT.anchorMax = new Vector2(1f, 1f);
+        sRT.offsetMin = new Vector2(16f, footerH + 8f); sRT.offsetMax = new Vector2(-16f, -60f);
+        var scroll = scrollGO.AddComponent<ScrollRect>();
+        scroll.horizontal = false; scroll.vertical = true;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+        scroll.scrollSensitivity = 28f;
+
+        var viewportGO = new GameObject("Viewport");
+        viewportGO.transform.SetParent(scrollGO.transform, false);
+        var vRT = viewportGO.AddComponent<RectTransform>();
+        vRT.anchorMin = Vector2.zero; vRT.anchorMax = Vector2.one;
+        vRT.offsetMin = Vector2.zero; vRT.offsetMax = Vector2.zero;
+        vRT.pivot = new Vector2(0f, 1f);
+        // Image transparan penuh hanya untuk menangkap raycast (scroll/drag).
+        var vImg = viewportGO.AddComponent<Image>();
+        vImg.color = new Color(0f, 0f, 0f, 0f);
+        vImg.raycastTarget = true;
+        // RectMask2D meng-clip berdasarkan rectangle (bukan alpha stencil),
+        // sehingga child tidak hilang seperti saat memakai Mask + Image alpha~0.
+        viewportGO.AddComponent<RectMask2D>();
+        scroll.viewport = vRT;
+
+        var list = new GameObject("Content");
+        list.transform.SetParent(viewportGO.transform, false);
         var lrt = list.AddComponent<RectTransform>();
-        lrt.anchorMin = new Vector2(0f, 0f); lrt.anchorMax = new Vector2(1f, 1f);
-        lrt.offsetMin = new Vector2(30f, footerH + 10f); lrt.offsetMax = new Vector2(-30f, -60f);
+        lrt.anchorMin = new Vector2(0f, 1f); lrt.anchorMax = new Vector2(1f, 1f);
+        lrt.pivot = new Vector2(0.5f, 1f);
+        lrt.anchoredPosition = Vector2.zero;
+        lrt.sizeDelta = new Vector2(0f, 0f);
+        scroll.content = lrt;
+
         var vlg = list.AddComponent<VerticalLayoutGroup>();
-        vlg.childAlignment = TextAnchor.UpperLeft; vlg.spacing = 12f;
-        vlg.padding = new RectOffset(6, 6, 4, 4);
+        vlg.childAlignment = TextAnchor.UpperLeft; vlg.spacing = 10f;
+        vlg.padding = new RectOffset(14, 14, 8, 8);
         vlg.childControlWidth = true; vlg.childControlHeight = true;
         vlg.childForceExpandWidth = true; vlg.childForceExpandHeight = false;
+        // ContentSizeFitter pada CONTENT (bukan pada item) — agar Content
+        // membesar vertikal mengikuti jumlah item → ScrollRect bisa scroll.
+        var csf = list.AddComponent<ContentSizeFitter>();
+        csf.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+        csf.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 
         // Sumber: kustom > GameState.achievements (filter relevan H2)
         string[] items;
@@ -379,8 +416,6 @@ public class Day2SummaryScreen : MonoBehaviour
             if (string.IsNullOrEmpty(item)) continue;
             var t = BuatTeks(list.transform, "Item", "\uD83C\uDFC6  " + item, pencapaianUkuran, pencapaianWarna, FontStyles.Normal);
             t.alignment = TextAlignmentOptions.MidlineLeft;
-            var fitter = t.gameObject.AddComponent<ContentSizeFitter>();
-            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         }
 
         // Refleksi: 3 Kata Sakti yang dikuasai + hasil Meteran Bahaya.
@@ -392,7 +427,6 @@ public class Day2SummaryScreen : MonoBehaviour
                 ck(gs.usedTidak, "TIDAK") + "   " + ck(gs.usedPergi, "PERGI") + "   " + ck(gs.usedCerita, "CERITA");
             var ks = BuatTeks(list.transform, "KataSakti", kataSaktiBaris, pencapaianUkuran, new Color(1f, 0.95f, 0.7f, 1f), FontStyles.Bold);
             ks.alignment = TextAlignmentOptions.MidlineLeft;
-            ks.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
             float d = gs.dangerLevel;
             string status = d <= 0.25f ? "TERKENDALI \u2014 kamu tenang & waspada"
@@ -403,7 +437,6 @@ public class Day2SummaryScreen : MonoBehaviour
                                       : new Color(1f, 0.45f, 0.4f, 1f);
             var db = BuatTeks(list.transform, "Bahaya", $"\u26A0 Tingkat Bahaya akhir: {Mathf.RoundToInt(d * 100f)}% \u2014 {status}", pencapaianUkuran, dColor, FontStyles.Normal);
             db.alignment = TextAlignmentOptions.MidlineLeft;
-            db.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
         }
 
         // Rekap keputusan Hari 2: tiap pilihan diwarnai sesuai kategori (AMAN/RAGU/BAHAYA).
@@ -416,7 +449,6 @@ public class Day2SummaryScreen : MonoBehaviour
                 var rj = BuatTeks(list.transform, "RekapJudul", rekapJudul, rekapUkuran,
                     new Color(0.75f, 0.92f, 1f, 1f), FontStyles.Bold);
                 rj.alignment = TextAlignmentOptions.MidlineLeft;
-                rj.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
 
                 foreach (var ch in gs.choices)
                 {
@@ -429,7 +461,6 @@ public class Day2SummaryScreen : MonoBehaviour
                     var ct = BuatTeks(list.transform, "Pilihan", baris, rekapUkuran,
                         new Color(0.92f, 0.92f, 0.88f, 1f), FontStyles.Normal);
                     ct.alignment = TextAlignmentOptions.TopLeft;
-                    ct.gameObject.AddComponent<ContentSizeFitter>().verticalFit = ContentSizeFitter.FitMode.PreferredSize;
                 }
             }
         }
@@ -443,6 +474,12 @@ public class Day2SummaryScreen : MonoBehaviour
             frt.offsetMin = new Vector2(20f, 10f); frt.offsetMax = new Vector2(-20f, 65f);
             ft.alignment = TextAlignmentOptions.Center;
         }
+
+        // Paksa rebuild layout supaya tinggi Content terhitung dengan benar
+        // dari TMP preferredHeight pada frame yang sama dengan build UI.
+        LayoutRebuilder.ForceRebuildLayoutImmediate(lrt);
+        // Scroll ke atas (item pertama).
+        scroll.verticalNormalizedPosition = 1f;
     }
 
     void BuatBarisNyawa(Transform parent, int curLives, int maxLives)
