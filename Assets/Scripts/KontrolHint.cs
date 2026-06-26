@@ -72,15 +72,10 @@ public class KontrolHint : MonoBehaviour
 
         _sudahTampilSesiIni = true;
 
-        // Pilih teks sesuai platform
-        bool sentuh = Application.isMobilePlatform || Input.touchSupported;
-        string isi = sentuh
-            ? (string.IsNullOrEmpty(teksSentuh)
-                ? "\uD83D\uDC46  Tombol panah kiri-bawah untuk JALAN  \u2022  tombol LARI & TERIAK di kanan-bawah"
-                : teksSentuh)
-            : (string.IsNullOrEmpty(teksKeyboard)
-                ? "\u2190 \u2192 / A D : Jalan      \u21E7 Shift : Lari      \u2423 Spasi (tahan) : Teriak      Esc : Jeda"
-                : teksKeyboard);
+        // Game hanya untuk mobile → selalu tampilkan petunjuk kontrol sentuh
+        string isi = string.IsNullOrEmpty(teksSentuh)
+            ? "\uD83D\uDC46  Tombol panah kiri-bawah untuk JALAN  \u2022  tombol LARI & TERIAK di kanan-bawah"
+            : teksSentuh;
 
         // Bangun UI
         var root = BangunUI(isi, out CanvasGroup cg);

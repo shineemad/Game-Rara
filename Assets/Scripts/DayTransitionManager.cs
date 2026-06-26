@@ -125,6 +125,11 @@ public class DayTransitionManager : MonoBehaviour
             SetActiveAll(day1Objects, false);
             SetActiveAll(day3Objects, false);
 
+            // Sapu bersih sisa UI Day 1 yang dibuat runtime (kanvas dialog/HUD/dll)
+            // yang mungkin belum masuk day1Objects[] — supaya tidak "bocor" terlihat
+            // saat fade transisi antar fase Day 2.
+            Day2Preset.NonaktifkanSemuaUIDay1(debugLog);
+
             // Tampilkan prolog DULU sebelum enable Day2_Root + jalankan Day2Controller
             var prolog = day2Prolog;
             if (prolog == null) prolog = Day2PrologScreen.Instance;
@@ -229,6 +234,10 @@ public class DayTransitionManager : MonoBehaviour
             SetActiveAll(day1Objects, false);
             SetActiveAll(day2Objects, false);
             SetActiveAll(day3Objects, true);
+
+            // Sapu bersih sisa UI Day 1 yang dibuat runtime supaya tidak "bocor"
+            // terlihat saat transisi antar fase Day 3.
+            Day2Preset.NonaktifkanSemuaUIDay1(debugLog);
 
             // Tampilkan prolog DULU sebelum jalankan boss fight Day3Controller.
             var prolog = day3Prolog;

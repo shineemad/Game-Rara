@@ -1837,6 +1837,7 @@ MonoBehaviour:
   autoFindRara: 1
   npcDialog: {fileID: 452308648}
   tahanSampaiDialogSelesai: 1
+  aktifPergiAman: 1
   klaksonSfx: {fileID: 0}
   klaksonVolume: 0.6
   klaksonInterval: 0
@@ -3918,6 +3919,9 @@ MonoBehaviour:
   perigiKeKiriSetelahDialog: 1
   kecepatanPergi: 3.5
   jarakHilangSetelahPergi: 14
+  aktifPergiAman: 1
+  aktifMendekatBahaya: 1
+  jarakMendekatBahaya: 0.6
 --- !u!212 &868601431
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -4309,8 +4313,8 @@ MonoBehaviour:
   - pembicara: Narasi
     teks: 'Pagi ini Rara harus jalan kaki ke sekolah sendirian.
 
-      Ibu dan Ayah
-      udah berangkat kerja tadi.'
+      Ayah udah
+      berangkat kerja tadi.'
     portrait: {fileID: 0}
   - pembicara: Rara
     teks: '"Oke, bismillah! SMP Harapan nggak jauh kok.
@@ -6383,6 +6387,12 @@ MonoBehaviour:
   dialog: {fileID: 0}
   dialogOnceOnly: 1
   dialogDelay: 0.2
+  aktifPergiAman: 1
+  jarakMenjauh: 12
+  kecepatanMenjauhMul: 1.2
+  sembunyikanSetelahMenjauh: 1
+  aktifMendekatBahaya: 1
+  jarakMendekatBahaya: 0.6
 --- !u!50 &1452768352
 Rigidbody2D:
   serializedVersion: 4
@@ -6486,7 +6496,7 @@ MonoBehaviour:
     text: '"Mau permen nggak? Enak banget lho~
 
       Om punya banyak di warung,
-      ikut bentar aja ya, deket kok! tuh warungya Om"'
+      ikut bentar aja ya, deket kok! tuh warung Om"'
     choices: []
   - speakerName: Rara (hati)
     profile: {fileID: 0}
@@ -7972,8 +7982,9 @@ MonoBehaviour:
     backgroundSprite: {fileID: -3488003289054300884, guid: 13747e5be51e6eb4b9470c8f4b7992ac, type: 3}
     illustration: {fileID: 0}
     title: 'Hari 1: Jalan Kaki ke Sekolah'
-    text: Pagi hari di sebuah jalan menuju sekolah. Rara, gadis 13 tahun berbaju
-      ungu, bersiap berangkat ke SMP Harapan. "Hati-hati di jalan, Rara!" kata Ibu.
+    text: Pagi hari di depan rumah, seorang gadis bernama Rara (13 tahun) berbaju
+      ungu bersiap berangkat ke sekolah. "Hati-hati di jalan, Rara!" kata ibu Rara
+      di depan rumah.
     dialogSprite: {fileID: 0}
   - backgroundColor: {r: 0.36, g: 0.63, b: 0.78, a: 0}
     backgroundSprite: {fileID: -232070390949327782, guid: c90103ef72149624bb8e996f937662af, type: 3}
@@ -7987,9 +7998,13 @@ MonoBehaviour:
     backgroundSprite: {fileID: -7833834552866419639, guid: 87b19167c27a5c74bb3b7924bbae0e72, type: 3}
     illustration: {fileID: 0}
     title: Panduan Bermain
-    text: "\u2190 \u2192 : Gerakkan Rara ke kiri / kanan, Shift + \u2190 \u2192 :
-      Lari lebih cepat\nSPASI / Klik : Interaksi, Tombol TERIAK : Usir orang asing
-      yang mendekat\nNyawa Rara ada 3. Hati-hati!"
+    text: 'Tombol panah kiri-bawah : Gerakkan Rara ke kiri / kanan, tahan untuk Lari
+      lebih cepat
+
+      Tombol TERIAK kanan-bawah : Usir orang asing yang mendekat
+
+      Ketuk
+      tombol pilihan untuk menjawab. Nyawa Rara ada 3. Hati-hati!'
     dialogSprite: {fileID: 0}
   globalDialogSprite: {fileID: 4113829005332862926, guid: 64f200f9fa47f254c8ef4d8a33f19e53, type: 3}
   defaultDialogSpritePath: sprites/UI day 1/9.png
@@ -8023,7 +8038,7 @@ MonoBehaviour:
   btnWidth: 0.165
   btnHeight: 0.049
   btnBgColor: {r: 0.15471691, g: 0.09972275, b: 0, a: 0.65882355}
-  hintText: "\u25BC  SPACE / KLIK"
+  hintText: KLIK
   hintFontSizeOverride: 0
   hintAlign: 514
   advanceOnKeyboard: 1
@@ -9034,7 +9049,7 @@ MonoBehaviour:
     backgroundSprite: {fileID: -771712450127645301, guid: 4f6e3aa12b5f4444c89cd0b039cbfa8e, type: 3}
     illustration: {fileID: 0}
     title: 'Hari 2: Naik Angkot ke Sekolah'
-    text: 'Siang hari. Rara menunggu angkot di halte untuk berangkat ke sekolah.
+    text: 'Pagi hari. Rara menunggu angkot di halte untuk berangkat ke sekolah.
 
       "Pilih
       angkot yang ramai penumpang, ya!" pesan Ibu sebelum berangkat.'
@@ -9086,7 +9101,7 @@ MonoBehaviour:
   btnWidth: 0.165
   btnHeight: 0.049
   btnBgColor: {r: 0.15294118, g: 0.09803922, b: 0, a: 0.65882355}
-  hintText: "\u25BC  SPACE / KLIK"
+  hintText: KLIK
   hintFontSizeOverride: 0
   hintAlign: 514
   advanceOnKeyboard: 1

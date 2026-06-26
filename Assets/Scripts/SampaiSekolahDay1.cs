@@ -207,7 +207,7 @@ public class SampaiSekolahDay1 : MonoBehaviour
         // Tombol lanjut.
         Color warnaTombol = gangSepi ? new Color(0.86f, 0.45f, 0.20f, 1f)
                                      : new Color(0.20f, 0.70f, 0.36f, 1f);
-        BuatTombol(card.transform, "[  LANJUT  \u2192  KARTU EDUKASI  ]", warnaTombol, () =>
+        BuatTombol(card.transform, "LANJUT KE KARTU EDUKASI", warnaTombol, () =>
         {
             AudioManager.Instance?.Click();
             if (_canvasGO != null) Destroy(_canvasGO);
@@ -285,7 +285,7 @@ public class SampaiSekolahDay1 : MonoBehaviour
         // Isi tips.
         var isi = BuatTeks(card.transform, "Isi", tips, 23,
             new Color(1f, 1f, 0.90f, 0.97f), FontStyles.Normal);
-        isi.alignment = TextAlignmentOptions.TopLeft;
+        isi.alignment = TextAlignmentOptions.Center;
         var isiRt = isi.rectTransform;
         isiRt.anchorMin = new Vector2(0f, 0f); isiRt.anchorMax = new Vector2(1f, 1f);
         isiRt.offsetMin = new Vector2(50f, 120f); isiRt.offsetMax = new Vector2(-50f, -112f);
@@ -339,11 +339,16 @@ public class SampaiSekolahDay1 : MonoBehaviour
         rt.anchorMin = new Vector2(0.5f, 0f); rt.anchorMax = new Vector2(0.5f, 0f);
         rt.pivot = new Vector2(0.5f, 0f);
         rt.anchoredPosition = new Vector2(0f, 28f);
-        rt.sizeDelta = new Vector2(440f, 76f);
+        rt.sizeDelta = new Vector2(560f, 80f);
 
         var label = BuatTeks(go.transform, "Label", teks, 26, Color.white, FontStyles.Bold);
         label.alignment = TextAlignmentOptions.Center;
+        label.textWrappingMode = TextWrappingModes.NoWrap;
+        label.enableAutoSizing = true;
+        label.fontSizeMin = 18f; label.fontSizeMax = 26f;
         Stretch(label.rectTransform);
+        label.rectTransform.offsetMin = new Vector2(24f, 0f);
+        label.rectTransform.offsetMax = new Vector2(-24f, 0f);
 
         var btn = go.AddComponent<Button>();
         btn.targetGraphic = img;

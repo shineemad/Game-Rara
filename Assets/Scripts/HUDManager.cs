@@ -186,6 +186,7 @@ public class HUDManager : MonoBehaviour
     // Sprite bersama — dibuat sekali saat runtime
     private static Sprite _sCircle;
     private static Sprite _sRoundRect;
+    private static Sprite _sHeart;
 
     // Canvas navbar (untuk disembunyikan/ditampilkan oleh layar tertentu, mis. ChatSim).
     private GameObject       _navbarCanvasGO;
@@ -948,6 +949,7 @@ public class HUDManager : MonoBehaviour
         // Pastikan sprite bersama sudah dibuat
         if (_sCircle    == null) _sCircle    = GenCircle(64);
         if (_sRoundRect == null) _sRoundRect = GenRoundedRect(128, 64, 16);
+        if (_sHeart     == null) _sHeart     = GenHeart(64);
 
         // Canvas navbar
         var cGO = new GameObject("HUDCanvas_Navbar");
@@ -995,7 +997,7 @@ public class HUDManager : MonoBehaviour
         scoreRT.offsetMin = new Vector2(14f, 0f);
         scoreRT.offsetMax = Vector2.zero;
 
-        // Tiga hati — digeser ke kanan area skor agar tidak bertumpuk
+        // Tiga hati — digambar sebagai sprite hati prosedural berwarna merah
         _rHearts = new Image[3];
         for (int i = 0; i < 3; i++)
         {
@@ -1003,7 +1005,7 @@ public class HUDManager : MonoBehaviour
             var hRT  = Rect(left, "Heart" + i,
                 new Vector2(x0, 0.15f), new Vector2(x0 + 0.12f, 0.85f));
             var hImg = hRT.gameObject.AddComponent<Image>();
-            hImg.sprite         = heartFullSprite != null ? heartFullSprite : _sCircle;
+            hImg.sprite         = heartFullSprite != null ? heartFullSprite : _sHeart;
             hImg.color          = heartFullSprite != null ? Color.white
                                                           : new Color(0.92f, 0.18f, 0.18f, 1f);
             hImg.preserveAspect = true;
@@ -1423,6 +1425,35 @@ public class HUDManager : MonoBehaviour
             img.color = orig;
             yield return new WaitForSeconds(0.15f);
         }
+    }
+
+    // Buat sprite hati anti-aliased di runtime (mandiri, tidak butuh font/glyph)
+    static Sprite GenHeart(int res)
+    {
+        var tex = new Texture2D(res, res, TextureFormat.RGBA32, false);
+        const int SS = 3;                 // supersampling per sumbu untuk tepi halus
+        for (int py = 0; py < res; py++)
+            for (int px = 0; px < res; px++)
+            {
+                float cov = 0f;
+                for (int sy = 0; sy < SS; sy++)
+                    for (int sx = 0; sx < SS; sx++)
+                    {
+                        // Normalisasi ke ruang hati: skala sama agar tidak gepeng
+                        float u = (px + (sx + 0.5f) / SS) / res;   // 0..1
+                        float v = (py + (sy + 0.5f) / SS) / res;   // 0..1 (bawah→atas)
+                        float x = (u - 0.5f)  * 2.6f;
+                        float y = (v - 0.46f) * 2.6f;
+                        // Kurva hati implisit: (x²+y²−1)³ − x²·y³ ≤ 0
+                        float a  = x * x + y * y - 1f;
+                        float f  = a * a * a - x * x * y * y * y;
+                        if (f <= 0f) cov += 1f;
+                    }
+                cov /= (SS * SS);
+                tex.SetPixel(px, py, new Color(1f, 1f, 1f, cov));
+            }
+        tex.Apply();
+        return Sprite.Create(tex, new Rect(0, 0, res, res), new Vector2(0.5f, 0.5f));
     }
 
     // Buat sprite lingkaran anti-aliased di runtime

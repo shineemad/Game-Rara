@@ -1401,14 +1401,50 @@ public class ZonaTubuhQuiz : MonoBehaviour
     {
         if (_quizSelesai || chip == null) return false;
 
+        // 1) Uji ketat: pointer benar-benar di dalam kotak zona.
         bool diZonaAman   = RectTransformUtility.RectangleContainsScreenPoint(_zonaAmanRT,   screenPos);
         bool diZonaBahaya = RectTransformUtility.RectangleContainsScreenPoint(_zonaBahayaRT, screenPos);
+
+        // 2) Toleransi: perbesar area tangkap tiap kolom (margin 14% lebar layar) supaya
+        //    chip jauh lebih MUDAH masuk walau dilepas sedikit di luar kotak. Bagian tengah
+        //    layar tetap "netral" (chip kembali ke tempat semula).
+        if (!diZonaAman && !diZonaBahaya)
+        {
+            float margin = Screen.width * 0.14f;
+            Rect rAman   = RectLayarDiperbesar(_zonaAmanRT,   margin);
+            Rect rBahaya = RectLayarDiperbesar(_zonaBahayaRT, margin);
+            bool dekatAman   = rAman.Contains(screenPos);
+            bool dekatBahaya = rBahaya.Contains(screenPos);
+
+            if (dekatAman && dekatBahaya)
+            {
+                // Area tumpang-tindih → pilih kolom yang pusatnya paling dekat horizontal.
+                bool lebihDekatAman = Mathf.Abs(screenPos.x - rAman.center.x)
+                                    <= Mathf.Abs(screenPos.x - rBahaya.center.x);
+                diZonaAman = lebihDekatAman; diZonaBahaya = !lebihDekatAman;
+            }
+            else
+            {
+                diZonaAman = dekatAman; diZonaBahaya = dekatBahaya;
+            }
+        }
 
         if (!diZonaAman && !diZonaBahaya) return false;
 
         string jawabanPemain = diZonaAman ? "AMAN" : "BAHAYA";
         LabuhkanChip(chip, jawabanPemain);
         return true;
+    }
+
+    // Rect layar (pixel) sebuah RectTransform yang DIPERBESAR margin ke segala arah.
+    // Canvas ScreenSpaceOverlay → GetWorldCorners langsung dalam koordinat pixel layar.
+    static Rect RectLayarDiperbesar(RectTransform rt, float margin)
+    {
+        Vector3[] c = new Vector3[4];
+        rt.GetWorldCorners(c);
+        float xMin = c[0].x - margin, yMin = c[0].y - margin;
+        float xMax = c[2].x + margin, yMax = c[2].y + margin;
+        return new Rect(xMin, yMin, xMax - xMin, yMax - yMin);
     }
 
     // Masukkan chip ke DALAM kotak zona (reparent + menumpuk) lalu proses skor.

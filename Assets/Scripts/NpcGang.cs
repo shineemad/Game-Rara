@@ -614,15 +614,15 @@ public class NpcGang : MonoBehaviour
         }
         else
         {
-            d.panelColor  = new Color(0f, 0f, 0f, 0.82f);
-            d.borderColor = new Color(1f, 0.85f, 0.3f, 1f);
+            d.panelColor  = new Color(0f, 0f, 0f, 0.78f);
+            d.borderColor = new Color(1f, 0.85f, 0.3f, 0f);
         }
 
         // ── Warna & font ──
         d.speakerColor    = new Color(1f, 0.85f, 0.3f, 1f);
         d.textColor       = Color.white;
         d.hintColor       = new Color(1f, 1f, 1f, 0.55f);
-        d.speakerFontSize = 30;
+        d.speakerFontSize = 26;
         d.textFontSize    = 26;
         d.hintFontSize    = 16;
         d.typeSpeed       = 0.025f;
@@ -632,11 +632,11 @@ public class NpcGang : MonoBehaviour
         // Pastikan banner nama TIDAK pakai sprite (tanpa kotak coklat)
         d.nameBannerSprite = null;
 
-        // ── Posisi & ukuran panel (match screenshot Inspector terakhir) ──
+        // ── Posisi & ukuran panel (ikut box dialog Paman NPC) ──
         d.panelCenterX    = 0.50f;
-        d.panelCenterY    = 0.219f;
-        d.panelWidthFrac  = 0.939f;
-        d.panelHeightFrac = 0.395f;
+        d.panelCenterY    = 0.16f;
+        d.panelWidthFrac  = 0.972f;
+        d.panelHeightFrac = 0.291f;
 
         // ── Portrait kiri ──
         d.portraitCenterX = 0.14f;
@@ -646,7 +646,7 @@ public class NpcGang : MonoBehaviour
         d.portraitPreserveAspect = false;
 
         // ── Banner nama (anchor area teks nama) ──
-        d.bannerAnchorMin = new Vector2(0.03f,  0.1f);
+        d.bannerAnchorMin = new Vector2(0.03f,  0.11f);
         d.bannerAnchorMax = new Vector2(0.253f, 0.333f);
 
         // ── Area teks utama ──

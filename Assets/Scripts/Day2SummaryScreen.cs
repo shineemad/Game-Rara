@@ -373,13 +373,10 @@ public class Day2SummaryScreen : MonoBehaviour
         vRT.anchorMin = Vector2.zero; vRT.anchorMax = Vector2.one;
         vRT.offsetMin = Vector2.zero; vRT.offsetMax = Vector2.zero;
         vRT.pivot = new Vector2(0f, 1f);
-        // Image transparan penuh hanya untuk menangkap raycast (scroll/drag).
         var vImg = viewportGO.AddComponent<Image>();
-        vImg.color = new Color(0f, 0f, 0f, 0f);
+        vImg.color = new Color(0f, 0f, 0f, 0.0001f); // hampir transparan, dipakai Mask
         vImg.raycastTarget = true;
-        // RectMask2D meng-clip berdasarkan rectangle (bukan alpha stencil),
-        // sehingga child tidak hilang seperti saat memakai Mask + Image alpha~0.
-        viewportGO.AddComponent<RectMask2D>();
+        viewportGO.AddComponent<Mask>().showMaskGraphic = false;
         scroll.viewport = vRT;
 
         var list = new GameObject("Content");

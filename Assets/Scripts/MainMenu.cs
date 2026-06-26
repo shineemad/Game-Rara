@@ -245,16 +245,10 @@ public class MainMenu : MonoBehaviour
     void BukaKontrol()
     {
         if (AudioManager.Instance != null) AudioManager.Instance.Click();
-        var card = BukaModal("\uD83C\uDFAE  CARA BERMAIN", 760f, 720f);
+        var card = BukaModal("CARA BERMAIN", 760f, 560f);
 
         string isi =
-            "<b>KOMPUTER (Keyboard)</b>\n" +
-            "<b>Jalan</b>  :  A / D\n" +
-            "<b>Lari</b>  :  Shift\n" +
-            "<b>Teriak minta tolong</b>  :  Spasi (tahan)\n" +
-            "<b>Lanjut dialog</b>  :  Spasi / Klik\n" +
-            "<b>Jeda (pause)</b>  :  Esc / P\n\n" +
-            "<b>HP / Tablet (Sentuh)</b>\n" +
+            "<b>MOBILE (Sentuh)</b>\n" +
             "<b>Jalan</b>  :  tombol panah kiri-bawah\n" +
             "<b>Lari & Teriak</b>  :  tombol kanan-bawah\n" +
             "<b>Menjawab</b>  :  ketuk tombol pilihan\n\n" +
@@ -288,22 +282,17 @@ public class MainMenu : MonoBehaviour
     void BukaPengaturan()
     {
         if (AudioManager.Instance != null) AudioManager.Instance.Click();
-        var card = BukaModal("\u2699  PENGATURAN", 640f, 700f);
+        var card = BukaModal("PENGATURAN", 640f, 560f);
 
         float y = -110f;
-        LabelSeksi(card, "\uD83D\uDD0A  Volume", ref y);
+        LabelSeksi(card, "Volume", ref y);
         Slider(card, "Volume Master", GameSettings.MasterVolume, 0f, 1f, ref y,
                v => GameSettings.MasterVolume = v);
         Toggle(card, "Musik Latar", GameSettings.MusicOn, ref y,
                on => GameSettings.MusicOn = on);
 
         y -= 14f;
-        LabelSeksi(card, "\uD83D\uDD24  Ukuran Font", ref y);
-        Slider(card, "Skala Teks", GameSettings.FontScale, 0.8f, 1.6f, ref y,
-               v => GameSettings.FontScale = v);
-
-        y -= 14f;
-        LabelSeksi(card, "\u267F  Aksesibilitas", ref y);
+        LabelSeksi(card, "Aksesibilitas", ref y);
         Toggle(card, "Kurangi Animasi", GameSettings.ReduceMotion, ref y,
                on => GameSettings.ReduceMotion = on);
 
@@ -316,7 +305,7 @@ public class MainMenu : MonoBehaviour
     void BukaTentang()
     {
         if (AudioManager.Instance != null) AudioManager.Instance.Click();
-        var card = BukaModal("\u2139  TENTANG", 700f, 700f);
+        var card = BukaModal("TENTANG", 700f, 700f);
 
         string isi =
             "<b>BERANI</b>\n" +
@@ -331,7 +320,7 @@ public class MainMenu : MonoBehaviour
 
         var teks = MakeText(card.transform, "Isi", isi, 26,
                             new Color(0.93f, 0.95f, 1f, 1f), FontStyles.Normal);
-        teks.alignment = TextAlignmentOptions.Top;
+        teks.alignment = TextAlignmentOptions.Center;
         teks.lineSpacing = 12f;
         // Auto-shrink agar seluruh isi selalu muat & tidak menimpa tombol TUTUP.
         teks.enableAutoSizing = true;
@@ -353,7 +342,7 @@ public class MainMenu : MonoBehaviour
     void KonfirmasiKeluar()
     {
         if (AudioManager.Instance != null) AudioManager.Instance.Click();
-        var card = BukaModal("\u2716  KELUAR", 620f, 360f);
+        var card = BukaModal("KELUAR", 620f, 360f);
 
         var teks = MakeText(card.transform, "Isi",
             "Yakin ingin keluar dari game?\nProgres yang belum selesai tidak tersimpan.",

@@ -206,6 +206,24 @@ public class Day2Preset : MonoBehaviour
     // AUTO-DISCOVER DAY 1
     // ══════════════════════════════════════════════════════════════════════
 
+    /// <summary>
+    /// Nonaktifkan SEKARANG semua GameObject milik Day 1 (live scan), termasuk
+    /// kanvas UI yang dibuat runtime sehingga belum sempat masuk day1Objects[]
+    /// saat Bootstrap. Dipanggil DayTransitionManager tepat saat pindah ke Day 2/3
+    /// supaya tidak ada sisa UI Day 1 yang "bocor" muncul saat transisi antar fase.
+    /// Aman: hanya menyentuh root GameObject yang mengandung komponen Day 1.
+    /// </summary>
+    public static void NonaktifkanSemuaUIDay1(bool log = false)
+    {
+        var roots = DiscoverDay1Objects(log);
+        foreach (var go in roots)
+        {
+            if (go == null) continue;
+            if (go.activeSelf) go.SetActive(false);
+        }
+        if (log) Debug.Log($"[Day2Preset] NonaktifkanSemuaUIDay1: {roots.Count} root Day 1 dinonaktifkan.");
+    }
+
     static List<GameObject> DiscoverDay1Objects(bool log)
     {
         var result = new HashSet<GameObject>();
