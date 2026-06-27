@@ -2039,43 +2039,42 @@ MonoBehaviour:
   tampilkanOverlay: 1
   overlaySprite: {fileID: 0}
   overlayColor: {r: 0, g: 0, b: 0, a: 0.82}
-  judul: "\U0001F6E1\uFE0F  CARA MENJAGA DIRI \u2014 HARI 2"
+  judul: "CARA MENJAGA DIRI - HARI 2"
   warnaJudul: {r: 0.45, g: 1, b: 0.65, a: 1}
   ukuranJudul: 32
   tipsList:
-  - heading: "\u2728 3 KATA SAKTI saat merasa tidak aman:"
-    isi: "\u2460 TIDAK!  \u2014 tolak dengan TEGAS & suara keras.\n\u2461 PERGI  
-      \u2014 menjauh / pindah ke tempat ramai.\n\u2462 CERITA  \u2014 lapor orang
-      dewasa yang kamu percaya.\nKamu TIDAK pernah salah karena menolak atau melapor."
+  - heading: "3 KATA SAKTI saat merasa tidak aman:"
+    isi: "1. TIDAK! - tolak dengan TEGAS & suara keras.\n2. PERGI - menjauh / pindah
+      ke tempat ramai.\n3. CERITA - lapor orang dewasa yang kamu percaya.\nKamu TIDAK
+      pernah salah karena menolak atau melapor."
     ikon: {fileID: 0}
     warnaHeading: {r: 0.45, g: 1, b: 0.65, a: 1}
     warnaIsi: {r: 1, g: 1, b: 0.85, a: 1}
-  - heading: "\U0001F6AB ZONA PRIBADI tubuhmu:"
-    isi: "\u2022 Bagian tubuh yang tertutup baju renang = milik kamu sendiri.\n\u2022
-      Tidak ada yang boleh menyentuh / melihat / memotretnya.\n\u2022 Kalau ada yang
-      mencoba \u2014 walau orang dikenal \u2014 itu BAHAYA. Lakukan: TIDAK, PERGI,
-      CERITA."
+  - heading: "ZONA PRIBADI tubuhmu:"
+    isi: "- Bagian tubuh yang tertutup baju renang = milik kamu sendiri.\n- Tidak
+      ada yang boleh menyentuh / melihat / memotretnya.\n- Kalau ada yang mencoba
+      - walau orang dikenal - itu BAHAYA. Lakukan: TIDAK, PERGI, CERITA."
     ikon: {fileID: 0}
     warnaHeading: {r: 0.45, g: 1, b: 0.65, a: 1}
     warnaIsi: {r: 1, g: 1, b: 0.85, a: 1}
-  - heading: "\U0001F6A9 KENALI TANDA BAHAYA (grooming):"
-    isi: "\u2022 Orang asing sok akrab & memberi iming-iming / hadiah gratis.\n\u2022
-      Minta data pribadi (nomor HP, alamat, foto).\n\u2022 Mengajak menyimpan rahasia
-      dari orang tua.\nSemua itu = RED FLAG. Jangan diladeni!"
+  - heading: "KENALI TANDA BAHAYA (grooming):"
+    isi: "- Orang asing sok akrab & memberi iming-iming / hadiah gratis.\n- Minta
+      data pribadi (nomor HP, alamat, foto).\n- Mengajak menyimpan rahasia dari orang
+      tua.\nSemua itu = RED FLAG. Jangan diladeni!"
     ikon: {fileID: 0}
     warnaHeading: {r: 0.45, g: 1, b: 0.65, a: 1}
     warnaIsi: {r: 1, g: 1, b: 0.85, a: 1}
-  - heading: "\U0001F68C Aman di Angkot & Jalan:"
-    isi: "\u2022 Duduk dekat Pak Supir / ibu-ibu, hindari pojok sepi.\n\u2022 Catat
-      plat nomor & kabari orang tua.\n\u2022 Kalau ada yang aneh, turun di tempat
-      ramai dan minta tolong."
+  - heading: "Aman di Angkot & Jalan:"
+    isi: "- Duduk dekat Pak Supir / ibu-ibu, hindari pojok sepi.\n- Catat plat nomor
+      & kabari orang tua.\n- Kalau ada yang aneh, turun di tempat ramai dan minta
+      tolong."
     ikon: {fileID: 0}
     warnaHeading: {r: 0.45, g: 1, b: 0.65, a: 1}
     warnaIsi: {r: 1, g: 1, b: 0.85, a: 1}
-  - heading: "\U0001F46E ORANG TEPERCAYA tempat lapor:"
-    isi: "\u2022 Orang tua, guru, dan keluarga dekat.\n\u2022 Polisi, satpam, atau
-      petugas berseragam.\n\u2022 Ibu-ibu / orang dewasa di tempat ramai.\nSimpan
-      nomor mereka & beranikan diri bercerita."
+  - heading: "ORANG TEPERCAYA tempat lapor:"
+    isi: "- Orang tua, guru, dan keluarga dekat.\n- Polisi, satpam, atau petugas
+      berseragam.\n- Ibu-ibu / orang dewasa di tempat ramai.\nSimpan nomor mereka
+      & beranikan diri bercerita."
     ikon: {fileID: 0}
     warnaHeading: {r: 0.45, g: 1, b: 0.65, a: 1}
     warnaIsi: {r: 1, g: 1, b: 0.85, a: 1}
@@ -2083,10 +2082,10 @@ MonoBehaviour:
   ilustrasiTinggi: 140
   accordion: 1
   accordionTerbukaAwal: 0
-  footerText: "\u260E Hotline:\nPolisi 110  |  Hotline Anak 129  |  KPAI 021-31901556"
+  footerText: "Hotline:\nPolisi 110  |  Hotline Anak 129  |  KPAI 021-31901556"
   warnaFooter: {r: 1, g: 0.78, b: 0.2, a: 1}
   ukuranFooter: 18
-  tombolLanjutTeks: "\u25B6  LANJUT"
+  tombolLanjutTeks: "LANJUT"
   tombolSprite: {fileID: 0}
   tombolWarna: {r: 0.2, g: 0.65, b: 0.35, a: 1}
   tombolBorderColor: {r: 1, g: 0.78, b: 0.2, a: 1}
@@ -4003,7 +4002,7 @@ MonoBehaviour:
       Mana uang jajan lo? HP-nya
       juga sini!"'
     choices: []
-  - speakerName: Rara (dalam hati)
+  - speakerName: Rara (batin)
     profile: {fileID: 0}
     text: 'Jantung Rara berdebar kencang.
 
@@ -6487,7 +6486,7 @@ MonoBehaviour:
     profile: {fileID: 414440879778542897, guid: d7769e879c67f7d44942d01f783848db, type: 3}
     text: '"Hei dek, bentar ya~!"'
     choices: []
-  - speakerName: Rara (hati)
+  - speakerName: Rara (batin)
     profile: {fileID: 0}
     text: Eh? Siapa ini? Rara nggak pernah lihat orang ini sebelumnya...
     choices: []
@@ -6498,7 +6497,7 @@ MonoBehaviour:
       Om punya banyak di warung,
       ikut bentar aja ya, deket kok! tuh warung Om"'
     choices: []
-  - speakerName: Rara (hati)
+  - speakerName: Rara (batin)
     profile: {fileID: 0}
     text: 'Tunggu... Rara nggak kenal orang ini sama sekali!
 
@@ -7229,7 +7228,7 @@ MonoBehaviour:
       kategori: AMAN
       damage: 40
       bonusPoin: 0
-      reaksi: "\u2713 Tegas! Si Bully kaget kamu berani menolak."
+      reaksi: "\u2713 Tegas! Si Bayangan Hitam kaget kamu berani menolak."
       latarReaksi: {fileID: 0}
     - label: '"Eh... aku nggak bawa uang kok..."'
       kategori: RAGU
@@ -7250,7 +7249,7 @@ MonoBehaviour:
       kategori: AMAN
       damage: 40
       bonusPoin: 0
-      reaksi: "\u2713 Mantap! Nyali Si Bully makin ciut."
+      reaksi: "\u2713 Mantap! Nyali Si Bayangan Hitam makin ciut."
       latarReaksi: {fileID: 0}
     - label: '"I-iya deh, aku nggak ngadu..."'
       kategori: RAGU
@@ -7271,7 +7270,7 @@ MonoBehaviour:
       kategori: AMAN
       damage: 50
       bonusPoin: 0
-      reaksi: "\u2713 Hebat! Satpam datang. Si Bully kabur!"
+      reaksi: "\u2713 Hebat! Satpam datang. Si Bayangan Hitam kabur!"
       latarReaksi: {fileID: 0}
     - label: '"Aku... aku tunggu temanku aja deh."'
       kategori: RAGU
@@ -7285,9 +7284,9 @@ MonoBehaviour:
       bonusPoin: 0
       reaksi: "\u2716 BAHAYA besar! Kamu kehilangan 1 nyawa."
       latarReaksi: {fileID: 0}
-  narasiBossKalah: Satpam dan guru piket datang! Si Bully langsung kabur ketakutan.
+  narasiBossKalah: Satpam dan guru piket datang! Si Bayangan Hitam langsung kabur ketakutan.
     Rara berhasil menjaga dirinya dengan berani dan cerdas.
-  achievementMenang: Penakluk Si Bully
+  achievementMenang: Penakluk Si Bayangan Hitam
   eduJudul: "\U0001F4DA  KARTU EDUKASI \u2014 HARI 3"
   eduWarnaJudul: {r: 1, g: 0.85, b: 0.3, a: 1}
   eduLatarSprite: {fileID: 2453971899653100909, guid: 9676d926479d11e4aabcedbf3f893494, type: 3}

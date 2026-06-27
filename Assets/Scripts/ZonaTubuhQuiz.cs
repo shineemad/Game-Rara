@@ -1239,11 +1239,13 @@ public class ZonaTubuhQuiz : MonoBehaviour
         TambahKlikZona(_zonaAmanRT,   "AMAN");
         TambahKlikZona(_zonaBahayaRT, "BAHAYA");
 
-        // Karakter ilustrasi di tengah (opsional, di belakang label)
+        // Karakter ilustrasi di tengah arena (opsional) — jadi LATAR di belakang
+        // label seret. Di-parent ke arenaGO + SetAsFirstSibling supaya render di
+        // belakang chip/teks namun di atas panel arena.
         if (karakterSprite != null)
         {
             var karGO = new GameObject("Karakter");
-            karGO.transform.SetParent(_canvasGO.transform, false);
+            karGO.transform.SetParent(arenaGO.transform, false);
             var karImg = karGO.AddComponent<Image>();
             karImg.sprite         = karakterSprite;
             karImg.preserveAspect = true;
@@ -1253,6 +1255,7 @@ public class ZonaTubuhQuiz : MonoBehaviour
             karRT.pivot = new Vector2(0.5f, 0.5f);
             karRT.sizeDelta = karakterUkuran;
             karRT.anchoredPosition = karakterAnchoredPos;
+            karGO.transform.SetAsFirstSibling(); // render paling belakang dlm arena
         }
 
         // Container label di TENGAH arena — grid 2 kolom, di antara header & instruksi.
@@ -1264,8 +1267,10 @@ public class ZonaTubuhQuiz : MonoBehaviour
 
         int kolom = 2;
         int baris = Mathf.CeilToInt(chips.Length / (float)kolom);
-        float celahKolom  = 28f;
-        float spasiBaris  = 18f;
+        // Celah kolom dibuat lebar supaya latar sprite (gambar tubuh) di TENGAH
+        // arena terlihat di antara kolom kiri & kanan label.
+        float celahKolom  = 260f;
+        float spasiBaris  = 30f;
         float lebarTotal  = kolom * chipUkuran.x + celahKolom;
         float tinggiTotal = baris * chipUkuran.y + (baris - 1) * spasiBaris;
         caRT.sizeDelta = new Vector2(lebarTotal, tinggiTotal);
@@ -1759,10 +1764,12 @@ public class DraggableChip : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
     public void OnDrag(PointerEventData eventData)
     {
         if (_ditempatkan) return;
-        Vector2 local;
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            (RectTransform)canvas.transform, eventData.position, canvas.worldCamera, out local);
-        _rt.anchoredPosition = local;
+        // Geser chip mengikuti PERGERAKAN (delta) cursor/jari. Cara ini selalu
+        // membuat chip menempel di bawah cursor apa pun anchor/pivot-nya — lebih
+        // andal daripada konversi titik absolut yang bisa meleset saat anchor
+        // chip bukan di tengah (sebelumnya menyebabkan label "tidak mengikuti").
+        float skala = canvas != null && canvas.scaleFactor > 0f ? canvas.scaleFactor : 1f;
+        _rt.anchoredPosition += eventData.delta / skala;
     }
 
     public void OnEndDrag(PointerEventData eventData)
@@ -1802,14 +1809,62 @@ public class DraggableChip : MonoBehaviour, IBeginDragHandler, IDragHandler, IEn
         SetTerpilih(false);
         _cg.interactable   = false;
         _cg.blocksRaycasts = false;
-        if (wadahZona != null)
-        {
-            transform.SetParent(wadahZona, false);
-            _rt.anchoredPosition = Vector2.zero;
-            _rt.localScale = Vector3.one;
-        }
         if (chipImage != null)
             chipImage.color = warnaAkhir;
+        if (wadahZona != null)
+        {
+            _rt.localScale = Vector3.one;
+            // Animasikan chip MENGIKUTI/meluncur dari titik lepas ke slot kolom,
+            // bukan melompat langsung — terasa "masuk" ke dalam kolom.
+            StartCoroutine(AnimasiMasukZona(wadahZona));
+        }
+    }
+
+    // Glide mulus chip dari posisi lepas saat ini ke slot final di dalam kolom zona.
+    System.Collections.IEnumerator AnimasiMasukZona(Transform wadahZona)
+    {
+        // Posisi DUNIA titik lepas (tempat jari/mouse melepas chip).
+        Vector3 worldAwal = _rt.position;
+
+        var le = GetComponent<LayoutElement>();
+        if (le == null) le = gameObject.AddComponent<LayoutElement>();
+        // Kunci tinggi chip yang sudah masuk agar seragam & rapi seperti tombol.
+        le.minHeight      = _rt.rect.height;
+        le.preferredHeight = _rt.rect.height;
+        le.flexibleHeight = 0f;
+
+        // Reparent ke wadah lalu paksa layout menghitung slot final → ambil posisi dunianya.
+        transform.SetParent(wadahZona, false);
+        le.ignoreLayout = false;
+        Canvas.ForceUpdateCanvases();
+        UnityEngine.UI.LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)wadahZona);
+        Vector3 worldTarget = _rt.position;
+
+        // Lepaskan sementara dari kendali layout supaya bisa dianimasikan bebas.
+        le.ignoreLayout = true;
+        float t = 0f;
+        while (t < 1f)
+        {
+            t += Time.unscaledDeltaTime * 8f;          // durasi ~0,125 dtk
+            float e = 1f - (1f - t) * (1f - t);        // ease-out (cepat lalu melambat)
+            _rt.position = Vector3.Lerp(worldAwal, worldTarget, e);
+            yield return null;
+        }
+        _rt.position = worldTarget;
+
+        // Kembalikan ke kendali layout → terkunci rapi di slot kolom.
+        le.ignoreLayout = false;
+
+        // Sentuhan "pop" mendarat: sedikit membesar lalu mengecil kembali ke 1.
+        float p = 0f;
+        while (p < 1f)
+        {
+            p += Time.unscaledDeltaTime * 9f;          // durasi ~0,11 dtk
+            float s = 1f + 0.12f * Mathf.Sin(p * Mathf.PI); // 1 → 1.12 → 1
+            _rt.localScale = new Vector3(s, s, 1f);
+            yield return null;
+        }
+        _rt.localScale = Vector3.one;
     }
 }
 

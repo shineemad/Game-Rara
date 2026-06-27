@@ -251,7 +251,7 @@ public class NpcDialog : MonoBehaviour
                 text = "\"Hei dek, bentar ya~!\""
             },
             new DialogEntry {
-                speakerName = "Rara (dalam hati)",
+                speakerName = "Rara (batin)",
                 text = "Eh? Siapa ini? Rara nggak pernah lihat orang ini sebelumnya..."
             },
             new DialogEntry {
@@ -259,7 +259,7 @@ public class NpcDialog : MonoBehaviour
                 text = "\"Mau permen nggak? Enak banget lho~\nOm punya banyak di warung, ikut bentar aja ya, deket kok!\""
             },
             new DialogEntry {
-                speakerName = "Rara (dalam hati)",
+                speakerName = "Rara (batin)",
                 text = "Tunggu... Rara nggak kenal orang ini sama sekali!\nDia nawarin permen DAN mau ngajak Rara pergi... INI NGGAK BENER!"
             },
             new DialogEntry {

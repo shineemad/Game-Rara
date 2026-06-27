@@ -112,6 +112,16 @@ public class AudioManager : MonoBehaviour
     [Tooltip("Hujan latar sepanjang Day 3 (loop). Diputar via ambienceSource.")]
     public AudioClip ambienceHujan;
 
+    // ── State terakhir BGM/ambience. Dipakai untuk MEMUTAR ULANG musik setelah
+    //    perangkat audio berganti (mis. VoiceMeter / minigame Hari 2-3 memanggil
+    //    Microphone.Start/End yang memicu Unity menghentikan semua AudioSource). ──
+    bool      _bgmAktif;
+    BGMTrack  _bgmTrackSekarang;
+    float     _bgmVolumeSekarang = 0.7f;
+    bool      _ambienceAktif;
+    AudioClip _ambienceClipSekarang;
+    float     _ambienceVolumeSekarang = 0.4f;
+
     // ══════════════════════════════════════════════════════════════════════
     void Awake()
     {
@@ -119,10 +129,115 @@ public class AudioManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
+            PastikanSumberTerpasang();
+            AktifkanSemuaSumber();
+            // Putar ulang BGM bila perangkat audio berubah (mic dimulai/dihentikan).
+            AudioSettings.OnAudioConfigurationChanged += OnPerangkatAudioBerubah;
+            // Pemantau yang memulihkan BGM bila mati diam-diam (lihat PantauBgm).
+            StartCoroutine(PantauBgm());
         }
         else
         {
             Destroy(gameObject);
+        }
+    }
+
+    // Bersihkan referensi singleton saat objek ini dihancurkan agar Instance tidak
+    // menunjuk ke AudioManager/AudioSource yang sudah di-destroy (mencegah
+    // MissingReferenceException saat scene di-reload pada game satu-scene).
+    void OnDestroy()
+    {
+        if (Instance == this)
+        {
+            AudioSettings.OnAudioConfigurationChanged -= OnPerangkatAudioBerubah;
+            Instance = null;
+        }
+    }
+
+    // Pastikan GameObject & seluruh AudioSource AKTIF agar BGM/SFX selalu bisa
+    // diputar sejak awal. Mencegah error "Can not play a disabled audio source"
+    // bila checkbox komponen AudioSource sempat ter-nonaktif di Inspector.
+    // Auto-wire AudioSource bila referensi Inspector kosong. Tanpa ini, jika
+    // bgmSource/sfxSource/ambienceSource = null (mis. referensi scene ter-reset),
+    // PlayBGM/PlaySFX/PlayAmbience akan return diam-diam => SELURUH audio senyap.
+    // Urutan komponen pada GameObject "audio": [0]=bgm [1]=sfx [2]=ambience.
+    void PastikanSumberTerpasang()
+    {
+        var sumber = GetComponents<AudioSource>();
+        if (bgmSource      == null && sumber.Length > 0) bgmSource      = sumber[0];
+        if (sfxSource      == null && sumber.Length > 1) sfxSource      = sumber[1];
+        if (ambienceSource == null && sumber.Length > 2) ambienceSource = sumber[2];
+
+        // Cadangan terakhir: buat AudioSource baru agar tidak pernah null.
+        if (bgmSource      == null) bgmSource      = gameObject.AddComponent<AudioSource>();
+        if (sfxSource      == null) sfxSource      = gameObject.AddComponent<AudioSource>();
+        if (ambienceSource == null) ambienceSource = gameObject.AddComponent<AudioSource>();
+
+        bgmSource.playOnAwake      = false;
+        sfxSource.playOnAwake      = false;
+        ambienceSource.playOnAwake = false;
+    }
+
+    void AktifkanSemuaSumber()
+    {
+        if (!gameObject.activeSelf) gameObject.SetActive(true);
+        if (bgmSource      != null && !bgmSource.enabled)      bgmSource.enabled      = true;
+        if (sfxSource      != null && !sfxSource.enabled)      sfxSource.enabled      = true;
+        if (ambienceSource != null && !ambienceSource.enabled) ambienceSource.enabled = true;
+
+        // Jaminan audio global tidak ter-pause. Bila suatu kondisi sempat men-set
+        // AudioListener.pause = true (mis. dari pause/alt-tab) dan tidak dikembalikan,
+        // SELURUH audio (BGM + SFX) jadi senyap. Pastikan selalu false di sini.
+        if (AudioListener.pause) AudioListener.pause = false;
+    }
+
+    // Dipanggil Unity saat perangkat/konfigurasi audio berganti. Saat itu Unity
+    // MENGHENTIKAN semua AudioSource yang sedang berbunyi (penyebab BGM menu &
+    // bagian lain mendadak hilang ketika mikrofon VoiceMeter mulai merekam).
+    // Kita putar ulang BGM & ambience terakhir agar musik kembali berjalan.
+    void OnPerangkatAudioBerubah(bool perangkatBerubah)
+    {
+        AktifkanSemuaSumber();
+
+        if (_bgmAktif && bgmSource != null && bgmClips != null)
+        {
+            int idx = (int)_bgmTrackSekarang;
+            if (idx >= 0 && idx < bgmClips.Length && bgmClips[idx] != null)
+            {
+                bgmSource.clip   = bgmClips[idx];
+                bgmSource.volume = _bgmVolumeSekarang;
+                bgmSource.loop   = true;
+                bgmSource.Play();
+            }
+        }
+
+        if (_ambienceAktif && ambienceSource != null && _ambienceClipSekarang != null)
+        {
+            ambienceSource.clip   = _ambienceClipSekarang;
+            ambienceSource.volume = _ambienceVolumeSekarang;
+            ambienceSource.loop   = true;
+            ambienceSource.Play();
+        }
+    }
+
+    // Watchdog BGM. BGM bisa "mati diam-diam" karena banyak sebab di luar kendali
+    // kita: VoiceMeter / minigame Hari 2-3 me-restart perangkat audio (Microphone
+    // Start/End), aplikasi kehilangan fokus, atau perangkat audio berganti — dan
+    // tidak semua kasus memicu OnAudioConfigurationChanged. Pemantau ringan (cek tiap
+    // 0.5 dtk waktu-nyata) memastikan BGM yang seharusnya berbunyi selalu dipulihkan.
+    System.Collections.IEnumerator PantauBgm()
+    {
+        var tunggu = new WaitForSecondsRealtime(0.5f);
+        while (true)
+        {
+            yield return tunggu;
+            if (_bgmAktif && !AudioListener.pause
+                && bgmSource != null && bgmSource.enabled
+                && !bgmSource.mute && bgmSource.clip != null
+                && !bgmSource.isPlaying)
+            {
+                bgmSource.Play();
+            }
         }
     }
 
@@ -138,6 +253,17 @@ public class AudioManager : MonoBehaviour
         int idx = (int)track;
         if (bgmClips == null || idx >= bgmClips.Length || bgmClips[idx] == null)
             return;
+        if (bgmSource == null) return;
+
+        // Pastikan komponen AudioSource AKTIF. Bila checkbox AudioSource sempat
+        // ter-nonaktif, bgmSource.Play() gagal "Can not play a disabled audio
+        // source" sehingga BGM tidak berjalan sama sekali. Aktifkan ulang.
+        if (!bgmSource.enabled) bgmSource.enabled = true;
+
+        // Catat track aktif agar bisa diputar ulang bila perangkat audio berganti.
+        _bgmAktif          = true;
+        _bgmTrackSekarang  = track;
+        _bgmVolumeSekarang = volume;
 
         if (bgmSource.clip == bgmClips[idx] && bgmSource.isPlaying)
             return; // sudah diputar
@@ -180,7 +306,11 @@ public class AudioManager : MonoBehaviour
         bgmSource.volume = volume;
     }
 
-    public void StopBGM() => bgmSource.Stop();
+    public void StopBGM()
+    {
+        _bgmAktif = false;
+        if (bgmSource != null) bgmSource.Stop();
+    }
 
     // ══════════════════════════════════════════════════════════════════════
     // SFX
@@ -188,7 +318,7 @@ public class AudioManager : MonoBehaviour
 
     void PlaySFX(AudioClip clip)
     {
-        if (clip != null) sfxSource.PlayOneShot(clip);
+        if (clip != null && sfxSource != null) sfxSource.PlayOneShot(clip);
     }
 
     public void Click()      => PlaySFX(sfxClick);
@@ -224,7 +354,7 @@ public class AudioManager : MonoBehaviour
         AudioClip c = sfxKetik != null ? sfxKetik
                     : (sfxChatKetik != null ? sfxChatKetik
                     : (sfxChatMasuk != null ? sfxChatMasuk : sfxClick));
-        if (c != null) sfxSource.PlayOneShot(c, 0.5f);
+        if (c != null && sfxSource != null) sfxSource.PlayOneShot(c, 0.5f);
     }
 
     // ── Umum Tambahan (Nyawa, Game Over, Tegang) ──────────────────────────
@@ -261,6 +391,10 @@ public class AudioManager : MonoBehaviour
         if (ambienceSource == null) return;
         var pakai = clip != null ? clip : ambienceAngkot;
         if (pakai == null) return;
+        // Catat ambience aktif agar bisa diputar ulang bila perangkat audio berganti.
+        _ambienceAktif          = true;
+        _ambienceClipSekarang   = pakai;
+        _ambienceVolumeSekarang = volume;
         if (ambienceSource.clip == pakai && ambienceSource.isPlaying) return;
         ambienceSource.clip   = pakai;
         ambienceSource.volume = volume;
@@ -271,6 +405,7 @@ public class AudioManager : MonoBehaviour
     /// Hentikan ambience loop.
     public void StopAmbience()
     {
+        _ambienceAktif = false;
         if (ambienceSource != null) ambienceSource.Stop();
     }
 
@@ -289,4 +424,139 @@ public class AudioManager : MonoBehaviour
             default:       Neutral();    break;
         }
     }
+
+#if UNITY_EDITOR
+    // ══════════════════════════════════════════════════════════════════════
+    // EDITOR — AUTO-ASSIGN AUDIO LANGSUNG DARI FOLDER Assets/sounds
+    // ──────────────────────────────────────────────────────────────────────
+    // Memetakan setiap field AudioClip + bgmClips[] ke file di Assets/sounds
+    // berdasarkan NAMA FILE (tanpa ekstensi, abaikan huruf besar/kecil).
+    // Pakai bila wiring di Inspector kosong / ter-revert: klik kanan komponen
+    // AudioManager → pilih menu di bawah, lalu Save Scene (Ctrl+S).
+    // Tidak mengubah API/field apa pun — hanya MENGISI referensi clip.
+    // ══════════════════════════════════════════════════════════════════════
+
+    // Dipanggil otomatis saat komponen pertama kali ditambahkan ke GameObject.
+    void Reset() => MuatSemuaAudioDariSounds(overwrite: false);
+
+    [ContextMenu("\u25B6 Muat Audio dari folder sounds (isi yang KOSONG saja)")]
+    void MuatAudioKosongMenu() => MuatSemuaAudioDariSounds(overwrite: false);
+
+    [ContextMenu("\u25B6 Muat ULANG semua Audio dari folder sounds (TIMPA)")]
+    void MuatAudioTimpaMenu() => MuatSemuaAudioDariSounds(overwrite: true);
+
+    /// <summary>
+    /// Cari & assign seluruh AudioClip dari Assets/sounds (rekursif).
+    /// overwrite=false hanya mengisi field yang masih null; true menimpa semua.
+    /// </summary>
+    void MuatSemuaAudioDariSounds(bool overwrite)
+    {
+        // Index semua AudioClip di Assets/sounds berdasar nama file (case-insensitive).
+        var index = new System.Collections.Generic.Dictionary<string, AudioClip>(
+            System.StringComparer.OrdinalIgnoreCase);
+        foreach (var guid in UnityEditor.AssetDatabase.FindAssets("t:AudioClip", new[] { "Assets/sounds" }))
+        {
+            string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+            string nama = System.IO.Path.GetFileNameWithoutExtension(path);
+            if (!index.ContainsKey(nama))
+                index[nama] = UnityEditor.AssetDatabase.LoadAssetAtPath<AudioClip>(path);
+        }
+
+        AudioClip Cari(params string[] kandidat)
+        {
+            foreach (var n in kandidat)
+                if (index.TryGetValue(n, out var clip) && clip != null) return clip;
+            return null;
+        }
+
+        void Set(ref AudioClip field, params string[] kandidat)
+        {
+            if (!overwrite && field != null) return;
+            var c = Cari(kandidat);
+            if (c != null) field = c;
+        }
+
+        // ── BGM: [0]menu [1]day1 [2]day2 [3]day3 [4]boss [5]result ──────────
+        if (overwrite || bgmClips == null || bgmClips.Length < 6)
+        {
+            var lama = bgmClips;
+            bgmClips = new AudioClip[6];
+            if (!overwrite && lama != null)
+                for (int i = 0; i < lama.Length && i < 6; i++) bgmClips[i] = lama[i];
+        }
+        void SetBgm(int i, params string[] kandidat)
+        {
+            if (!overwrite && bgmClips[i] != null) return;
+            var c = Cari(kandidat);
+            if (c != null) bgmClips[i] = c;
+        }
+        SetBgm(0, "Menu");
+        SetBgm(1, "Day1-Jalan", "Day1");
+        SetBgm(2, "Day2-Angkot", "Day2");
+        SetBgm(3, "Day3-Parkiran", "Day3");
+        SetBgm(4, "Boss Fight", "BossFight");
+        SetBgm(5, "Result");
+
+        // ── SFX Umum ────────────────────────────────────────────────────────
+        Set(ref sfxClick,     "sfxClick", "SFXclick");
+        Set(ref sfxCorrect,   "sfxCorrect");
+        Set(ref sfxWrong,     "sfxWrong");
+        Set(ref sfxBossHit,   "sfxBossHit");
+        Set(ref sfxBossGroan, "sfxBossGroan");
+        Set(ref sfxVictory,   "sfxVictory");
+        Set(ref sfxNeutral,   "sfxNeutral");
+
+        // ── SFX Kategori Pilihan Dialog ──────────────────────────────────────
+        Set(ref sfxAman,        "sfxAman");
+        Set(ref sfxRagu,        "sfxRagu");
+        Set(ref sfxBahaya,      "sfxBahaya");
+        Set(ref sfxLapor,       "sfxLapor");
+        Set(ref sfxAchievement, "sfxAchievement");
+
+        // ── SFX Hari 2 (Angkot & Chat) ───────────────────────────────────────
+        Set(ref sfxChatMasuk, "sfxChatMasuk");
+        Set(ref sfxChatKetik, "sfxChatKetik");
+        Set(ref sfxKetik,     "sfxketik", "sfxKetik");
+        Set(ref sfxAngkot,    "sfxAngkot");
+        Set(ref sfxPeluit,    "sfxPeluit");
+        Set(ref sfxLangkah,   "sfxLangkah");
+
+        // ── Ambience (loop) ──────────────────────────────────────────────────
+        Set(ref ambienceAngkot, "Ambience Angkot", "ambienceAngkot");
+        Set(ref ambienceHujan,  "ambienceHujan");
+
+        // ── SFX Umum Tambahan (Nyawa, Game Over, Tegang) ────────────────────
+        Set(ref sfxKehilanganNyawa, "sfxKehilanganNyawa");
+        Set(ref sfxGameOver,        "sfxGameOver");
+        Set(ref sfxDetakJantung,    "sfxDetakJantung");
+        Set(ref sfxTimerTik,        "sfxTimerTik");
+        Set(ref sfxTeriakCharge,    "sfxTeriakCharge");
+
+        // ── SFX Hari 2 Tambahan ──────────────────────────────────────────────
+        Set(ref sfxAngkotPintu, "sfxAngkotPintu");
+        Set(ref sfxDragAmbil,   "sfxDragAmbil");
+        Set(ref sfxDragLepas,   "sfxDragLepas");
+
+        // ── SFX Hari 3 (Hujan & Boss) ────────────────────────────────────────
+        Set(ref sfxPetir,      "sfxPetir");
+        Set(ref sfxPanicAlarm, "sfxPanicAlarm");
+        Set(ref sfxMotorOjol,  "sfxMotorOjol");
+        Set(ref sfxBossKalah,  "sfxBossKalah");
+
+        // ── SFX Polish (Prolog, Skor, Kartu, Lencana) ───────────────────────
+        Set(ref sfxSlideProlog, "sfxSlideProlog");
+        Set(ref sfxSkorNaik,    "sfxSkorNaik");
+        Set(ref sfxMuncul,      "sfxMuncul");
+        Set(ref sfxMunculKartu, "sfxMunculKartu");
+        Set(ref sfxKlikLanjut,  "sfxKlikLanjut");
+        Set(ref sfxKlikUlangi,  "sfxKlikUlangi");
+        Set(ref sfxUnlock,      "sfxUnlock");
+
+        UnityEditor.EditorUtility.SetDirty(this);
+        if (!Application.isPlaying)
+            UnityEditor.SceneManagement.EditorSceneManager.MarkSceneDirty(gameObject.scene);
+        Debug.Log("[AudioManager] Audio dimuat dari Assets/sounds (timpa=" + overwrite
+                + "). Total klip terindeks: " + index.Count + ". Jangan lupa Save Scene.");
+    }
+#endif
 }

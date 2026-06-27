@@ -455,6 +455,17 @@ public class MobileControls : MonoBehaviour
             onDown: () => rightHeld = true,
             onUp:   () => rightHeld = false);
 
+        // ── Tombol arah: lingkaran translucent + PANAH PUTIH di tengah ──
+        // Tombol tetap berbentuk lingkaran (sprite circle bawaan dpadColor);
+        // panah putih (segitiga prosedural) diletakkan sebagai child icon di
+        // tengah. Label glyph "◄"/"►" disembunyikan karena sering tak ter-render.
+        if (leftImg  != null) TambahPanahPutih(leftImg.gameObject,  true);
+        if (rightImg != null) TambahPanahPutih(rightImg.gameObject, false);
+        var lblKiri  = leftImg  != null ? leftImg.transform.Find("Label")  : null;
+        var lblKanan = rightImg != null ? rightImg.transform.Find("Label") : null;
+        if (lblKiri  != null) lblKiri.gameObject.SetActive(false);
+        if (lblKanan != null) lblKanan.gameObject.SetActive(false);
+
         // ── AKSI: TERIAK (pojok kanan bawah) ─────────────────────────────
         // Bagian dari controller mobile terpadu. Menggerakkan ShoutHeld yang
         // dibaca Day1Controller (HandleShout & tutorial). Dilengkapi cincin gauge
@@ -687,6 +698,63 @@ public class MobileControls : MonoBehaviour
         return Sprite.Create(tex, new Rect(0, 0, res, res), new Vector2(0.5f, 0.5f));
     }
 
+    // Buat sprite PANAH (segitiga) secara prosedural — tanpa file icon & tanpa
+    // bergantung pada glyph font (◄ ► sering tak ter-render). Dipakai untuk
+    // menjadikan tombol arah berbentuk panah kiri/kanan.
+    static Sprite MakeArrowSprite(bool pointLeft)
+    {
+        int res = 64;
+        var tex = new Texture2D(res, res, TextureFormat.RGBA32, false);
+        float mx = 0.18f;   // margin kiri-kanan (fraksi) agar panah tak menyentuh tepi
+        for (int y = 0; y < res; y++)
+            for (int x = 0; x < res; x++)
+            {
+                float fx = (x + 0.5f) / res;
+                float fy = (y + 0.5f) / res;
+
+                // Di luar area horizontal segitiga → transparan
+                if (fx < mx || fx > 1f - mx)
+                {
+                    tex.SetPixel(x, y, new Color(1f, 1f, 1f, 0f));
+                    continue;
+                }
+
+                // t: 0 di tepi kiri area, 1 di tepi kanan area
+                float t = (fx - mx) / (1f - 2f * mx);
+                // u: 0 di ALAS segitiga, 1 di PUNCAK (arah panah)
+                float u = pointLeft ? (1f - t) : t;
+
+                // Setengah tinggi segitiga mengecil menuju puncak
+                float halfH = 0.42f * (1f - u);
+                float edge  = halfH - Mathf.Abs(fy - 0.5f);
+                float a     = Mathf.Clamp01(edge * res);   // tepi halus (anti-alias)
+
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, a));
+            }
+        tex.Apply();
+        tex.wrapMode = TextureWrapMode.Clamp;
+        return Sprite.Create(tex, new Rect(0, 0, res, res), new Vector2(0.5f, 0.5f));
+    }
+
+    // Tambahkan panah PUTIH (segitiga) di tengah tombol arah, di atas lingkaran.
+    void TambahPanahPutih(GameObject tombol, bool pointLeft)
+    {
+        var arrowGO = new GameObject("Panah");
+        arrowGO.transform.SetParent(tombol.transform, false);
+        var arrowRT = arrowGO.AddComponent<RectTransform>();
+        float pad = (1f - iconSizeFraction) * 0.5f;
+        arrowRT.anchorMin = new Vector2(pad, pad);
+        arrowRT.anchorMax = new Vector2(1f - pad, 1f - pad);
+        arrowRT.offsetMin = Vector2.zero;
+        arrowRT.offsetMax = Vector2.zero;
+        var arrowImg = arrowGO.AddComponent<Image>();
+        arrowImg.sprite         = MakeArrowSprite(pointLeft);
+        arrowImg.color          = Color.white;
+        arrowImg.preserveAspect = true;
+        arrowImg.raycastTarget  = false;
+    }
+
+    // Terapkan font TMP (asset Inspector → default TMP → LiberationSans fallback).
     void ApplyFont(TextMeshProUGUI tmp)
     {
         TMP_FontAsset f = fontAsset;

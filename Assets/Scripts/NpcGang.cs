@@ -789,7 +789,7 @@ public class NpcGang : MonoBehaviour
             },
             new NpcDialog.DialogEntry
             {
-                speakerName = "Rara (dalam hati)",
+                speakerName = "Rara (batin)",
                 text = "Jantung Rara berdebar kencang.\nMereka mau memalak! Aku harus pilih dengan tepat..."
             },
             new NpcDialog.DialogEntry

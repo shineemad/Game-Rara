@@ -387,18 +387,6 @@ public class EduCardDay2 : MonoBehaviour
         hlg.childForceExpandWidth = false; hlg.childForceExpandHeight = false;
         hlg.spacing = 12f;
 
-        if (tip.ikon != null)
-        {
-            var iconGO = new GameObject("Ikon");
-            iconGO.transform.SetParent(entry.transform, false);
-            var iRT = iconGO.AddComponent<RectTransform>();
-            iRT.sizeDelta = new Vector2(56f, 56f);
-            var iImg = iconGO.AddComponent<Image>();
-            iImg.sprite = tip.ikon; iImg.preserveAspect = true;
-            var le = iconGO.AddComponent<LayoutElement>();
-            le.preferredWidth = 56f; le.preferredHeight = 56f; le.flexibleWidth = 0f;
-        }
-
         var txtCol = new GameObject("Text");
         txtCol.transform.SetParent(entry.transform, false);
         txtCol.AddComponent<RectTransform>();
@@ -434,7 +422,7 @@ public class EduCardDay2 : MonoBehaviour
         if (accordion)
         {
             bool terbuka = (index == accordionTerbukaAwal);
-            var chev = BuatTeks(headRow.transform, "Chevron", terbuka ? "\u25BC" : "\u25B6", 18, tip.warnaHeading, FontStyles.Bold);
+            var chev = BuatTeks(headRow.transform, "Chevron", terbuka ? "-" : "+", 18, tip.warnaHeading, FontStyles.Bold);
             chev.alignment = TextAlignmentOptions.MidlineRight;
             var chLE = chev.gameObject.AddComponent<LayoutElement>();
             chLE.preferredWidth = 28f; chLE.flexibleWidth = 0f;
@@ -450,7 +438,7 @@ public class EduCardDay2 : MonoBehaviour
             {
                 bool baru = !bodyGO.activeSelf;
                 bodyGO.SetActive(baru);
-                chevTMP.text = baru ? "\u25BC" : "\u25B6";
+                chevTMP.text = baru ? "-" : "+";
                 AudioManager.Instance?.Click();
                 LayoutRebuilder.ForceRebuildLayoutImmediate((RectTransform)entry.transform);
             });

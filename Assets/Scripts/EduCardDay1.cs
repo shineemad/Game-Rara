@@ -438,21 +438,6 @@ public class EduCardDay1 : MonoBehaviour
         hlg.childForceExpandHeight = false;
         hlg.spacing              = 12f;
 
-        if (tip.ikon != null)
-        {
-            var iconGO = new GameObject("Ikon");
-            iconGO.transform.SetParent(entry.transform, false);
-            var iRT = iconGO.AddComponent<RectTransform>();
-            iRT.sizeDelta = new Vector2(56f, 56f);
-            var iImg = iconGO.AddComponent<Image>();
-            iImg.sprite         = tip.ikon;
-            iImg.preserveAspect = true;
-            var le = iconGO.AddComponent<LayoutElement>();
-            le.preferredWidth  = 56f;
-            le.preferredHeight = 56f;
-            le.flexibleWidth   = 0f;
-        }
-
         var txtCol = new GameObject("Text");
         txtCol.transform.SetParent(entry.transform, false);
         txtCol.AddComponent<RectTransform>();

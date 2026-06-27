@@ -2176,7 +2176,8 @@ public class Day3Controller : MonoBehaviour
             _portraitUcapanImg.enabled = false;
         // Label nama boss (di atas potret) hanya tampil bila yang bicara memang si boss.
         if (_bossNamaText != null) _bossNamaText.text = (namaPembicara == bossNama) ? bossNama : "";
-        _ucapanText.fontStyle = italic ? FontStyles.Italic : FontStyles.Bold;
+        // Narasi Day 3 tampil NORMAL (tidak italic); ucapan pembicara tetap Bold.
+        _ucapanText.fontStyle = italic ? FontStyles.Normal : FontStyles.Bold;
         _ucapanText.text = "";
         if (_hintLanjutText != null) _hintLanjutText.gameObject.SetActive(false);
 

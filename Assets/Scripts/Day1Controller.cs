@@ -1259,7 +1259,7 @@ public class Day1Controller : MonoBehaviour
             },
             new Day1Intro.BarisNarasi
             {
-                pembicara = "Rara (dalam hati)",
+                pembicara = "Rara (batin)",
                 teks      = "Harusnya aku ambil jalan ramai tadi\u2026"
             },
             new Day1Intro.BarisNarasi

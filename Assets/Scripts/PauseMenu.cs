@@ -917,13 +917,6 @@ public class PauseMenu : MonoBehaviour
             GameSettings.MusicOn = on;
         });
 
-        // ── FONT ─────────────────────────────────────────────────────────
-        BuatLabelSeksi(card, "🔤 Ukuran Font", ref y);
-        BuatSlider(card, "Skala Teks", GameSettings.FontScale, 0.8f, 1.6f, ref y, (v) =>
-        {
-            GameSettings.FontScale = v;
-        });
-
         // ── AKSESIBILITAS ────────────────────────────────────────────────
         BuatLabelSeksi(card, "♿ Aksesibilitas", ref y);
         BuatToggle(card, "Kurangi Animasi", GameSettings.ReduceMotion, ref y, (on) =>
