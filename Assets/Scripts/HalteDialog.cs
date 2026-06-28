@@ -642,7 +642,7 @@ public class HalteDialog : MonoBehaviour
         // (klik di luar tombol tidak lagi melanjutkan)
         _hintText.text = "";
         _tombolLanjut = TombolLanjutVN.Pasang(_dialogBoxGO.transform, null,
-            "LANJUT  \u25B6", new Vector2(0.80f, 0.08f), new Vector2(0.99f, 0.42f));
+            "LANJUT", new Vector2(0.80f, 0.08f), new Vector2(0.99f, 0.42f));
 
         // ── Row pilihan: di-parent ke Canvas, posisi di ATAS panel ──
         _pilihanRowGO = new GameObject("PilihanRow");

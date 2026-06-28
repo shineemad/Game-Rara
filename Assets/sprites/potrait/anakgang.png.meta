@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 74e32d7b50454b44fa273c2384918263
+guid: b9154a521584e7e4b89ba4125e2bf869
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -621021955452869361
-    second: rara_0
+      213: -951285293377004457
+    second: anakgang_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: rara_0
+      name: anakgang_0
       rect:
         serializedVersion: 2
-        x: 0
+        x: 221
         y: 0
-        width: 1254
-        height: 1254
+        width: 2102
+        height: 2223
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -127,8 +127,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: f05638362dfa167f0800000000000000
-      internalID: -621021955452869361
+      spriteID: 75cd538d01b5cc2f0800000000000000
+      internalID: -951285293377004457
       vertices: []
       indices: 
       edges: []
@@ -143,8 +143,7 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable:
-      rara_0: -621021955452869361
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -1384,6 +1384,12 @@ public class Day3Controller : MonoBehaviour
                 berhasilVoice = false;
                 yield return PromptTeriak(ok => berhasilVoice = ok);
             }
+            // Opsi [4] PANIC BUTTON juga voice-driven: teriak minta tolong sampai
+            // ZONA MERAH (meter dB) lalu lari ke satpam.
+            else if (dipilih.panicButton)
+            {
+                yield return PromptTeriakZona(_ => { });
+            }
 
             if (dipilih.butuhVoiceKeras && !berhasilVoice)
             {
@@ -1597,7 +1603,7 @@ public class Day3Controller : MonoBehaviour
 
         var instruksi = BuatTeks(go.transform, "Instruksi",
             "\uD83D\uDDE3 TERIAK TERUS \u2014 JANGAN BERHENTI!\n\"JANGAN DEKAT-DEKAT!!\"\n" +
-            "<size=65%>(teriak ke mic, atau TAHAN SPASI / KLIK) sambil tekan tombol DARURAT</size>",
+            "<size=65%>(teriak ke mic, atau TAHAN tombol TERIAK) sambil tekan tombol DARURAT</size>",
             38, Color.white, FontStyles.Bold);
         instruksi.alignment = TextAlignmentOptions.Center;
         var iRt = instruksi.rectTransform;
@@ -1734,6 +1740,292 @@ public class Day3Controller : MonoBehaviour
         if (sukses) AudioManager.Instance?.PlayKategori("AMAN");
         Destroy(go);
         onResult?.Invoke(sukses);
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // PROMPT TERIAK — ZONA SUARA (meter dB) untuk opsi [4] PANIC BUTTON
+    // Voice-driven: tahan suara di ZONA MERAH sampai meter penuh, lalu Rara
+    // lari & lapor ke satpam. UI meniru tantangan suara Hari 2 (3 zona dB).
+    // ══════════════════════════════════════════════════════════════════════
+    IEnumerator PromptTeriakZona(Action<bool> onResult)
+    {
+        // Ambang zona pada bar (fraksi 0..1): hijau → kuning → merah.
+        const float ambangKuning = 0.5f;
+        const float ambangMerah  = 0.78f;
+        const float tahanDetik   = 1.4f;   // lama suara konsisten di ZONA MERAH → berhasil
+
+        Color hijau = warnaAman, kuning = warnaRagu, merah = warnaBahaya;
+        string labelNormal = "SUARA NORMAL  (50-60 DB)";
+        string labelSedang = "SUARA SEDANG  (60-80 DB)";
+        string labelKeras  = "SUARA KERAS  (>80 DB)";
+
+        var go = new GameObject("Day3_PromptTeriakZona");
+        var canvas = go.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.ScreenSpaceOverlay;
+        canvas.sortingOrder = sortingOrder + 50;
+        AddScaler(go);
+        go.AddComponent<GraphicRaycaster>();
+
+        // Latar belakang penuh layar (pakai sprite teriak bila diisi).
+        Sprite teriakBg = teriakLatarBelakang != null ? teriakLatarBelakang : arenaLatarSprite;
+        var bg = BuatImage(go.transform, "BG", teriakBg != null ? Color.white : new Color(0.06f, 0.05f, 0.10f, 1f));
+        if (teriakBg != null) bg.sprite = teriakBg;
+        bg.raycastTarget = true;
+        Stretch(bg.rectTransform);
+
+        // Kartu utama membulat (gaya gambar referensi).
+        var kartu = BuatImage(go.transform, "Kartu", new Color(0.10f, 0.07f, 0.05f, 0.97f));
+        kartu.sprite = GetRoundedSpritePlat(); kartu.type = Image.Type.Sliced;
+        kartu.raycastTarget = false;
+        var kRt = kartu.rectTransform;
+        kRt.anchorMin = new Vector2(0.06f, 0.06f); kRt.anchorMax = new Vector2(0.94f, 0.94f);
+        kRt.offsetMin = Vector2.zero; kRt.offsetMax = Vector2.zero;
+        var kOutline = kartu.gameObject.AddComponent<Outline>();
+        kOutline.effectColor = new Color(0.95f, 0.72f, 0.18f, 0.9f);
+        kOutline.effectDistance = new Vector2(3f, -3f);
+
+        // Sprite Rara berteriak (opsional) di kanan-bawah layar.
+        if (spriteTeriak != null)
+        {
+            var teriakImg = BuatImage(go.transform, "SpriteTeriak", Color.white);
+            teriakImg.sprite = spriteTeriak;
+            teriakImg.preserveAspect = true;
+            teriakImg.raycastTarget = false;
+            var tRt = teriakImg.rectTransform;
+            tRt.anchorMin = new Vector2(1f, 0f); tRt.anchorMax = new Vector2(1f, 0f);
+            tRt.pivot = new Vector2(1f, 0f);
+            tRt.sizeDelta = spriteTeriakUkuran;
+            tRt.anchoredPosition = new Vector2(-20f, 20f);
+        }
+
+        // Judul.
+        var judul = BuatTeks(go.transform, "Judul", "TERIAK MINTA TOLONG!", 40, merah, FontStyles.Bold);
+        judul.alignment = TextAlignmentOptions.Center;
+        var jRt = judul.rectTransform;
+        jRt.anchorMin = new Vector2(0.08f, 0.80f); jRt.anchorMax = new Vector2(0.92f, 0.92f);
+        jRt.offsetMin = Vector2.zero; jRt.offsetMax = Vector2.zero;
+
+        // Instruksi.
+        var ins = BuatTeks(go.transform, "Instruksi",
+            "TERIAK \u201CTOLOOONG! ADA YANG GANGGU!\u201D ke mikrofon sampai meter MERAH, lalu lari ke SATPAM! (boleh tahan tombol)",
+            24, Color.white, FontStyles.Normal);
+        ins.alignment = TextAlignmentOptions.Center;
+        var iRt = ins.rectTransform;
+        iRt.anchorMin = new Vector2(0.12f, 0.71f); iRt.anchorMax = new Vector2(0.88f, 0.80f);
+        iRt.offsetMin = Vector2.zero; iRt.offsetMax = Vector2.zero;
+
+        // Label level (berubah Normal / Sedang / KERAS).
+        var lvl = BuatTeks(go.transform, "Level", labelNormal, 32, hijau, FontStyles.Bold);
+        lvl.alignment = TextAlignmentOptions.Center;
+        var lRt = lvl.rectTransform;
+        lRt.anchorMin = new Vector2(0.1f, 0.62f); lRt.anchorMax = new Vector2(0.9f, 0.70f);
+        lRt.offsetMin = Vector2.zero; lRt.offsetMax = Vector2.zero;
+
+        // Bar background.
+        var bar = BuatImage(go.transform, "Bar", new Color(0.08f, 0.08f, 0.10f, 1f));
+        bar.sprite = GetRoundedSpritePlat(); bar.type = Image.Type.Sliced;
+        var barRt = bar.rectTransform;
+        barRt.anchorMin = new Vector2(0.15f, 0.50f); barRt.anchorMax = new Vector2(0.85f, 0.585f);
+        barRt.offsetMin = Vector2.zero; barRt.offsetMax = Vector2.zero;
+        var barOutline = bar.gameObject.AddComponent<Outline>();
+        barOutline.effectColor = new Color(1f, 1f, 1f, 0.3f); barOutline.effectDistance = new Vector2(2f, -2f);
+
+        // Zona warna (hijau / kuning / merah).
+        BuatZonaWarnaZona(bar.transform, 0f, ambangKuning, hijau);
+        BuatZonaWarnaZona(bar.transform, ambangKuning, ambangMerah, kuning);
+        BuatZonaWarnaZona(bar.transform, ambangMerah, 1f, merah);
+
+        // Garis target (ambang merah).
+        var garis = BuatImage(bar.transform, "GarisTarget", new Color(1f, 1f, 1f, 0.9f));
+        garis.raycastTarget = false;
+        var garisRt = garis.rectTransform;
+        garisRt.anchorMin = new Vector2(ambangMerah, -0.25f);
+        garisRt.anchorMax = new Vector2(ambangMerah, 1.25f);
+        garisRt.pivot = new Vector2(0.5f, 0.5f);
+        garisRt.sizeDelta = new Vector2(4f, 0f);
+
+        // Marker level (garis tebal vertikal yang bergerak).
+        var marker = BuatImage(bar.transform, "Marker", Color.white);
+        marker.raycastTarget = false;
+        var markRt = marker.rectTransform;
+        markRt.anchorMin = new Vector2(0f, -0.18f); markRt.anchorMax = new Vector2(0f, 1.18f);
+        markRt.pivot = new Vector2(0.5f, 0.5f);
+        markRt.sizeDelta = new Vector2(10f, 0f);
+
+        // Legenda 3 baris (mirip gambar referensi).
+        BuatLegendaZona(go.transform, hijau, kuning, merah, labelNormal, labelSedang, labelKeras);
+
+        // Indikator TAHAN: progress berapa lama suara sudah di ZONA MERAH.
+        var holdLabel = BuatTeks(go.transform, "HoldLabel", "TAHAN SUARA DI ZONA MERAH!", 18,
+            new Color(1f, 0.85f, 0.3f, 1f), FontStyles.Bold);
+        holdLabel.alignment = TextAlignmentOptions.Center;
+        var hlRt = holdLabel.rectTransform;
+        hlRt.anchorMin = new Vector2(0.15f, 0.475f); hlRt.anchorMax = new Vector2(0.85f, 0.498f);
+        hlRt.offsetMin = Vector2.zero; hlRt.offsetMax = Vector2.zero;
+
+        var holdBg = BuatImage(go.transform, "HoldBg", new Color(0.08f, 0.08f, 0.10f, 1f));
+        holdBg.sprite = GetRoundedSpritePlat(); holdBg.type = Image.Type.Sliced;
+        var holdBgRt = holdBg.rectTransform;
+        holdBgRt.anchorMin = new Vector2(0.22f, 0.45f); holdBgRt.anchorMax = new Vector2(0.78f, 0.475f);
+        holdBgRt.offsetMin = Vector2.zero; holdBgRt.offsetMax = Vector2.zero;
+        var holdBgOutline = holdBg.gameObject.AddComponent<Outline>();
+        holdBgOutline.effectColor = new Color(1f, 1f, 1f, 0.25f); holdBgOutline.effectDistance = new Vector2(2f, -2f);
+
+        var holdFill = BuatImage(holdBg.transform, "HoldFill", merah);
+        holdFill.sprite = GetRoundedSpritePlat(); holdFill.type = Image.Type.Sliced;
+        holdFill.raycastTarget = false;
+        var holdFillRt = holdFill.rectTransform;
+        holdFillRt.anchorMin = new Vector2(0f, 0f); holdFillRt.anchorMax = new Vector2(0f, 1f);
+        holdFillRt.offsetMin = Vector2.zero; holdFillRt.offsetMax = Vector2.zero;
+
+        var holdPct = BuatTeks(holdBg.transform, "HoldPct", "0%", 16, Color.white, FontStyles.Bold);
+        holdPct.alignment = TextAlignmentOptions.Center;
+
+        // Tombol TAHAN UNTUK TERIAK (fallback / pendukung input mic).
+        bool holdTeriak = false;
+        var btnGO = BuatTombol(go.transform, "TAHAN UNTUK TERIAK", merah, null);
+        var btnRt = (RectTransform)btnGO.transform;
+        btnRt.anchorMin = new Vector2(0.27f, 0.115f); btnRt.anchorMax = new Vector2(0.73f, 0.225f);
+        btnRt.offsetMin = Vector2.zero; btnRt.offsetMax = Vector2.zero;
+        var btnImg = btnGO.GetComponent<Image>();
+        btnImg.sprite = GetRoundedSpritePlat(); btnImg.type = Image.Type.Sliced;
+        var btnOutline = btnGO.AddComponent<Outline>();
+        btnOutline.effectColor = new Color(1f, 0.85f, 0.3f, 0.7f); btnOutline.effectDistance = new Vector2(3f, -3f);
+        var btnTrig = btnGO.AddComponent<EventTrigger>();
+        var downEvt = new EventTrigger.Entry { eventID = EventTriggerType.PointerDown };
+        downEvt.callback.AddListener(_ => holdTeriak = true);
+        var upEvt = new EventTrigger.Entry { eventID = EventTriggerType.PointerUp };
+        upEvt.callback.AddListener(_ => holdTeriak = false);
+        var exitEvt = new EventTrigger.Entry { eventID = EventTriggerType.PointerExit };
+        exitEvt.callback.AddListener(_ => holdTeriak = false);
+        btnTrig.triggers.Add(downEvt); btnTrig.triggers.Add(upEvt); btnTrig.triggers.Add(exitEvt);
+
+        var vm = VoiceMeter.Instance;
+        bool voiceDriven = vm != null;
+
+        float level = 0f, waktuMerah = 0f;
+        while (waktuMerah < tahanDetik)
+        {
+            float dt = Time.deltaTime;
+            bool hold = holdTeriak || Input.GetKey(KeyCode.Space) || Input.GetMouseButton(0)
+                        || (vm != null && vm.fallbackButtonHeld);
+
+            if (voiceDriven)
+            {
+                float target = LevelDariVoiceMeterZona(vm, ambangKuning, ambangMerah);
+                if (hold) target = Mathf.Max(target, 1f);
+                level = Mathf.Lerp(level, target, 1f - Mathf.Exp(-9f * dt));
+            }
+            else
+            {
+                level += (hold ? 0.9f : -0.7f) * dt;
+            }
+            level = Mathf.Clamp01(level);
+
+            markRt.anchorMin = new Vector2(level, -0.18f);
+            markRt.anchorMax = new Vector2(level,  1.18f);
+
+            if (level >= ambangMerah)
+            {
+                lvl.text = labelKeras; lvl.color = merah;
+                waktuMerah += dt;
+                marker.color = merah;
+                float pulsa = 1f + 0.25f * Mathf.Sin(Time.time * 18f);
+                marker.transform.localScale = new Vector3(pulsa, 1f, 1f);
+            }
+            else if (level >= ambangKuning)
+            {
+                lvl.text = labelSedang; lvl.color = kuning;
+                waktuMerah = 0f;
+                marker.color = Color.white;
+                marker.transform.localScale = Vector3.one;
+            }
+            else
+            {
+                lvl.text = labelNormal; lvl.color = hijau;
+                waktuMerah = 0f;
+                marker.color = Color.white;
+                marker.transform.localScale = Vector3.one;
+            }
+
+            float frac = Mathf.Clamp01(waktuMerah / Mathf.Max(0.01f, tahanDetik));
+            holdFillRt.anchorMax = new Vector2(frac, 1f);
+            holdPct.text = Mathf.RoundToInt(frac * 100f) + "%";
+            holdFill.color = frac > 0f
+                ? new Color(merah.r, merah.g, merah.b, 0.7f + 0.3f * Mathf.Sin(Time.time * 14f))
+                : merah;
+            yield return null;
+        }
+
+        lvl.text = "\u2713 HEBAT! LARI KE SATPAM!"; lvl.color = merah;
+        marker.color = merah;
+        AudioManager.Instance?.PlayKategori("AMAN");
+        yield return new WaitForSeconds(0.7f);
+        Destroy(go);
+        onResult?.Invoke(true);
+    }
+
+    // Buat 1 segmen warna pada bar zona (helper PromptTeriakZona).
+    void BuatZonaWarnaZona(Transform bar, float dari, float sampai, Color warna)
+    {
+        var z = BuatImage(bar, "Zona", warna);
+        z.raycastTarget = false;
+        var rt = z.rectTransform;
+        rt.anchorMin = new Vector2(dari, 0.12f);
+        rt.anchorMax = new Vector2(sampai, 0.88f);
+        rt.offsetMin = Vector2.zero; rt.offsetMax = Vector2.zero;
+    }
+
+    // Legenda 3 baris: kotak warna + label (mirip gambar referensi).
+    void BuatLegendaZona(Transform parent, Color hijau, Color kuning, Color merah,
+                         string lNormal, string lSedang, string lKeras)
+    {
+        var box = new GameObject("Legenda");
+        box.transform.SetParent(parent, false);
+        var brt = box.AddComponent<RectTransform>();
+        brt.anchorMin = new Vector2(0.30f, 0.27f); brt.anchorMax = new Vector2(0.70f, 0.46f);
+        brt.offsetMin = Vector2.zero; brt.offsetMax = Vector2.zero;
+        var vlg = box.AddComponent<VerticalLayoutGroup>();
+        vlg.spacing = 6f; vlg.childControlHeight = true; vlg.childControlWidth = true;
+        vlg.childForceExpandHeight = true; vlg.childForceExpandWidth = true;
+
+        BuatBarisLegendaZona(box.transform, hijau,  lNormal);
+        BuatBarisLegendaZona(box.transform, kuning, lSedang);
+        BuatBarisLegendaZona(box.transform, merah,  lKeras);
+    }
+
+    void BuatBarisLegendaZona(Transform parent, Color warna, string teks)
+    {
+        var row = new GameObject("Baris");
+        row.transform.SetParent(parent, false);
+        var hlg = row.AddComponent<HorizontalLayoutGroup>();
+        hlg.spacing = 12f; hlg.childControlHeight = true; hlg.childControlWidth = true;
+        hlg.childForceExpandHeight = true; hlg.childForceExpandWidth = false;
+        hlg.childAlignment = TextAnchor.MiddleLeft;
+
+        var kotak = BuatImage(row.transform, "Kotak", warna);
+        kotak.sprite = GetRoundedSpritePlat(); kotak.type = Image.Type.Sliced;
+        var kLe = kotak.gameObject.AddComponent<LayoutElement>();
+        kLe.preferredWidth = 44f; kLe.preferredHeight = 28f; kLe.flexibleWidth = 0f;
+
+        var lab = BuatTeks(row.transform, "Teks", teks, 20, Color.white, FontStyles.Normal);
+        lab.alignment = TextAlignmentOptions.MidlineLeft;
+        var labLe = lab.gameObject.AddComponent<LayoutElement>();
+        labLe.flexibleWidth = 1f;
+    }
+
+    // Peta level VoiceMeter global (threshold-relatif) ke skala zona meter ini.
+    float LevelDariVoiceMeterZona(VoiceMeter vm, float ambangKuning, float ambangMerah)
+    {
+        if (vm == null) return 0f;
+        float n = vm.NormalizedLevel;
+        if (n >= vm.thresholdLoud)
+            return Mathf.Lerp(ambangMerah, 1f, Mathf.InverseLerp(vm.thresholdLoud, 1f, n));
+        if (n >= vm.thresholdMedium)
+            return Mathf.Lerp(ambangKuning, ambangMerah, Mathf.InverseLerp(vm.thresholdMedium, vm.thresholdLoud, n));
+        if (n >= vm.thresholdNormal)
+            return Mathf.Lerp(0f, ambangKuning, Mathf.InverseLerp(vm.thresholdNormal, vm.thresholdMedium, n));
+        return 0f;
     }
 
     // ══════════════════════════════════════════════════════════════════════
@@ -2176,7 +2468,7 @@ public class Day3Controller : MonoBehaviour
             _portraitUcapanImg.enabled = false;
         // Label nama boss (di atas potret) hanya tampil bila yang bicara memang si boss.
         if (_bossNamaText != null) _bossNamaText.text = (namaPembicara == bossNama) ? bossNama : "";
-        // Narasi Day 3 tampil NORMAL (tidak italic); ucapan pembicara tetap Bold.
+        // Teks narasi Day 3 dibuat NORMAL (tidak italic) sesuai permintaan.
         _ucapanText.fontStyle = italic ? FontStyles.Normal : FontStyles.Bold;
         _ucapanText.text = "";
         if (_hintLanjutText != null) _hintLanjutText.gameObject.SetActive(false);
@@ -2187,6 +2479,7 @@ public class Day3Controller : MonoBehaviour
         {
             if (_ucapanSkip) { _ucapanText.text = teks; break; }
             _ucapanText.text += c;
+            if (c != ' ') AudioManager.Instance?.PlayKetikHuruf();
             yield return new WaitForSeconds(0.018f);
         }
 
@@ -2308,7 +2601,7 @@ public class Day3Controller : MonoBehaviour
         iRt.anchorMin = new Vector2(0f, 0f); iRt.anchorMax = new Vector2(1f, 1f);
         iRt.offsetMin = new Vector2(60f, 120f); iRt.offsetMax = new Vector2(-60f, -120f);
 
-        var btn = BuatTombol(panel.transform, "\u25B6  LANJUT", warnaAman, () => lanjut = true);
+        var btn = BuatTombol(panel.transform, "LANJUT", warnaAman, () => lanjut = true);
         var tRt = ((RectTransform)btn.transform);
         tRt.anchorMin = new Vector2(0.5f, 0f); tRt.anchorMax = new Vector2(0.5f, 0f);
         tRt.pivot = new Vector2(0.5f, 0f); tRt.sizeDelta = new Vector2(340f, 70f);
@@ -2471,7 +2764,7 @@ public class Day3Controller : MonoBehaviour
         fRt.offsetMin = Vector2.zero; fRt.offsetMax = Vector2.zero;
 
         // Tombol Main Lagi (rounded + hover) di dalam kartu.
-        var btnMain = BuatTombol(cardT, "\uD83D\uDD04  MAIN LAGI", warnaAman, MainLagi);
+        var btnMain = BuatTombol(cardT, "MAIN LAGI", warnaAman, MainLagi);
         HiasTombolHasil(btnMain);
         var bmRt = (RectTransform)btnMain.transform;
         bmRt.anchorMin = new Vector2(0.5f, 0.035f); bmRt.anchorMax = new Vector2(0.5f, 0.035f);
@@ -2479,7 +2772,7 @@ public class Day3Controller : MonoBehaviour
         bmRt.anchoredPosition = new Vector2(-16f, 0f);
 
         // Tombol Keluar (rounded + hover) di dalam kartu.
-        var btnKeluar = BuatTombol(cardT, "\u274C  KELUAR", warnaNetral, Keluar);
+        var btnKeluar = BuatTombol(cardT, "KELUAR", warnaNetral, Keluar);
         HiasTombolHasil(btnKeluar);
         var bkRt = (RectTransform)btnKeluar.transform;
         bkRt.anchorMin = new Vector2(0.5f, 0.035f); bkRt.anchorMax = new Vector2(0.5f, 0.035f);

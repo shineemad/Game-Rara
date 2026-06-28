@@ -113,7 +113,7 @@ public class PrologScreen : MonoBehaviour
 
     [Header("Layout — Teks Hint")]
     [Tooltip("Teks petunjuk di dalam tombol LANJUT")]
-    public string hintText      = "\u25bc  SPACE / KLIK UNTUK LANJUT";
+    public string hintText      = "\u25bc  KETUK UNTUK LANJUT";
     [Tooltip("Ukuran font teks hint (0 = ikut hintFontSize)")]
     public int    hintFontSizeOverride = 0;
     [Tooltip("Rata teks hint")]
@@ -714,7 +714,7 @@ public class PrologScreen : MonoBehaviour
             {
                 backgroundColor = new Color(0.29f, 0.48f, 0.61f, 1f),
                 title = "Panduan Bermain",
-                text  = "← → : Gerakkan Rara ke kiri / kanan\nShift + ← → : Lari lebih cepat\nSPASI / Klik : Interaksi\nTombol TERIAK : Usir orang asing yang mendekat\n\nNyawa Rara ada 3. Hati-hati!"
+                text  = "Tombol panah kiri-bawah : Gerakkan Rara ke kiri / kanan, tahan untuk Lari lebih cepat\nTombol TERIAK kanan-bawah : Usir orang asing yang mendekat\nKetuk tombol pilihan untuk menjawab\n\nNyawa Rara ada 3. Hati-hati!"
             }
         };
 

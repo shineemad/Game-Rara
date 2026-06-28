@@ -692,7 +692,7 @@ public class Day2Controller : MonoBehaviour
 
         // ── Tombol LANJUT (HANYA tombol ini yang melanjutkan dialog) ──
         var tombolLanjut = TombolLanjutVN.Pasang(boxGO.transform, null,
-            "LANJUT  \u25B6", new Vector2(0.70f, 0.06f), new Vector2(0.975f, 0.26f));
+            "LANJUT", new Vector2(0.70f, 0.06f), new Vector2(0.975f, 0.26f));
 
         foreach (var b in baris)
         {
@@ -781,7 +781,7 @@ public class Day2Controller : MonoBehaviour
 
         // ── Tombol LANJUT (HANYA tombol ini yang melanjutkan narasi) ──
         var tombolLanjut = TombolLanjutVN.Pasang(cGO.transform, null,
-            "LANJUT  \u25B6", new Vector2(0.70f, 0.20f), new Vector2(0.88f, 0.30f));
+            "LANJUT", new Vector2(0.70f, 0.20f), new Vector2(0.88f, 0.30f));
 
         foreach (var t in baris)
         {

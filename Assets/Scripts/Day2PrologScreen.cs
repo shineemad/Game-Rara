@@ -55,9 +55,9 @@ public class Day2PrologScreen : MonoBehaviour
         // Slide 1 — pengenalan situasi
         new PrologSlide
         {
-            backgroundColor = new Color(0.91f, 0.72f, 0.43f, 1f),   // krem-jingga (siang hari)
+            backgroundColor = new Color(0.91f, 0.72f, 0.43f, 1f),   // krem-jingga (pagi hari)
             title = "Hari 2: Naik Angkot ke Sekolah",
-            text  = "Siang hari. Rara menunggu di halte angkot.\n" +
+            text  = "Pagi hari. Rara menunggu di halte angkot.\n" +
                     "Ia akan naik angkot menuju sekolah.\n\n" +
                     "\"Pilih angkot yang ramai penumpang, ya!\" pesan Ibu sebelum berangkat.",
         },
@@ -137,7 +137,7 @@ public class Day2PrologScreen : MonoBehaviour
     public Color btnBgColor = new Color(0.05f, 0.08f, 0.10f, 0.92f);
 
     [Header("Tombol LANJUT — Teks")]
-    public string hintText = "\u25bc  SPACE / KLIK UNTUK LANJUT";
+    public string hintText = "\u25bc  KETUK UNTUK LANJUT";
     public int hintFontSizeOverride = 0;
     public TextAlignmentOptions hintAlign = TextAlignmentOptions.Center;
 
@@ -702,7 +702,7 @@ public class Day2PrologScreen : MonoBehaviour
         btnBgColor = new Color(0.05f, 0.05f, 0.08f, 0.92f);
 
         // Teks hint
-        hintText             = "\u25bc  SPACE / KLIK UNTUK LANJUT";
+        hintText             = "\u25bc  KETUK UNTUK LANJUT";
         hintAlign            = TextAlignmentOptions.Center;
         hintFontSizeOverride = 0;
 
@@ -719,7 +719,7 @@ public class Day2PrologScreen : MonoBehaviour
             {
                 backgroundColor = new Color(0.91f, 0.72f, 0.43f, 1f),
                 title = "Hari 2: Naik Angkot ke Sekolah",
-                text  = "Siang hari. Rara menunggu di halte angkot.\n" +
+                text  = "Pagi hari. Rara menunggu di halte angkot.\n" +
                         "Ia akan naik angkot menuju sekolah.\n\n" +
                         "\"Pilih angkot yang ramai penumpang, ya!\" pesan Ibu sebelum berangkat.",
             },

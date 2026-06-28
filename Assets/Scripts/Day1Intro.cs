@@ -99,7 +99,7 @@ public class Day1Intro : MonoBehaviour
         new BarisNarasi
         {
             pembicara = "Rara",
-            teks      = "\"Oke, bismillah! SMP Harapan nggak jauh kok. \uD83D\uDE24\nAku pasti bisa jalan sendiri!\""
+            teks      = "\"Oke, bismillah! Sekolahku nggak jauh kok. \uD83D\uDE24\nAku pasti bisa jalan sendiri!\""
         },
         new BarisNarasi
         {
@@ -462,7 +462,7 @@ public class Day1Intro : MonoBehaviour
             new BarisNarasi
             {
                 pembicara = "Rara",
-                teks = "\"Oke, bismillah! SMP Harapan nggak jauh kok.\nAku pasti bisa jalan sendiri!\""
+                teks = "\"Oke, bismillah! Sekolahku nggak jauh kok.\nAku pasti bisa jalan sendiri!\""
             },
             new BarisNarasi
             {
@@ -904,7 +904,7 @@ public class Day1Intro : MonoBehaviour
         var tmpHint = BuatTMP(panelGO.transform, "Hint",
             new Vector2(hintCenterX - hintSizeW * 0.5f, hintCenterY - hintSizeH * 0.5f),
             new Vector2(hintCenterX + hintSizeW * 0.5f, hintCenterY + hintSizeH * 0.5f),
-            "\u25BC SPACE / Klik untuk lanjut", fontSizeHint,
+            "\u25BC Ketuk untuk lanjut", fontSizeHint,
             warnaHintDlg, false);
         tmpHint.alignment = TextAlignmentOptions.MidlineRight;
 

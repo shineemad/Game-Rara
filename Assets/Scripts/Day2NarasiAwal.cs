@@ -704,7 +704,7 @@ public class Day2NarasiAwal : MonoBehaviour
         // ── Tombol LANJUT: HANYA tombol ini yang melanjutkan narasi ──
         // (klik di luar tombol tidak lagi melanjutkan)
         _tombolLanjut = TombolLanjutVN.Pasang(panelGO.transform, null,
-            "LANJUT  \u25B6", new Vector2(0.70f, 0.06f), new Vector2(0.975f, 0.26f));
+            "LANJUT", new Vector2(0.70f, 0.06f), new Vector2(0.975f, 0.26f));
     }
 
     // ── Helper buat TMP UGUI (sama tanda tangan dengan Day1Intro.BuatTMP) ──

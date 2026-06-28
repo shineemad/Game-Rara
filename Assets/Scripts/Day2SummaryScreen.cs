@@ -374,9 +374,12 @@ public class Day2SummaryScreen : MonoBehaviour
         vRT.offsetMin = Vector2.zero; vRT.offsetMax = Vector2.zero;
         vRT.pivot = new Vector2(0f, 1f);
         var vImg = viewportGO.AddComponent<Image>();
-        vImg.color = new Color(0f, 0f, 0f, 0.0001f); // hampir transparan, dipakai Mask
+        vImg.color = new Color(0f, 0f, 0f, 0.0001f); // hampir transparan, hanya untuk raycast (drag-scroll)
         vImg.raycastTarget = true;
-        viewportGO.AddComponent<Mask>().showMaskGraphic = false;
+        // RectMask2D meng-clip konten berdasarkan RECT viewport — tidak bergantung pada
+        // graphic yang ter-render. Pada komponen Mask, Image ber-alpha ~0 bisa ter-cull
+        // sehingga stencil tak pernah ditulis → SELURUH isi scroll ikut terklip (panel kosong).
+        viewportGO.AddComponent<RectMask2D>();
         scroll.viewport = vRT;
 
         var list = new GameObject("Content");
@@ -391,6 +394,10 @@ public class Day2SummaryScreen : MonoBehaviour
         var vlg = list.AddComponent<VerticalLayoutGroup>();
         vlg.childAlignment = TextAnchor.UpperLeft; vlg.spacing = 10f;
         vlg.padding = new RectOffset(14, 14, 8, 8);
+        // childControlHeight=true: VerticalLayoutGroup membaca preferredHeight tiap
+        // item (TMP mengimplementasi ILayoutElement) lalu menatanya. Lebar diatur
+        // grup (childControlWidth) supaya TMP membungkus teks SEBELUM tinggi dihitung,
+        // jadi item tidak kolaps ke tinggi 0 (bug panel kosong).
         vlg.childControlWidth = true; vlg.childControlHeight = true;
         vlg.childForceExpandWidth = true; vlg.childForceExpandHeight = false;
         // ContentSizeFitter pada CONTENT (bukan pada item) — agar Content
@@ -413,6 +420,7 @@ public class Day2SummaryScreen : MonoBehaviour
             if (string.IsNullOrEmpty(item)) continue;
             var t = BuatTeks(list.transform, "Item", "\uD83C\uDFC6  " + item, pencapaianUkuran, pencapaianWarna, FontStyles.Normal);
             t.alignment = TextAlignmentOptions.MidlineLeft;
+            PasangFitterTinggi(t);
         }
 
         // Refleksi: 3 Kata Sakti yang dikuasai + hasil Meteran Bahaya.
@@ -424,6 +432,7 @@ public class Day2SummaryScreen : MonoBehaviour
                 ck(gs.usedTidak, "TIDAK") + "   " + ck(gs.usedPergi, "PERGI") + "   " + ck(gs.usedCerita, "CERITA");
             var ks = BuatTeks(list.transform, "KataSakti", kataSaktiBaris, pencapaianUkuran, new Color(1f, 0.95f, 0.7f, 1f), FontStyles.Bold);
             ks.alignment = TextAlignmentOptions.MidlineLeft;
+            PasangFitterTinggi(ks);
 
             float d = gs.dangerLevel;
             string status = d <= 0.25f ? "TERKENDALI \u2014 kamu tenang & waspada"
@@ -434,6 +443,7 @@ public class Day2SummaryScreen : MonoBehaviour
                                       : new Color(1f, 0.45f, 0.4f, 1f);
             var db = BuatTeks(list.transform, "Bahaya", $"\u26A0 Tingkat Bahaya akhir: {Mathf.RoundToInt(d * 100f)}% \u2014 {status}", pencapaianUkuran, dColor, FontStyles.Normal);
             db.alignment = TextAlignmentOptions.MidlineLeft;
+            PasangFitterTinggi(db);
         }
 
         // Rekap keputusan Hari 2: tiap pilihan diwarnai sesuai kategori (AMAN/RAGU/BAHAYA).
@@ -446,6 +456,7 @@ public class Day2SummaryScreen : MonoBehaviour
                 var rj = BuatTeks(list.transform, "RekapJudul", rekapJudul, rekapUkuran,
                     new Color(0.75f, 0.92f, 1f, 1f), FontStyles.Bold);
                 rj.alignment = TextAlignmentOptions.MidlineLeft;
+                PasangFitterTinggi(rj);
 
                 foreach (var ch in gs.choices)
                 {
@@ -458,6 +469,7 @@ public class Day2SummaryScreen : MonoBehaviour
                     var ct = BuatTeks(list.transform, "Pilihan", baris, rekapUkuran,
                         new Color(0.92f, 0.92f, 0.88f, 1f), FontStyles.Normal);
                     ct.alignment = TextAlignmentOptions.TopLeft;
+                    PasangFitterTinggi(ct);
                 }
             }
         }
@@ -650,6 +662,21 @@ public class Day2SummaryScreen : MonoBehaviour
         img.color = new Color(1f, 1f, 1f, 0.16f); img.raycastTarget = false;
         var le = sep.AddComponent<LayoutElement>();
         le.preferredHeight = 2f; le.minHeight = 2f; le.flexibleWidth = 1f;
+        // VerticalLayoutGroup memakai tinggi RectTransform (childControlHeight=false),
+        // jadi tinggi garis pemisah diset eksplisit 2px.
+        ((RectTransform)sep.transform).sizeDelta = new Vector2(0f, 2f);
+    }
+
+    // Jaring pengaman tinggi item: VerticalLayoutGroup (childControlHeight=true)
+    // memakai preferredHeight TMP untuk menata item. LayoutElement.minHeight
+    // memastikan tiap item tetap terlihat (minimal satu baris) walau pengukuran
+    // TMP belum siap saat layout pertama kali dibangun. LayoutElement TIDAK
+    // bentrok dengan grup (beda dgn ContentSizeFitter yang ILayoutSelfController).
+    void PasangFitterTinggi(TextMeshProUGUI t)
+    {
+        var le = t.gameObject.AddComponent<LayoutElement>();
+        le.minHeight = Mathf.Max(20f, t.fontSize * 1.5f);
+        le.flexibleHeight = 0f;
     }
 
     string WarnaKategoriHex(string kategori)

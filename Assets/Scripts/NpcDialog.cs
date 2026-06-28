@@ -216,7 +216,7 @@ public class NpcDialog : MonoBehaviour
     private Button           _voiceAmanButton;  // tombol AMAN aktif — dipilih saat pemain teriak
     private float            _voiceHoldTimer;   // berapa lama mic terdeteksi keras (anti salah pencet)
     private bool             _choiceProcessed;  // guard double-fire pilihan
-    private bool             _ignoreNextAdvance;// blokir Advance() 1 frame setelah klik pilihan
+    private int              _ignoreAdvanceFrame = -1; // frame saat pilihan diklik — Advance() diabaikan HANYA pada frame ini
     private System.Action    _playLinesCallback;// callback dari PlayLines()
     private bool             _showingEdukasi;   // sedang menampilkan dialog edukasi pilihan salah
     private string           _edukasiText = ""; // teks edukasi yang sedang diketik
@@ -508,7 +508,7 @@ public class NpcDialog : MonoBehaviour
         StopAllCoroutines();
         _pendingChoices    = null;
         _choiceProcessed   = false;
-        _ignoreNextAdvance = false;
+        _ignoreAdvanceFrame = -1;
         _showingEdukasi    = false;
         if (choicesPanel != null) { Destroy(choicesPanel); choicesPanel = null; }
         currentIndex = 0;
@@ -544,8 +544,10 @@ public class NpcDialog : MonoBehaviour
 
     void Advance()
     {
-        // Blokir 1 frame setelah klik tombol pilihan (EventSystem + Update berjalan frame sama)
-        if (_ignoreNextAdvance) { _ignoreNextAdvance = false; return; }
+        // Blokir Advance() HANYA pada frame yang sama dengan klik pilihan
+        // (EventSystem + Update berjalan frame sama). Tidak menelan klik LANJUT
+        // pemain pada baris narasi berikutnya.
+        if (Time.frameCount == _ignoreAdvanceFrame) return;
 
         // Panel pilihan aktif — harus klik tombol, bukan SPACE/klik sembarang
         if (choicesPanel != null && choicesPanel.activeSelf) return;
@@ -911,7 +913,7 @@ public class NpcDialog : MonoBehaviour
     {
         if (_choiceProcessed) return;
         _choiceProcessed   = true;
-        _ignoreNextAdvance = true;
+        _ignoreAdvanceFrame = Time.frameCount;
 
         _choiceButtons   = null;
         _voiceAmanButton = null;

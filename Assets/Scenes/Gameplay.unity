@@ -4172,7 +4172,7 @@ MonoBehaviour:
     aman di jalan.
 
 
-    TAHAN tombol TERIAK (atau SPACE) sampai meter PENUH!'
+    TAHAN tombol TERIAK sampai meter PENUH!'
   latihTeriakLabel: "\U0001F50A  TAHAN: TERIAK!"
   latihBerhasil: "\u2713 HEBAT! Suaramu lantang! Kalau ada yang mengganggu di jalan,
     berani TERIAK minta tolong, ya!"
@@ -4316,7 +4316,7 @@ MonoBehaviour:
       berangkat kerja tadi.'
     portrait: {fileID: 0}
   - pembicara: Rara
-    teks: '"Oke, bismillah! SMP Harapan nggak jauh kok.
+    teks: '"Oke, bismillah! Sekolahku nggak jauh kok.
 
       Aku pasti bisa jalan
       sendiri!"'
@@ -4642,7 +4642,7 @@ MonoBehaviour:
     aman di jalan.
 
 
-    TAHAN tombol TERIAK (atau SPACE) sampai meter PENUH!'
+    TAHAN tombol TERIAK sampai meter PENUH!'
   latihTeriakLabel: "\U0001F50A  TAHAN: TERIAK!"
   latihBerhasil: "\u2713 HEBAT! Suaramu lantang! Kalau ada yang mengganggu di jalan,
     berani TERIAK minta tolong, ya!"
@@ -8037,7 +8037,7 @@ MonoBehaviour:
   btnWidth: 0.165
   btnHeight: 0.049
   btnBgColor: {r: 0.15471691, g: 0.09972275, b: 0, a: 0.65882355}
-  hintText: KLIK
+  hintText: KETUK
   hintFontSizeOverride: 0
   hintAlign: 514
   advanceOnKeyboard: 1
@@ -9100,7 +9100,7 @@ MonoBehaviour:
   btnWidth: 0.165
   btnHeight: 0.049
   btnBgColor: {r: 0.15294118, g: 0.09803922, b: 0, a: 0.65882355}
-  hintText: KLIK
+  hintText: KETUK
   hintFontSizeOverride: 0
   hintAlign: 514
   advanceOnKeyboard: 1
@@ -9753,7 +9753,7 @@ MonoBehaviour:
   judulWarna: {r: 1, g: 0.45, b: 0.45, a: 1}
   judulUkuran: 38
   deskripsiTeks: "Pria yang tadi menyentuh bahumu kembali menggeser duduknya \u2014
-    makin merapat!\n\n\U0001F449 TAHAN TERUS tombol TERIAK (atau tahan SPACE) tanpa
+    makin merapat!\n\n\U0001F449 TAHAN TERUS tombol TERIAK tanpa
     dilepas.\nBar hijau akan PENUH dalam {DURASI} detik \u2014 kalau kamu lepas,
     bar TURUN lagi.\nLengkapi sebelum waktu habis untuk memanggil Pak Supir!"
   deskripsiWarna: {r: 1, g: 1, b: 0.92, a: 0.95}
@@ -9810,8 +9810,8 @@ MonoBehaviour:
   pengejaranJudul: "\U0001F4E2 MINTA TOLONG SEKARANG!"
   pengejaranDeskripsi: "Pria asing yang tadi menyentuh bahumu menggeser duduknya
     lagi \u2014 makin merapat ke arah Rara!\nPak Supir ada di depan. Inilah saatnya
-    CERITA: minta tolong orang dewasa.\n\nTAHAN tombol TERIAK \"PAK, TOLONG!\" (atau
-    tahan SPACE) sebelum waktu habis ({DURASI} dtk)."
+    CERITA: minta tolong orang dewasa.\n\nTAHAN tombol TERIAK \"PAK, TOLONG!\" atau
+    berteriak ke mic sebelum waktu habis ({DURASI} dtk)."
   pengejaranReaksiBerhasil: "\u2713 Rara berteriak \"PAK, TOLONG!\" sekencang-kencangnya!
     Pak Supir langsung menepi dan menegur pria itu. Penumpang lain ikut menoleh \u2014
     pria itu salah tingkah lalu turun. Angkot melaju lagi dan Rara tiba di sekolah

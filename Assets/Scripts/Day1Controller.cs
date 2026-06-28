@@ -174,7 +174,7 @@ public class Day1Controller : MonoBehaviour
     [TextArea(2, 5)]
     [Tooltip("Deskripsi panel. Konteks tutorial Hari 1.")]
     public string latihDeskripsi   =
-        "Sebelum jalan, latih dulu suaramu!\nTERIAK KERAS = kamu lebih aman di jalan.\n\nTAHAN tombol TERIAK (atau SPACE) sampai meter PENUH!";
+        "Sebelum jalan, latih dulu suaramu!\nTERIAK KERAS = kamu lebih aman di jalan.\n\nTAHAN tombol TERIAK sampai meter PENUH!";
     [Tooltip("Label tombol tahan-teriak.")]
     public string latihTeriakLabel = "\uD83D\uDD0A  TAHAN: TERIAK!";
     [Tooltip("Teks reaksi saat meter penuh / berhasil.")]

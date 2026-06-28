@@ -29,7 +29,7 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
     public int    judulUkuran = 38;
     [TextArea(2, 5)]
     public string deskripsiTeks =
-        "Pria itu makin merapat di dalam angkot!\n\n\uD83D\uDC49 TAHAN TERUS tombol TERIAK (atau tahan SPACE) tanpa dilepas.\nBar hijau akan PENUH dalam {DURASI} detik \u2014 kalau dilepas, bar TURUN lagi.\nLengkapi sebelum waktu habis untuk memanggil Pak Supir!";
+        "Pria itu makin merapat di dalam angkot!\n\n\uD83D\uDC49 TAHAN TERUS tombol TERIAK tanpa dilepas.\nBar hijau akan PENUH dalam {DURASI} detik \u2014 kalau dilepas, bar TURUN lagi.\nLengkapi sebelum waktu habis untuk memanggil Pak Supir!";
     public Color  deskripsiWarna = new Color(1f, 1f, 0.92f, 0.95f);
     public int    deskripsiUkuran = 22;
 
@@ -133,7 +133,7 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
     public string pengejaranDeskripsi =
         "Pria asing yang sama menggeser duduknya lagi — makin merapat ke arah Rara!\n" +
         "Pak Supir ada di depan. Inilah saatnya CERITA: minta tolong orang dewasa.\n\n" +
-        "TAHAN tombol TERIAK \"PAK, TOLONG!\" (atau tahan SPACE) sebelum waktu habis ({DURASI} dtk).";
+        "TAHAN tombol TERIAK \"PAK, TOLONG!\" atau berteriak ke mic sebelum waktu habis ({DURASI} dtk).";
     [TextArea(2, 5)]
     [Tooltip("Reaksi saat BERHASIL teriak (Pak Supir menolong, tiba di sekolah).")]
     public string pengejaranReaksiBerhasil =
@@ -350,7 +350,7 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
         // ── Tombol LANJUT: HANYA tombol ini yang melanjutkan (klik di luar diabaikan) ──
         bool lanjutDiminta = false;
         var tombolLanjut = TombolLanjutVN.Pasang(cGO.transform, null,
-            "LANJUT  \u25B6", new Vector2(0.70f, 0.06f), new Vector2(0.975f, 0.20f));
+            "LANJUT", new Vector2(0.70f, 0.06f), new Vector2(0.975f, 0.20f));
         tombolLanjut.GetComponent<Button>().onClick.AddListener(() => lanjutDiminta = true);
 
         bool AdaInputLanjut()
@@ -411,6 +411,7 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
                         idx++;
                         t -= vnKecepatanKetik;
                         teksTmp.text = b.teks.Substring(0, idx);
+                        if (b.teks[idx - 1] != ' ') AudioManager.Instance?.PlayKetikHuruf();
                     }
 
                     yield return null;

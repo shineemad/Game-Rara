@@ -177,11 +177,11 @@ public class MainMenu : MonoBehaviour
         fit.verticalFit   = ContentSizeFitter.FitMode.PreferredSize;
         fit.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
 
-        MakeButton(stack.transform, "BtnMulai",  "\u25B6  MULAI GAME",   warnaMulai,  0f, 460f, 80, MulaiGame,       layoutChild: true);
-        MakeButton(stack.transform, "BtnKontrol","\uD83C\uDFAE  CARA BERMAIN", warnaNetral, 0f, 460f, 70, BukaKontrol,    layoutChild: true);
-        MakeButton(stack.transform, "BtnSetting","\u2699  PENGATURAN",   warnaNetral, 0f, 460f, 70, BukaPengaturan, layoutChild: true);
-        MakeButton(stack.transform, "BtnTentang","\u2139  TENTANG",      warnaNetral, 0f, 460f, 70, BukaTentang,    layoutChild: true);
-        MakeButton(stack.transform, "BtnKeluar", "\u2716  KELUAR",       warnaKeluar, 0f, 460f, 70, KonfirmasiKeluar, layoutChild: true);
+        MakeButton(stack.transform, "BtnMulai",  "MULAI GAME",   warnaMulai,  0f, 460f, 80, MulaiGame,       layoutChild: true);
+        MakeButton(stack.transform, "BtnKontrol","CARA BERMAIN", warnaNetral, 0f, 460f, 70, BukaKontrol,    layoutChild: true);
+        MakeButton(stack.transform, "BtnSetting","PENGATURAN",   warnaNetral, 0f, 460f, 70, BukaPengaturan, layoutChild: true);
+        MakeButton(stack.transform, "BtnTentang","TENTANG",      warnaNetral, 0f, 460f, 70, BukaTentang,    layoutChild: true);
+        MakeButton(stack.transform, "BtnKeluar", "KELUAR",       warnaKeluar, 0f, 460f, 70, KonfirmasiKeluar, layoutChild: true);
 
         // ── Footer versi ──────────────────────────────────────────────────────
         var ver = MakeText(_root.transform, "Versi", versiTeks, 24,

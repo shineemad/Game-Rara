@@ -416,7 +416,7 @@ public class AngkotSentuhScene : MonoBehaviour
         _hintTxt.text = "";
 
         // Tombol LANJUT (HANYA tombol ini yang melanjutkan; klik di luar diabaikan)
-        _tombolLanjut = TombolLanjutVN.Pasang(boxGO.transform, null, "LANJUT  \u25B6");
+        _tombolLanjut = TombolLanjutVN.Pasang(boxGO.transform, null, "LANJUT");
         _tombolLanjut.GetComponent<Button>().onClick.AddListener(() => _lanjutDitekan = true);
     }
 
@@ -482,7 +482,7 @@ public class AngkotSentuhScene : MonoBehaviour
         _hintTxt.text = "";
 
         // Tombol LANJUT (HANYA tombol ini yang melanjutkan; klik di luar diabaikan)
-        _tombolLanjut = TombolLanjutVN.Pasang(_dialogBoxGO.transform, null, "LANJUT  \u25B6");
+        _tombolLanjut = TombolLanjutVN.Pasang(_dialogBoxGO.transform, null, "LANJUT");
         _tombolLanjut.GetComponent<Button>().onClick.AddListener(() => _lanjutDitekan = true);
     }
 

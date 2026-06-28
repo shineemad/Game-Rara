@@ -129,7 +129,6 @@ public class AudioManager : MonoBehaviour
         {
             Instance = this;
             DontDestroyOnLoad(gameObject);
-            PastikanSumberTerpasang();
             AktifkanSemuaSumber();
             // Putar ulang BGM bila perangkat audio berubah (mic dimulai/dihentikan).
             AudioSettings.OnAudioConfigurationChanged += OnPerangkatAudioBerubah;
@@ -157,27 +156,6 @@ public class AudioManager : MonoBehaviour
     // Pastikan GameObject & seluruh AudioSource AKTIF agar BGM/SFX selalu bisa
     // diputar sejak awal. Mencegah error "Can not play a disabled audio source"
     // bila checkbox komponen AudioSource sempat ter-nonaktif di Inspector.
-    // Auto-wire AudioSource bila referensi Inspector kosong. Tanpa ini, jika
-    // bgmSource/sfxSource/ambienceSource = null (mis. referensi scene ter-reset),
-    // PlayBGM/PlaySFX/PlayAmbience akan return diam-diam => SELURUH audio senyap.
-    // Urutan komponen pada GameObject "audio": [0]=bgm [1]=sfx [2]=ambience.
-    void PastikanSumberTerpasang()
-    {
-        var sumber = GetComponents<AudioSource>();
-        if (bgmSource      == null && sumber.Length > 0) bgmSource      = sumber[0];
-        if (sfxSource      == null && sumber.Length > 1) sfxSource      = sumber[1];
-        if (ambienceSource == null && sumber.Length > 2) ambienceSource = sumber[2];
-
-        // Cadangan terakhir: buat AudioSource baru agar tidak pernah null.
-        if (bgmSource      == null) bgmSource      = gameObject.AddComponent<AudioSource>();
-        if (sfxSource      == null) sfxSource      = gameObject.AddComponent<AudioSource>();
-        if (ambienceSource == null) ambienceSource = gameObject.AddComponent<AudioSource>();
-
-        bgmSource.playOnAwake      = false;
-        sfxSource.playOnAwake      = false;
-        ambienceSource.playOnAwake = false;
-    }
-
     void AktifkanSemuaSumber()
     {
         if (!gameObject.activeSelf) gameObject.SetActive(true);

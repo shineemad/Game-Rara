@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 9faab9d09b6eba44fb09370ec6e1e75c
+guid: 82e4d81776f2f504bb818b2b30d4ade9
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1209331726834910066
-    second: paman_0
+      213: -1528380126220725092
+    second: priaasing_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: paman_0
+      name: priaasing_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 1254
-        height: 1254
+        width: 2508
+        height: 2508
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -127,8 +127,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e8c3566a337973fe0800000000000000
-      internalID: -1209331726834910066
+      spriteID: c94d8d67f5a1acae0800000000000000
+      internalID: -1528380126220725092
       vertices: []
       indices: 
       edges: []
@@ -143,8 +143,7 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable:
-      paman_0: -1209331726834910066
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
