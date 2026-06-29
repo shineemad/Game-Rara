@@ -807,7 +807,7 @@ public class HalteDialog : MonoBehaviour
         {
             var sp = GetPortraitForSpeaker(speaker);
             _portraitImg.sprite  = sp;
-            _portraitImg.enabled = false; // potret/sprite profil disembunyikan dari box dialog
+            _portraitImg.enabled = sp != null; // tampilkan potret bila ada sprite
         }
         // Sembunyikan hint selama mengetik
         if (_hintText != null) _hintText.gameObject.SetActive(false);
@@ -882,7 +882,7 @@ public class HalteDialog : MonoBehaviour
         {
             var sp = GetPortraitForSpeaker("Rara");
             _portraitImg.sprite  = sp;
-            _portraitImg.enabled = false; // potret/sprite profil disembunyikan dari box dialog
+            _portraitImg.enabled = sp != null; // tampilkan potret bila ada sprite
         }
         // Sembunyikan hint saat menampilkan tombol pilihan
         if (_hintText != null) _hintText.gameObject.SetActive(false);
@@ -944,7 +944,7 @@ public class HalteDialog : MonoBehaviour
         {
             var sp = GetPortraitForSpeaker("Narasi");
             _portraitImg.sprite  = sp;
-            _portraitImg.enabled = false; // potret/sprite profil disembunyikan dari box dialog
+            _portraitImg.enabled = sp != null; // tampilkan potret bila ada sprite
         }
         // Animasi mengetik reaksi
         yield return KetikTeks(reaksi != null ? (reaksi.teks ?? "") : "");

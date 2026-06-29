@@ -36,17 +36,18 @@ public class VoiceMeter : MonoBehaviour
     // ══════════════════════════════════════════════════════════════════════
 
     [Header("Ambang Batas Level (amplitudo RMS 0–1)")]
-    [Tooltip("Amplitudo minimum untuk dianggap 'suara normal' (hijau ~50-60 dB)")]
+    [Tooltip("Amplitudo minimum untuk dianggap 'suara normal' (hijau ~50 dB). 0.032 ≈ 50 dB.")]
     [Range(0f, 1f)]
-    public float thresholdNormal = 0.015f;
+    public float thresholdNormal = 0.032f;
 
-    [Tooltip("Amplitudo minimum untuk dianggap 'suara sedang' (kuning ~60-80 dB)")]
+    [Tooltip("Amplitudo minimum untuk dianggap 'suara sedang' (kuning ~60 dB). 0.10 ≈ 60 dB.")]
     [Range(0f, 1f)]
-    public float thresholdMedium = 0.07f;
+    public float thresholdMedium = 0.10f;
 
-    [Tooltip("Amplitudo minimum untuk dianggap 'suara keras / teriak' (merah >80 dB)")]
+    [Tooltip("Amplitudo minimum untuk dianggap 'suara keras / teriak' (merah ~70-80 dB). " +
+             "0.30 dipakai sebagai kompromi agar teriak masih bisa mencapai zona MERAH.")]
     [Range(0f, 1f)]
-    public float thresholdLoud   = 0.22f;
+    public float thresholdLoud   = 0.30f;
 
     [Header("Pengaturan Mikrofon")]
     [Tooltip("Panjang buffer rekaman mikrofon dalam detik")]
@@ -56,10 +57,10 @@ public class VoiceMeter : MonoBehaviour
     [Tooltip("Jumlah sampel yang dibaca per frame untuk hitung RMS")]
     public int  sampleWindow  = 512;
     [Tooltip("Penguat (gain) sinyal mikrofon. Naikkan bila teriak ke mic tidak terdeteksi\n" +
-             "(voice-driven kurang sensitif). 1 = tanpa penguat. Default 4 supaya teriak\n" +
+             "(voice-driven kurang sensitif). 1 = tanpa penguat. Default 8 supaya teriak\n" +
              "asli mudah mencapai zona MERAH (Loud).")]
     [Range(1f, 20f)]
-    public float gainMic = 4f;
+    public float gainMic = 8f;
 
     [Header("Smoothing (0 = lambat, 1 = instan)")]
     [Range(0.01f, 1f)]

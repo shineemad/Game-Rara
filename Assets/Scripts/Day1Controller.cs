@@ -170,19 +170,23 @@ public class Day1Controller : MonoBehaviour
 
     [Header("Panel Latih Suara (Voice Validation)")]
     [Tooltip("Judul panel latih suara.")]
-    public string latihJudul       = "\uD83D\uDDE3  LATIH SUARAMU!";
+    public string latihJudul       = "LATIH SUARAMU!";
     [TextArea(2, 5)]
     [Tooltip("Deskripsi panel. Konteks tutorial Hari 1.")]
     public string latihDeskripsi   =
         "Sebelum jalan, latih dulu suaramu!\nTERIAK KERAS = kamu lebih aman di jalan.\n\nTAHAN tombol TERIAK sampai meter PENUH!";
     [Tooltip("Label tombol tahan-teriak.")]
-    public string latihTeriakLabel = "\uD83D\uDD0A  TAHAN: TERIAK!";
+    public string latihTeriakLabel = "TAHAN: TERIAK!";
     [Tooltip("Teks reaksi saat meter penuh / berhasil.")]
     [TextArea(2, 4)]
     public string latihBerhasil    =
-        "\u2713 HEBAT! Suaramu lantang! Kalau ada yang mengganggu di jalan, berani TERIAK minta tolong, ya!";
+        "HEBAT! Suaramu lantang! Kalau ada yang mengganggu di jalan, berani TERIAK minta tolong, ya!";
     [Tooltip("Window waktu (detik). 0 = tanpa batas waktu.")]
     public float  latihWaktuWindow = 15f;
+    [Tooltip("Pengali gain mic KHUSUS tutorial Latih Suara ini. <1 = kurangi sensitivitas " +
+             "agar mic tidak mudah terpicu suara pelan. 1 = sama dengan VoiceMeter global.")]
+    [Range(0.1f, 1f)]
+    public float  latihMicGain     = 0.5f;
 
     // ── Konfigurasi Encounter dipindah ke GameObject NPC ────────────────────
     // Dialog & pilihan tiap encounter kini dimiliki masing-masing NPC di scene
@@ -486,7 +490,7 @@ public class Day1Controller : MonoBehaviour
         var capGO = new GameObject("Caption");
         capGO.transform.SetParent(root.transform, false);
         var cap = capGO.AddComponent<TextMeshProUGUI>();
-        cap.text      = "\uD83C\uDFEB  Menuju Sekolah";
+        cap.text      = "Menuju Sekolah";
         cap.fontSize  = 23;
         cap.fontStyle = FontStyles.Bold;
         cap.alignment = TextAlignmentOptions.Left;
@@ -549,7 +553,7 @@ public class Day1Controller : MonoBehaviour
         var markGO = new GameObject("Marker");
         markGO.transform.SetParent(trackGO.transform, false);
         var mark = markGO.AddComponent<TextMeshProUGUI>();
-        mark.text      = "\uD83D\uDEB6";
+        mark.text      = "";
         mark.fontSize  = 30;
         mark.alignment = TextAlignmentOptions.Center;
         mark.raycastTarget = false;
@@ -674,7 +678,7 @@ public class Day1Controller : MonoBehaviour
         // Label dalam tombol: ikon corong + teks TERIAK
         _shoutBtnLabel = new GameObject("Label").AddComponent<TextMeshProUGUI>();
         _shoutBtnLabel.transform.SetParent(btnGO.transform, false);
-        _shoutBtnLabel.text      = "\uD83D\uDCE2\nTERIAK";
+        _shoutBtnLabel.text      = "TERIAK";
         _shoutBtnLabel.fontSize  = 26;
         _shoutBtnLabel.fontStyle = FontStyles.Bold;
         _shoutBtnLabel.alignment = TextAlignmentOptions.Center;
@@ -730,7 +734,7 @@ public class Day1Controller : MonoBehaviour
 
         // Denyut ringan saat suara KERAS untuk umpan balik kuat.
         if (_shoutBtnLabel != null)
-            _shoutBtnLabel.text = keras ? "\uD83D\uDCE2\nKERAS!" : "\uD83D\uDCE2\nTERIAK";
+            _shoutBtnLabel.text = keras ? "KERAS!" : "TERIAK";
         var rt = _shoutCanvasGO != null ? _shoutCanvasGO.transform.Find("ShoutRoot") as RectTransform : null;
         if (rt != null)
         {
@@ -1014,8 +1018,9 @@ public class Day1Controller : MonoBehaviour
                 // Tombol/SPACE ditahan → isi meter langsung sampai penuh.
                 shoutLevel = Mathf.Min(1f, shoutLevel + shoutFillRate * Time.deltaTime);
             else if (micAktif)
-                // Tidak menekan tombol → ikuti level mikrofon.
-                shoutLevel = VoiceMeter.Instance.NormalizedLevel;
+                // Tidak menekan tombol → ikuti level mikrofon (gain dikurangi
+                // khusus tutorial ini agar tidak terlalu sensitif).
+                shoutLevel = VoiceMeter.Instance.NormalizedLevel * latihMicGain;
             else
                 // Tanpa mic & tanpa tombol → meter luruh perlahan.
                 shoutLevel = Mathf.Max(0f, shoutLevel - shoutDecayRate * Time.deltaTime);
@@ -1032,9 +1037,12 @@ public class Day1Controller : MonoBehaviour
             }
             else if (micAktif)
             {
+                // Kurangi sensitivitas mic KHUSUS tutorial ini (latihMicGain < 1)
+                // tanpa mengubah gain VoiceMeter global yang dipakai Hari 3.
+                float levelLokal  = VoiceMeter.Instance.NormalizedLevel * latihMicGain;
                 float ambangKeras = Mathf.Max(0.0001f, VoiceMeter.Instance.thresholdLoud);
-                progresKeras = Mathf.Clamp01(VoiceMeter.Instance.NormalizedLevel / ambangKeras);
-                keras        = VoiceMeter.Instance.Level == VoiceMeter.VoiceLevel.Loud;
+                progresKeras = Mathf.Clamp01(levelLokal / ambangKeras);
+                keras        = levelLokal >= VoiceMeter.Instance.thresholdLoud;
             }
             else
             {
@@ -1068,7 +1076,7 @@ public class Day1Controller : MonoBehaviour
             barFillRt.anchorMax = new Vector2(1f, 1f);
             barFillImg.color = new Color(0.91f, 0.25f, 0.20f, 1f); // merah = KERAS
             tombolImg.color = warnaDitekan;
-            tombolLabel.text = "\u2713 SUARA KERAS!";
+            tombolLabel.text = "SUARA KERAS!";
             desk.text = latihBerhasil;
             yield return new WaitForSeconds(1.6f);
         }
@@ -1204,7 +1212,7 @@ public class Day1Controller : MonoBehaviour
             },
             new Day1Intro.BarisNarasi
             {
-                pembicara = "\uD83D\uDCA1 Tips Aman",
+                pembicara = "Tips Aman",
                 teks      = "Pilih jalan yang RAMAI dan TERANG. Banyak orang berarti\nbanyak saksi dan tempat minta tolong kalau terjadi sesuatu."
             }
         }));
@@ -1264,7 +1272,7 @@ public class Day1Controller : MonoBehaviour
             },
             new Day1Intro.BarisNarasi
             {
-                pembicara = "\u26A0 Pelajaran",
+                pembicara = "Pelajaran",
                 teks      = "HINDARI jalan pintas yang sepi dan gelap \u2014 walau lebih cepat,\ndi sana tak ada orang yang bisa menolong. Lebih baik lewat jalan ramai."
             }
         }));
@@ -1685,7 +1693,7 @@ public class Day1Controller : MonoBehaviour
         pitaRt.pivot     = new Vector2(0.5f, 1f);
         pitaRt.offsetMin = new Vector2(28f, -96f); pitaRt.offsetMax = new Vector2(-28f, -22f);
 
-        var judul = BuatTeksLatih(pita.transform, "Judul", "\uD83D\uDCDA  KARTU EDUKASI — HARI 1",
+        var judul = BuatTeksLatih(pita.transform, "Judul", "KARTU EDUKASI — HARI 1",
             34, new Color(0.18f, 0.09f, 0.02f, 1f), FontStyles.Bold);
         Stretch(judul.rectTransform);
 
@@ -1696,23 +1704,23 @@ public class Day1Controller : MonoBehaviour
         {
             // Jalur GANG SEPI (BAHAYA): Rara sempat kehilangan 1 nyawa — tekankan pelajarannya.
             tips =
-                "<color=#FF8A7A><b>\uD83D\uDD34 Rara tadi lewat GANG SEPI\u2026 itu berisiko!</b></color>\n" +
+                "<color=#FF8A7A><b>Rara tadi lewat GANG SEPI\u2026 itu berisiko!</b></color>\n" +
                 "Jalan pintas yang sepi & gelap = tempat paling rawan. Tak ada orang yang bisa menolong kalau terjadi sesuatu.\n\n" +
-                "<color=#8FE3A2><b>\u2705 Lain kali, pilih JALAN RAMAI:</b></color>\n" +
+                "<color=#8FE3A2><b>Lain kali, pilih JALAN RAMAI:</b></color>\n" +
                 "•  Banyak orang = banyak <b>saksi</b> & tempat minta tolong.\n" +
                 "•  Lebih terang, lebih mudah lari ke warung/rumah orang.\n" +
                 "•  Sedikit lebih jauh tak apa \u2014 <b>selamat lebih penting</b> daripada cepat.\n\n" +
-                "<color=#FFD24A><b>\uD83D\uDCE2 Kalau merasa diikuti:</b></color>  TERIAK, lari ke keramaian, dan CERITA ke orang dewasa yang dipercaya.";
+                "<color=#FFD24A><b>Kalau merasa diikuti:</b></color>  TERIAK, lari ke keramaian, dan CERITA ke orang dewasa yang dipercaya.";
         }
         else
         {
             // Jalur JALAN RAMAI (AMAN): Rara memilih tepat — kuatkan kebiasaan baik.
             tips =
-                "<color=#8FE3A2><b>\u2705 Hebat! Rara memilih JALAN RAMAI.</b></color>\n" +
+                "<color=#8FE3A2><b>Hebat! Rara memilih JALAN RAMAI.</b></color>\n" +
                 "Jalan yang ramai & terang itu paling aman: banyak orang yang bisa jadi saksi dan tempat minta tolong.\n\n" +
-                "<color=#FFD24A><b>\uD83D\uDEA9 Jauhi jalan pintas yang sepi!</b></color>\n" +
+                "<color=#FFD24A><b>Jauhi jalan pintas yang sepi!</b></color>\n" +
                 "Gang gelap atau jalan sepi memang lebih cepat, tapi paling rawan \u2014 hindari walau terburu-buru.\n\n" +
-                "<color=#8FE3A2><b>\uD83D\uDDDD 3 Kata Sakti kalau merasa nggak aman:</b></color>\n" +
+                "<color=#8FE3A2><b>3 Kata Sakti kalau merasa nggak aman:</b></color>\n" +
                 "•  <b>TIDAK!</b>  — kamu BERHAK menolak siapa pun.\n" +
                 "•  <b>PERGI!</b>  — menjauh & lari ke tempat yang ramai.\n" +
                 "•  <b>CERITA!</b> — laporkan ke orang dewasa yang dipercaya.";

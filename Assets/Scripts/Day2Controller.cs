@@ -1321,7 +1321,7 @@ public class Day2Controller : MonoBehaviour
         // Lokasi
         OvBuatTMP(cGO.transform, "Lokasi",
             new Vector2(0.05f, 0.31f), new Vector2(0.95f, 0.43f),
-            "\uD83D\uDCCD  " + teksLokasi, ukuranFontLokasi, warnaTeksLokasi, false);
+            teksLokasi, ukuranFontLokasi, warnaTeksLokasi, false);
 
         // Hint kecil
         OvBuatTMP(cGO.transform, "Hint",

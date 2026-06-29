@@ -72,7 +72,7 @@ public class Day3Controller : MonoBehaviour
         [Tooltip("Poin bonus tambahan di luar skor kategori (mis. +100 bukti foto plat).")]
         public int bonusPoin = 0;
         [TextArea(2, 4)]
-        public string reaksi = "\u2713 Bagus! Pelaku kehilangan nyali.";
+        public string reaksi = "Bagus! Pelaku kehilangan nyali.";
         [Tooltip("Sprite latar belakang fullscreen saat REAKSI pilihan ini tampil (gaya Day 2). " +
                  "Kosong = pakai latar arena default.")]
         public Sprite latarReaksi;
@@ -96,7 +96,7 @@ public class Day3Controller : MonoBehaviour
         [Tooltip("\"AMAN\" | \"RAGU\" | \"BAHAYA\" | \"LAPOR\".")]
         public string kategori = "AMAN";
         [TextArea(2, 4)]
-        public string reaksi = "\u2713 Bagus!";
+        public string reaksi = "Bagus!";
         [Tooltip("Poin bonus tambahan di luar skor kategori.")]
         public int bonusPoin = 0;
         [Tooltip("Kurangi 1 nyawa saat dipilih (mis. opsi 'Diam').")]
@@ -175,7 +175,7 @@ public class Day3Controller : MonoBehaviour
     [Header("Narasi Pembuka (sebelum boss bicara)")]
     [TextArea(2, 5)]
     public string narasiPembuka =
-        "TUNGGU! Rara mau naik ojol...\ntapi seseorang tiba-tiba menghadang jalannya! \uD83D\uDE31\n" +
+        "TUNGGU! Rara mau naik ojol...\ntapi seseorang tiba-tiba menghadang jalannya!\n" +
         "Itu dia \u2014 si pengirim pesan tadi \u2014 muncul langsung di depan Rara!!";
     [Tooltip("Sprite latar belakang fullscreen saat narasi pembuka boss tampil (gaya Day 2). " +
              "Kosong = pakai latar arena default (arenaLatarSprite).")]
@@ -191,9 +191,9 @@ public class Day3Controller : MonoBehaviour
         // Day3PrologScreen. Baris di sini sengaja dibuat ringkas sebagai JEMBATAN ke
         // segmen jalan supaya tidak mengulang prolog.
         new BarisIntro { pembicara = "Narasi",
-            teks = "Hujan makin deras. Rara harus cepat menuju parkiran. \uD83C\uDF27" },
+            teks = "Hujan makin deras. Rara harus cepat menuju parkiran." },
         new BarisIntro { pembicara = "Narasi",
-            teks = "Tap layar / TERIAK buat jalan ke parkiran!\nSemakin keras teriak = makin cepet jalannya! \uD83C\uDFC3" }
+            teks = "Tap layar / TERIAK buat jalan ke parkiran!\nSemakin keras teriak = makin cepet jalannya!" }
     };
 
     [Header("Jalan di Hujan (menuju parkiran)")]
@@ -206,7 +206,7 @@ public class Day3Controller : MonoBehaviour
              "Kosong = pakai latar arena default (arenaLatarSprite).")]
     public Sprite jalanSampaiLatar;
     [TextArea(2, 3)]
-    public string jalanInstruksi = "\u2794 Jalan ke parkiran sekolah \u2014 TERIAK buat lari lebih cepat! \uD83C\uDFC3";
+    public string jalanInstruksi = "Jalan ke parkiran sekolah \u2014 TERIAK buat lari lebih cepat!";
     [Tooltip("Jarak total ke parkiran (meter, sekadar pemanis).")]
     public float jalanJarakMeter = 60f;
     [Tooltip("Kecepatan jalan santai (m/detik) saat tanpa input.")]
@@ -219,8 +219,8 @@ public class Day3Controller : MonoBehaviour
     [TextArea(2, 4)]
     public string[] jalanNarasiSampai = new string[]
     {
-        "Rara akhirnya sampai di parkiran. Basah kuyup kena hujan! \uD83D\uDE05\nDia langsung buka HP buat ngecek ojol-nya udah nyampe belum...",
-        "\"Eh?! Ada notif dari nomor yang nggak aku kenal?! \uD83D\uDE28\nSiapa nih... *deg-degan banget*\""
+        "Rara akhirnya sampai di parkiran. Basah kuyup kena hujan!\nDia langsung buka HP buat ngecek ojol-nya udah nyampe belum...",
+        "\"Eh?! Ada notif dari nomor yang nggak aku kenal?!\nSiapa nih... *deg-degan banget*\""
     };
 
     [Header("Tantangan 1 — Chat Agresif (Ojol Palsu)")]
@@ -232,9 +232,9 @@ public class Day3Controller : MonoBehaviour
     [Tooltip("Pesan masuk yang diketik otomatis satu per satu.")]
     public string[] chatPesan = new string[]
     {
-        "Hai cantik! Hujan deras ya \uD83D\uDE22 Hati-hati basah...",
+        "Hai cantik! Hujan deras ya Hati-hati basah...",
         "Mau jemput? Gratis kok, kasihan kamu basah sendirian!",
-        "\uD83E\uDD7A\uD83D\uDCF1 Eh, foto kamu pakai seragam dong... buat om simpan ya sayang~"
+        "Eh, foto kamu pakai seragam dong... buat om simpan ya sayang~"
     };
     [Tooltip("Detik tersisa untuk memilih respons chat.")]
     public float chatTimerDetik = 6f;
@@ -249,7 +249,7 @@ public class Day3Controller : MonoBehaviour
     public bool jalankanOjolPalsu = true;
     [TextArea(2, 4)]
     public string ojolNarasi =
-        "Yes! Rara nggak terpancing pesan mencurigakan itu! \uD83D\uDCAA\n" +
+        "Yes! Rara nggak terpancing pesan mencurigakan itu!\n" +
         "Nah, ojol pesanan Rara baru aja tiba di parkiran!\n" +
         "Tapi jangan langsung naik \u2014 cek plat nomornya dulu ya!";
     public string ojolNamaSpeaker = "Ojek Online (?)";
@@ -260,12 +260,12 @@ public class Day3Controller : MonoBehaviour
     public Sprite ojolLatarBelakang;
     public PilihanRonde[] ojolPilihan = new PilihanRonde[]
     {
-        new PilihanRonde { label = "\uD83D\uDCF8 Foto plat dulu, lalu tolak naik", kategori = "AMAN", bonusPoin = 100,
-            reaksi = "\u2713 Cerdas! Kamu foto plat sebagai bukti, lalu menolak dengan sopan. Jangan naik kendaraan orang asing." },
+        new PilihanRonde { label = "Foto plat dulu, lalu tolak naik", kategori = "AMAN", bonusPoin = 100,
+            reaksi = "Cerdas! Kamu foto plat sebagai bukti, lalu menolak dengan sopan. Jangan naik kendaraan orang asing." },
         new PilihanRonde { label = "\"Makasih, saya jalan kaki saja.\"", kategori = "AMAN",
-            reaksi = "\u2713 Bagus, kamu menolak dengan tegas dan tetap waspada." },
+            reaksi = "Bagus, kamu menolak dengan tegas dan tetap waspada." },
         new PilihanRonde { label = "Naik saja, mumpung gratis", kategori = "BAHAYA",
-            reaksi = "\u2716 Bahaya! Jangan pernah naik kendaraan orang asing meski gratis. Kamu kehilangan 1 nyawa." }
+            reaksi = "Bahaya! Jangan pernah naik kendaraan orang asing meski gratis. Kamu kehilangan 1 nyawa." }
     };
 
     [Header("Tantangan 2 — Cek Plat Nomor (Minigame)")]
@@ -281,7 +281,7 @@ public class Day3Controller : MonoBehaviour
     [TextArea(1, 3)]
     public string[] groomingLines = new string[]
     {
-        "\"Eh hei, mau kemana sendirian? \uD83D\uDE0F Ikut aku dulu deh. Sebentar aja kok~\"",
+        "\"Eh hei, mau kemana sendirian? Ikut aku dulu deh. Sebentar aja kok~\"",
         "\"Sssst! Jangan teriak-teriak, nanti kamu yang dimarahin orang. Diam aja ya~\"",
         "\"Haha, emangnya siapa yang bakal percaya sama kamu? Nggak ada! Diam aja~\"",
         "\"Ini rahasia kita berdua ya. Kalau kamu ngadu, kamu sendiri yang bakal kena masalah!\""
@@ -292,22 +292,22 @@ public class Day3Controller : MonoBehaviour
     public RondeKonfrontasi[] groomingRonde = new RondeKonfrontasi[]
     {
         new RondeKonfrontasi {
-            ucapanBoss = "\"Eh hei, mau kemana sendirian? \uD83D\uDE0F Ikut aku dulu deh. Sebentar aja kok~\"",
+            ucapanBoss = "\"Eh hei, mau kemana sendirian? Ikut aku dulu deh. Sebentar aja kok~\"",
             pilihan = new PilihanKonfrontasi[]
             {
                 new PilihanKonfrontasi {
-                    label = "\"PERGI! Aku NGGAK KENAL kamu! TOLONG!! \uD83D\uDD0A\"", kategori = "AMAN", bonusPoin = 50,
-                    reaksi = "\u2713 BERANI! Suara Rara bikin pelaku kaget dan mundur selangkah.",
+                    label = "\"PERGI! Aku NGGAK KENAL kamu! TOLONG!!\"", kategori = "AMAN", bonusPoin = 50,
+                    reaksi = "BERANI! Suara Rara bikin pelaku kaget dan mundur selangkah.",
                     warna = new Color(0.15f, 0.68f, 0.38f, 1f)
                 },
                 new PilihanKonfrontasi {
                     label = "\"E-emm... nggak usah deh...\" (suara pelan)", kategori = "RAGU",
-                    reaksi = "\u26A0 Kurang tegas. Lain kali bersuara lebih lantang ya!",
+                    reaksi = "Kurang tegas. Lain kali bersuara lebih lantang ya!",
                     warna = new Color(0.95f, 0.61f, 0.07f, 1f)
                 },
                 new PilihanKonfrontasi {
                     label = "(diam, bingung mau gimana...)", kategori = "BAHAYA",
-                    reaksi = "\u2716 DIAM ITU BAHAYA! Pelaku makin berani. Kamu kehilangan 1 nyawa.",
+                    reaksi = "DIAM ITU BAHAYA! Pelaku makin berani. Kamu kehilangan 1 nyawa.",
                     kurangiNyawa = true,
                     warna = new Color(0.50f, 0.20f, 0.20f, 1f)
                 }
@@ -318,18 +318,18 @@ public class Day3Controller : MonoBehaviour
             pilihan = new PilihanKonfrontasi[]
             {
                 new PilihanKonfrontasi {
-                    label = "\"JANGAN DEKET-DEKET! TOLONG!! \uD83D\uDD0A\" (Teriak KERAS!)", kategori = "AMAN", bonusPoin = 50,
-                    reaksi = "\u2713 HEBAT! Teriakan Rara menggema. Pelaku makin ciut nyalinya.",
+                    label = "\"JANGAN DEKET-DEKET! TOLONG!!\" (Teriak KERAS!)", kategori = "AMAN", bonusPoin = 50,
+                    reaksi = "HEBAT! Teriakan Rara menggema. Pelaku makin ciut nyalinya.",
                     warna = new Color(0.15f, 0.68f, 0.38f, 1f)
                 },
                 new PilihanKonfrontasi {
                     label = "\"T-tolong...\" (hampir nggak kedengeran)", kategori = "RAGU",
-                    reaksi = "\u26A0 Suaramu kepelanan. TERIAK sekuat tenaga lain kali!",
+                    reaksi = "Suaramu kepelanan. TERIAK sekuat tenaga lain kali!",
                     warna = new Color(0.95f, 0.61f, 0.07f, 1f)
                 },
                 new PilihanKonfrontasi {
                     label = "(beku di tempat, nggak bisa ngomong...)", kategori = "BAHAYA",
-                    reaksi = "\u2716 Rara beku ketakutan. Pelaku makin mendesak. Kehilangan 1 nyawa.",
+                    reaksi = "Rara beku ketakutan. Pelaku makin mendesak. Kehilangan 1 nyawa.",
                     kurangiNyawa = true,
                     warna = new Color(0.50f, 0.20f, 0.20f, 1f)
                 }
@@ -340,18 +340,18 @@ public class Day3Controller : MonoBehaviour
             pilihan = new PilihanKonfrontasi[]
             {
                 new PilihanKonfrontasi {
-                    label = "\"PERGI! Aku PERCAYA SAMA DIRI SENDIRI! TOLONG!! \uD83D\uDCAA\"", kategori = "AMAN", bonusPoin = 50,
-                    reaksi = "\u2713 KEREN! Rara percaya diri. Mental pelaku makin jatuh.",
+                    label = "\"PERGI! Aku PERCAYA SAMA DIRI SENDIRI! TOLONG!!\"", kategori = "AMAN", bonusPoin = 50,
+                    reaksi = "KEREN! Rara percaya diri. Mental pelaku makin jatuh.",
                     warna = new Color(0.15f, 0.68f, 0.38f, 1f)
                 },
                 new PilihanKonfrontasi {
                     label = "\"Emangnya... kenapa sih?\" (masih ragu-ragu)", kategori = "RAGU",
-                    reaksi = "\u26A0 Jangan terpancing. Tetap tegas menolak ya!",
+                    reaksi = "Jangan terpancing. Tetap tegas menolak ya!",
                     warna = new Color(0.95f, 0.61f, 0.07f, 1f)
                 },
                 new PilihanKonfrontasi {
                     label = "(nangis diem-diem, nggak berani berbuat apa-apa)", kategori = "BAHAYA",
-                    reaksi = "\u2716 Rara terlalu takut. Pelaku menang sesaat. Kehilangan 1 nyawa.",
+                    reaksi = "Rara terlalu takut. Pelaku menang sesaat. Kehilangan 1 nyawa.",
                     kurangiNyawa = true,
                     warna = new Color(0.50f, 0.20f, 0.20f, 1f)
                 }
@@ -362,18 +362,18 @@ public class Day3Controller : MonoBehaviour
             pilihan = new PilihanKonfrontasi[]
             {
                 new PilihanKonfrontasi {
-                    label = "\"Bohong! AKU BAKAL CERITA ke guru sekarang! \uD83D\uDD0A\"", kategori = "AMAN", bonusPoin = 50,
-                    reaksi = "\u2713 TEPAT! Rahasia jahat HARUS diceritakan. Pelaku panik!",
+                    label = "\"Bohong! AKU BAKAL CERITA ke guru sekarang!\"", kategori = "AMAN", bonusPoin = 50,
+                    reaksi = "TEPAT! Rahasia jahat HARUS diceritakan. Pelaku panik!",
                     warna = new Color(0.15f, 0.68f, 0.38f, 1f)
                 },
                 new PilihanKonfrontasi {
                     label = "\"Aku nggak tau harus ngapain...\" (bingung banget)", kategori = "RAGU",
-                    reaksi = "\u26A0 Ingat: kamu boleh cerita ke orang dewasa yang dipercaya!",
+                    reaksi = "Ingat: kamu boleh cerita ke orang dewasa yang dipercaya!",
                     warna = new Color(0.95f, 0.61f, 0.07f, 1f)
                 },
                 new PilihanKonfrontasi {
                     label = "\"Mungkin... emang salah aku ya...\" (mulai pasrah)", kategori = "BAHAYA",
-                    reaksi = "\u2716 Ini BUKAN salahmu! Jangan pasrah. Kehilangan 1 nyawa.",
+                    reaksi = "Ini BUKAN salahmu! Jangan pasrah. Kehilangan 1 nyawa.",
                     kurangiNyawa = true,
                     warna = new Color(0.50f, 0.20f, 0.20f, 1f)
                 }
@@ -391,25 +391,25 @@ public class Day3Controller : MonoBehaviour
     {
         new PilihanKonfrontasi {
             label = "(beku di tempat, nggak bisa ngomong...)", kategori = "BAHAYA",
-            reaksi = "\u2716 Rara beku ketakutan, dan dia jadi makin berani. Kehilangan 1 nyawa \u2014 ingat, DIAM ITU BAHAYA. Kamu harus bersuara!",
+            reaksi = "Rara beku ketakutan, dan dia jadi makin berani. Kehilangan 1 nyawa \u2014 ingat, DIAM ITU BAHAYA. Kamu harus bersuara!",
             kurangiNyawa = true, hasil = HasilDay3.Lanjut,
             warna = new Color(0.50f, 0.20f, 0.20f, 1f)
         },
         new PilihanKonfrontasi {
             label = "\"T-tolong...\" (suaranya hampir nggak kedengeran)", kategori = "RAGU",
-            reaksi = "\u26A0 Rara berhasil pergi, tapi suaranya pelan banget. Lain kali TERIAK yang keras ya!",
+            reaksi = "Rara berhasil pergi, tapi suaranya pelan banget. Lain kali TERIAK yang keras ya!",
             hasil = HasilDay3.Aman,
             warna = new Color(0.95f, 0.61f, 0.07f, 1f)
         },
         new PilihanKonfrontasi {
-            label = "\"JANGAN DEKET-DEKET! TOLONG!! \uD83D\uDD0A\" (Teriak KERAS!)", kategori = "AMAN", bonusPoin = 300,
-            reaksi = "\u2713 HEBAT! Teriakan Rara bikin dia kaget dan langsung mundur. Berani bersuara itu kekuatan!",
+            label = "\"JANGAN DEKET-DEKET! TOLONG!!\" (Teriak KERAS!)", kategori = "AMAN", bonusPoin = 300,
+            reaksi = "HEBAT! Teriakan Rara bikin dia kaget dan langsung mundur. Berani bersuara itu kekuatan!",
             butuhVoiceKeras = true, hasil = HasilDay3.Aman,
             warna = new Color(0.15f, 0.68f, 0.38f, 1f)
         },
         new PilihanKonfrontasi {
-            label = "\uD83D\uDCE2 TERIAK SEKERAS-KERASNYA + lari ke satpam! \uD83C\uDD98", kategori = "LAPOR",
-            reaksi = "\u2713 LAPOR SUKSES! Rara teriak minta tolong dan lari ke satpam. Guru dan satpam langsung datang \u2014 Rara pahlawan buat dirinya sendiri!",
+            label = "TERIAK SEKERAS-KERASNYA + lari ke satpam!", kategori = "LAPOR",
+            reaksi = "LAPOR SUKSES! Rara teriak minta tolong dan lari ke satpam. Guru dan satpam langsung datang \u2014 Rara pahlawan buat dirinya sendiri!",
             panicButton = true, hasil = HasilDay3.LaporSukses,
             warna = new Color(0.20f, 0.62f, 0.86f, 1f)
         }
@@ -426,10 +426,10 @@ public class Day3Controller : MonoBehaviour
     public Vector2 spriteTeriakUkuran = new Vector2(420f, 520f);
     [Header("Boss — Panic Button (Polisi Datang)")]
     [Tooltip("Label tombol darurat.")]
-    public string panicLabel = "\uD83D\uDEA8 PANIC BUTTON";
+    public string panicLabel = "PANIC BUTTON";
     [Tooltip("Narasi saat panic button ditekan (polisi/guru datang).")]
     [TextArea(2, 4)]
-    public string panicNarasi = "\uD83D\uDE94 \"HEEEI! Ada apa ini?! Kami denger ada yang teriak!\"\n" +
+    public string panicNarasi = "\"HEEEI! Ada apa ini?! Kami denger ada yang teriak!\"\n" +
         "Si Bayangan Gelap langsung kabur terbirit-birit! Pengecut!";
     [Tooltip("Durasi animasi polisi/guru datang (detik).")]
     public float panicAnimasiDurasi = 2.2f;
@@ -451,7 +451,7 @@ public class Day3Controller : MonoBehaviour
     [Tooltip("Sprite latar belakang fullscreen ending TRAUMA / Game Over (gaya Day 2). " +
              "Kosong = pakai latar hasil default (hasilLatarSprite).")]
     public Sprite endingTraumaLatar;
-    public string endingTraumaJudul = "\uD83D\uDC94  GAME OVER";
+    public string endingTraumaJudul = "GAME OVER";
 
     [Header("Backdrop Procedural")]
     public bool buatBackdrop = true;
@@ -501,11 +501,11 @@ public class Day3Controller : MonoBehaviour
             pilihan = new PilihanRonde[]
             {
                 new PilihanRonde { label = "\"TIDAK! Aku nggak kenal om.\"", kategori = "AMAN", damage = 40f,
-                    reaksi = "\u2713 Tegas! Kata sakti TIDAK. Pelaku kaget kamu berani menolak." },
+                    reaksi = "Tegas! Kata sakti TIDAK. Pelaku kaget kamu berani menolak." },
                 new PilihanRonde { label = "\"Eh... nggak usah deh, om...\"", kategori = "RAGU", damage = 20f,
-                    reaksi = "\u26A0 Kurang tegas. Dia masih coba membujukmu." },
+                    reaksi = "Kurang tegas. Dia masih coba membujukmu." },
                 new PilihanRonde { label = "Diam & ragu-ragu mau ikut", kategori = "BAHAYA", damage = 0f,
-                    reaksi = "\u2716 Dia makin memaksa. Kamu kehilangan 1 nyawa." }
+                    reaksi = "Dia makin memaksa. Kamu kehilangan 1 nyawa." }
             }
         },
         new Ronde {
@@ -514,11 +514,11 @@ public class Day3Controller : MonoBehaviour
             pilihan = new PilihanRonde[]
             {
                 new PilihanRonde { label = "\"Aku PERGI dari sini. Nggak ada rahasia sama orang asing.\"", kategori = "AMAN", damage = 40f,
-                    reaksi = "\u2713 Mantap! Kata sakti PERGI. Nyali pelaku makin ciut." },
+                    reaksi = "Mantap! Kata sakti PERGI. Nyali pelaku makin ciut." },
                 new PilihanRonde { label = "\"I-iya deh, aku nggak bakal cerita...\"", kategori = "RAGU", damage = 20f,
-                    reaksi = "\u26A0 Dia merasa kamu bisa ditakut-takuti." },
+                    reaksi = "Dia merasa kamu bisa ditakut-takuti." },
                 new PilihanRonde { label = "Menurut & janji simpan rahasia", kategori = "BAHAYA", damage = 0f,
-                    reaksi = "\u2716 Justru itu jebakannya. Kamu kehilangan 1 nyawa." }
+                    reaksi = "Justru itu jebakannya. Kamu kehilangan 1 nyawa." }
             }
         },
         new Ronde {
@@ -527,11 +527,11 @@ public class Day3Controller : MonoBehaviour
             pilihan = new PilihanRonde[]
             {
                 new PilihanRonde { label = "Teriak \"TOLONG!\" & lari CERITA ke satpam", kategori = "AMAN", damage = 50f,
-                    reaksi = "\u2713 Hebat! Kata sakti CERITA. Satpam datang, pelaku kabur!" },
+                    reaksi = "Hebat! Kata sakti CERITA. Satpam datang, pelaku kabur!" },
                 new PilihanRonde { label = "\"Aku... aku tunggu guru aja deh.\"", kategori = "RAGU", damage = 20f,
-                    reaksi = "\u26A0 Lumayan, tapi kamu masih ragu cari bantuan." },
+                    reaksi = "Lumayan, tapi kamu masih ragu cari bantuan." },
                 new PilihanRonde { label = "Ikut saja ke tempat sepi", kategori = "BAHAYA", damage = 0f,
-                    reaksi = "\u2716 BAHAYA besar! Kamu kehilangan 1 nyawa." }
+                    reaksi = "BAHAYA besar! Kamu kehilangan 1 nyawa." }
             }
         }
     };
@@ -540,12 +540,12 @@ public class Day3Controller : MonoBehaviour
     [TextArea(2, 5)]
     public string narasiBossKalah =
         "\"Tenang Rara, kamu udah berani banget! Kamu nggak salah sama sekali.\"\n" +
-        "Guru dan satpam bakal bantu laporin ke polisi. Rara berani cerita \u2014 itu pilihan PALING TEPAT! \uD83D\uDCAA";
+        "Guru dan satpam bakal bantu laporin ke polisi. Rara berani cerita \u2014 itu pilihan PALING TEPAT!";
     [Tooltip("Achievement yang diraih saat selamat dengan berani (ending AMAN).")]
     public string achievementMenang = "Berani Menjaga Diri";
 
     [Header("Kartu Edukasi Hari 3")]
-    public string eduJudul = "\uD83C\uDFC6  Kartu Edukasi \u2014 Hari 3: FINAL";
+    public string eduJudul = "Kartu Edukasi \u2014 Hari 3: FINAL";
     public Color  eduWarnaJudul = new Color(1f, 0.85f, 0.30f, 1f);
     [Tooltip("Sprite latar belakang penuh layar di belakang kartu edukasi (opsional). " +
              "Kosong = warna gelap solid.")]
@@ -553,19 +553,19 @@ public class Day3Controller : MonoBehaviour
     public Color  eduLatarWarna = new Color(0f, 0f, 0f, 0.82f);
     [TextArea(4, 10)]
     public string eduIsi =
-        "\u26A0 Apa itu Grooming?\n" +
+        "Apa itu Grooming?\n" +
         "Grooming = orang dewasa yang pura-pura 'baik' buat mendekati anak \u2014 lewat chat, sosmed, atau ketemu langsung. Ini KEJAHATAN. Kamu boleh lapor!\n\n" +
-        "\uD83E\uDD81 Cara Melindungi Diri:\n" +
+        "Cara Melindungi Diri:\n" +
         "\u2022 Ingat 3 KATA SAKTI: TIDAK! \u2014 PERGI! \u2014 CERITA!\n" +
         "\u2022 Terasa nggak aman? TERIAK keras dan minta tolong!\n" +
         "\u2022 Chat mencurigakan? Blokir + screenshot + cerita ke ortu.\n" +
         "\u2022 Guru dan polisi ADA untuk melindungi kamu!\n\n" +
-        "\uD83D\uDCE3 Yang Paling Penting:\n" +
-        "Kalau kamu jadi korban, itu BUKAN salahmu! Berani cerita ke orang yang dipercaya = tindakan paling berani yang bisa kamu lakuin! \uD83D\uDCAA\n\n" +
-        "\uD83C\uDD98 Darurat: Polisi 110  |  Hotline Anak 129  |  KPAI 021-31901556";
+        "Yang Paling Penting:\n" +
+        "Kalau kamu jadi korban, itu BUKAN salahmu! Berani cerita ke orang yang dipercaya = tindakan paling berani yang bisa kamu lakuin!\n\n" +
+        "Darurat: Polisi 110  |  Hotline Anak 129  |  KPAI 021-31901556";
 
     [Header("Layar Hasil Akhir (Complete)")]
-    public string hasilJudul = "\uD83C\uDFC1  TANTANGAN SELESAI!";
+    public string hasilJudul = "TANTANGAN SELESAI!";
     [Tooltip("Sprite latar belakang penuh layar di belakang kartu hasil (opsional). Kosong = warna solid gelap.")]
     public Sprite hasilLatarSprite;
     [Tooltip("Ambang skor untuk pesan penutup (mengikuti CLAUDE.md).")]
@@ -864,7 +864,7 @@ public class Day3Controller : MonoBehaviour
         Stretch(fill.rectTransform, 3f, 3f);
 
         // Ikon Rara berjalan/berlari (emoji) bergerak mengikuti progres.
-        var runner = BuatTeks(barBg.transform, "Runner", "\uD83D\uDEB6", 40, Color.white, FontStyles.Normal);
+        var runner = BuatTeks(barBg.transform, "Runner", "", 40, Color.white, FontStyles.Normal);
         runner.alignment = TextAlignmentOptions.Center;
         var runRt = runner.rectTransform;
         runRt.anchorMin = new Vector2(0f, 0.5f); runRt.anchorMax = new Vector2(0f, 0.5f);
@@ -878,7 +878,7 @@ public class Day3Controller : MonoBehaviour
         shRt.anchorMin = new Vector2(0.5f, 0f); shRt.anchorMax = new Vector2(0.5f, 0f);
         shRt.pivot = new Vector2(0.5f, 0f); shRt.sizeDelta = new Vector2(380f, 96f);
         shRt.anchoredPosition = new Vector2(0f, 70f);
-        var shLbl = BuatTeks(shoutImg.transform, "Lbl", "\uD83D\uDCE2 TERIAK (tahan)", 28, Color.white, FontStyles.Bold);
+        var shLbl = BuatTeks(shoutImg.transform, "Lbl", "TERIAK (tahan)", 28, Color.white, FontStyles.Bold);
         shLbl.alignment = TextAlignmentOptions.Center;
         Stretch(shLbl.rectTransform);
         var trig = shoutImg.gameObject.AddComponent<EventTrigger>();
@@ -911,11 +911,11 @@ public class Day3Controller : MonoBehaviour
             // Runner mengikuti progres sepanjang bar.
             float barW = barRt.rect.width;
             runRt.anchoredPosition = new Vector2(p * barW, runRt.anchoredPosition.y);
-            runner.text = teriak ? "\uD83C\uDFC3" : "\uD83D\uDEB6";
+            runner.text = teriak ? "" : "";
 
             int sisa = Mathf.CeilToInt(totalDist - jalan);
             jarakTxt.text = sisa > 0
-                ? "Parkiran " + sisa + " m lagi..." + (teriak ? "  \uD83D\uDCA8" : "")
+                ? "Parkiran " + sisa + " m lagi..."
                 : "Hampir sampai!";
             yield return null;
         }
@@ -998,7 +998,7 @@ public class Day3Controller : MonoBehaviour
 
         // Tombol screenshot bonus = "Screenshot Dulu" (+100 bukti).
         chat.tampilkanTombolScreenshot = true;
-        chat.screenshotLabel = "\uD83D\uDCF8 Screenshot dulu buat bukti";
+        chat.screenshotLabel = "Screenshot dulu buat bukti";
         chat.screenshotBonus = 100;
         chat.screenshotAchievement = "Detektif Bukti"; // ambil bukti = achievement
 
@@ -1006,20 +1006,20 @@ public class Day3Controller : MonoBehaviour
         chat.aksiList = new ChatSimWhatsApp.AksiData[]
         {
             new ChatSimWhatsApp.AksiData {
-                label = "\uD83D\uDCF8 Oke, ini foto seragamku~", kategori = "BAHAYA",
-                reaksi = "\u2716 STOP! Jangan kirim foto ke orang yang nggak kamu kenal! Foto bisa dipakai buat memeras atau mengancam kamu. Kamu kehilangan 1 nyawa.",
+                label = "Oke, ini foto seragamku~", kategori = "BAHAYA",
+                reaksi = "STOP! Jangan kirim foto ke orang yang nggak kamu kenal! Foto bisa dipakai buat memeras atau mengancam kamu. Kamu kehilangan 1 nyawa.",
                 kurangiNyawa = true,
                 warna = warnaBahaya
             },
             new ChatSimWhatsApp.AksiData {
-                label = "\uD83D\uDE97 Iya Om, aku di parkiran SMP. Jemput ya!", kategori = "BAHAYA",
-                reaksi = "\u2716 GAME OVER! Rara pergi sama orang nggak dikenal dari internet! Jangan PERNAH kasih lokasi atau minta dijemput orang asing.",
+                label = "Iya Om, aku di parkiran SMP. Jemput ya!", kategori = "BAHAYA",
+                reaksi = "GAME OVER! Rara pergi sama orang nggak dikenal dari internet! Jangan PERNAH kasih lokasi atau minta dijemput orang asing.",
                 akhiriGameOver = true,
                 warna = new Color(0.50f, 0.16f, 0.16f, 1f)
             },
             new ChatSimWhatsApp.AksiData {
-                label = "\uD83D\uDEAB BLOKIR sekarang + lapor ke ortu!", kategori = "AMAN",
-                reaksi = "\u2713 TEPAT! Blokir nomornya, terus cerita ke orang tua. Itulah cara pahlawan menjaga diri! (+200)",
+                label = "BLOKIR sekarang + lapor ke ortu!", kategori = "AMAN",
+                reaksi = "TEPAT! Blokir nomornya, terus cerita ke orang tua. Itulah cara pahlawan menjaga diri! (+200)",
                 bonusPoin = 200,
                 warna = warnaAman
             }
@@ -1055,8 +1055,8 @@ public class Day3Controller : MonoBehaviour
         _menungguPilihan = true;
         TampilkanTombolKustom(new (string, Color)[]
         {
-            ("\uD83D\uDD0D Cek & bandingkan plat dulu", warnaNetral),
-            ("\uD83D\uDE97 Naik saja (gratis!)",        warnaBahaya)
+            ("Cek & bandingkan plat dulu", warnaNetral),
+            ("Naik saja (gratis!)",        warnaBahaya)
         }, i => { pilih1 = i; _menungguPilihan = false; });
         while (_menungguPilihan) yield return null;
 
@@ -1068,7 +1068,7 @@ public class Day3Controller : MonoBehaviour
             if (HUDManager.Instance != null && GameState.Instance != null)
                 HUDManager.Instance.UpdateHearts(GameState.Instance.lives, GameState.Instance.maxLives);
             AudioManager.Instance?.Wrong();
-            yield return KetikReaksi("\u2716 Rara naik ojol palsu! Selalu cocokin plat di aplikasi sama plat di motor. Kalau beda, jangan naik! GAME OVER.");
+            yield return KetikReaksi("Rara naik ojol palsu! Selalu cocokin plat di aplikasi sama plat di motor. Kalau beda, jangan naik! GAME OVER.");
             yield return new WaitForSeconds(2.4f);
             if (platPanel != null) Destroy(platPanel);
             _hasilDay3 = HasilDay3.Trauma;
@@ -1091,7 +1091,7 @@ public class Day3Controller : MonoBehaviour
         TampilkanTombolKustom(new (string, Color)[]
         {
             ("\u274C TIDAK COCOK \u2014 tolak naik", warnaAman),
-            ("\u2705 Cocok \u2014 naik saja",        warnaBahaya)
+            ("Cocok \u2014 naik saja",        warnaBahaya)
         }, i => { pilih2 = i; _menungguPilihan = false; });
         while (_menungguPilihan) yield return null;
 
@@ -1103,7 +1103,7 @@ public class Day3Controller : MonoBehaviour
             if (HUDManager.Instance != null && GameState.Instance != null)
                 HUDManager.Instance.UpdateHearts(GameState.Instance.lives, GameState.Instance.maxLives);
             AudioManager.Instance?.Wrong();
-            yield return KetikReaksi("\u2716 Platnya jelas beda, tapi Rara tetap naik! Rara naik ojol palsu. GAME OVER.");
+            yield return KetikReaksi("Platnya jelas beda, tapi Rara tetap naik! Rara naik ojol palsu. GAME OVER.");
             yield return new WaitForSeconds(2.4f);
             if (platPanel != null) Destroy(platPanel);
             _hasilDay3 = HasilDay3.Trauma;
@@ -1116,7 +1116,7 @@ public class Day3Controller : MonoBehaviour
         if (ojolBonusCekPlat > 0) GameState.Instance?.AddScore(ojolBonusCekPlat);
         GameState.Instance?.TambahBukti(GameState.BUKTI_PLAT_DAY3); // B2 — bukti cek plat Hari 3
         AudioManager.Instance?.PlayKategori("AMAN");
-        yield return KetikReaksi("\u2713 PLAT BENAR dicek! Platnya beda = ojol PALSU. Rara nggak naik. Pinter! (+" + ojolBonusCekPlat + " bukti)");
+        yield return KetikReaksi("PLAT BENAR dicek! Platnya beda = ojol PALSU. Rara nggak naik. Pinter! (+" + ojolBonusCekPlat + " bukti)");
         yield return new WaitForSeconds(2.2f);
         if (_reaksiText != null) _reaksiText.text = "";
         if (platPanel != null) Destroy(platPanel);
@@ -1394,7 +1394,7 @@ public class Day3Controller : MonoBehaviour
             if (dipilih.butuhVoiceKeras && !berhasilVoice)
             {
                 // Teriakan kurang keras → pria belum mundur. Ulangi pilihan.
-                yield return KetikReaksi("\u26A0 Suaramu kurang keras! Tarik napas, terus TERIAK sekuat tenaga: \"JANGAN DEKET-DEKET!\"");
+                yield return KetikReaksi("Suaramu kurang keras! Tarik napas, terus TERIAK sekuat tenaga: \"JANGAN DEKET-DEKET!\"");
                 yield return new WaitForSeconds(1.8f);
                 if (_reaksiText != null) _reaksiText.text = "";
                 continue;
@@ -1428,7 +1428,7 @@ public class Day3Controller : MonoBehaviour
                 && !GameState.Instance.SemuaBuktiLengkap())
             {
                 _hasilDay3 = HasilDay3.Aman;
-                yield return KetikReaksi("\u26A0 Kamu berani minta tolong \u2014 itu sudah tepat! Tapi tanpa bukti " +
+                yield return KetikReaksi("Kamu berani minta tolong \u2014 itu sudah tepat! Tapi tanpa bukti " +
                     "lengkap (screenshot chat & cek plat), laporan jadi sulit ditindak. " +
                     "Lain kali kumpulkan dulu buktinya ya!");
                 yield return new WaitForSeconds(2.8f);
@@ -1602,7 +1602,7 @@ public class Day3Controller : MonoBehaviour
         kartuOutline.effectDistance = new Vector2(2.5f, -2.5f);
 
         var instruksi = BuatTeks(go.transform, "Instruksi",
-            "\uD83D\uDDE3 TERIAK TERUS \u2014 JANGAN BERHENTI!\n\"JANGAN DEKAT-DEKAT!!\"\n" +
+            "TERIAK TERUS \u2014 JANGAN BERHENTI!\n\"JANGAN DEKAT-DEKAT!!\"\n" +
             "<size=65%>(teriak ke mic, atau TAHAN tombol TERIAK) sambil tekan tombol DARURAT</size>",
             38, Color.white, FontStyles.Bold);
         instruksi.alignment = TextAlignmentOptions.Center;
@@ -1669,7 +1669,7 @@ public class Day3Controller : MonoBehaviour
             panicDitekan = true;
             panicGO.transform.localScale = Vector3.one;
             panicImg.color = new Color(0.18f, 0.62f, 0.30f, 1f);
-            panicTxt.text = "\u2713 Bantuan dipanggil!";
+            panicTxt.text = "Bantuan dipanggil!";
             AudioManager.Instance?.Click();
         });
 
@@ -1686,7 +1686,7 @@ public class Day3Controller : MonoBehaviour
         var shOutline = shoutImg.gameObject.AddComponent<Outline>();
         shOutline.effectColor    = new Color(0f, 0f, 0f, 0.35f);
         shOutline.effectDistance = new Vector2(2.5f, -2.5f);
-        var shLbl = BuatTeks(shoutImg.transform, "Label", "\uD83D\uDCE2 TERIAK (tahan)", 26, Color.white, FontStyles.Bold);
+        var shLbl = BuatTeks(shoutImg.transform, "Label", "TERIAK (tahan)", 26, Color.white, FontStyles.Bold);
         shLbl.alignment = TextAlignmentOptions.Center;
         Stretch(shLbl.rectTransform);
         var shTrig = shoutImg.gameObject.AddComponent<EventTrigger>();
@@ -1730,7 +1730,7 @@ public class Day3Controller : MonoBehaviour
 
             // Saat mental habis → arahkan pemain menekan tombol darurat.
             if (mental <= 0f && !panicDitekan)
-                instruksi.text = "\uD83D\uDEA8 Dia mulai mundur! Sekarang TEKAN TOMBOL DARURAT!";
+                instruksi.text = "Dia mulai mundur! Sekarang TEKAN TOMBOL DARURAT!";
 
             // Sukses HANYA jika Mental Si Bully terkuras DAN bantuan sudah dipanggil.
             if (mental <= 0f && panicDitekan) { sukses = true; break; }
@@ -1957,7 +1957,7 @@ public class Day3Controller : MonoBehaviour
             yield return null;
         }
 
-        lvl.text = "\u2713 HEBAT! LARI KE SATPAM!"; lvl.color = merah;
+        lvl.text = "HEBAT! LARI KE SATPAM!"; lvl.color = merah;
         marker.color = merah;
         AudioManager.Instance?.PlayKategori("AMAN");
         yield return new WaitForSeconds(0.7f);
@@ -2463,9 +2463,22 @@ public class Day3Controller : MonoBehaviour
             // Tag nama selalu KUNING untuk seluruh dialog Day 3.
             _namaUcapanText.color = new Color(1f, 0.85f, 0.3f, 1f);
         }
-        // Portrait/sprite profil DIHILANGKAN dari box dialog — selalu sembunyikan.
+        // Portrait/sprite profil per pembicara (Narasi / Rara / Boss) — gaya box dialog Halte.
         if (_portraitUcapanImg != null)
-            _portraitUcapanImg.enabled = false;
+        {
+            Sprite pSpr = PortraitUntuk(namaPembicara);
+            if (pSpr != null)
+            {
+                _portraitUcapanImg.sprite  = pSpr;
+                _portraitUcapanImg.color   = Color.white;
+                _portraitUcapanImg.enabled = true;
+            }
+            else
+            {
+                _portraitUcapanImg.sprite  = null;
+                _portraitUcapanImg.enabled = false;
+            }
+        }
         // Label nama boss (di atas potret) hanya tampil bila yang bicara memang si boss.
         if (_bossNamaText != null) _bossNamaText.text = (namaPembicara == bossNama) ? bossNama : "";
         // Teks narasi Day 3 dibuat NORMAL (tidak italic) sesuai permintaan.
@@ -2663,7 +2676,7 @@ public class Day3Controller : MonoBehaviour
 
         // Judul — ending terbaik (LAPOR SUKSES) punya gelar khusus.
         string judulTeks = trauma ? endingTraumaJudul
-                         : laporSukses ? "\uD83C\uDFC6  ENDING TERBAIK \u2014 PELAPOR HEBAT!"
+                         : laporSukses ? "ENDING TERBAIK \u2014 PELAPOR HEBAT!"
                          : hasilJudul;
         var judul = BuatTeks(cardT, "Judul", judulTeks,
             46, trauma ? warnaBahaya : warnaTeksJudul, FontStyles.Bold);
@@ -2741,9 +2754,9 @@ public class Day3Controller : MonoBehaviour
         {
             int kurang = gs != null ? (4 - gs.JumlahBukti) : 4;
             pesan += kurang > 0
-                ? "\n<size=85%><color=#FFD24A>\uD83D\uDCA1 Ending TERBAIK 'PELAPOR HEBAT': lengkapi " + kurang +
+                ? "\n<size=85%><color=#FFD24A>Ending TERBAIK 'PELAPOR HEBAT': lengkapi " + kurang +
                   " bukti lagi (screenshot chat & cek plat) lalu BERANI lapor!</color></size>"
-                : "\n<size=85%><color=#FFD24A>\uD83D\uDCA1 Bukti lengkap! Tinggal pilih BERANI LAPOR untuk ending TERBAIK.</color></size>";
+                : "\n<size=85%><color=#FFD24A>Bukti lengkap! Tinggal pilih BERANI LAPOR untuk ending TERBAIK.</color></size>";
         }
         var pesanText = BuatTeks(cardT, "Pesan", pesan, 24, trauma ? warnaBahaya : warnaTeksJudul, FontStyles.Italic);
         pesanText.alignment = TextAlignmentOptions.Center;
@@ -2831,7 +2844,7 @@ public class Day3Controller : MonoBehaviour
             {
                 case "AMAN": aman++; break;
                 case "RAGU": ragu++; break;
-                case "BAHAYA": bahaya++; redFlags.Add("\u2716 " + c.label); break;
+                case "BAHAYA": bahaya++; redFlags.Add(c.label); break;
             }
         }
 
@@ -2860,7 +2873,7 @@ public class Day3Controller : MonoBehaviour
     string TeksBukti(GameState gs)
     {
         if (gs == null) return "-";
-        string Cek(bool ada) => ada ? "<color=#26AD61>\u2713</color>" : "<color=#E84D3D>\u2717</color>";
+        string Cek(bool ada) => ada ? "<color=#26AD61>OK</color>" : "<color=#E84D3D>X</color>";
         var sb = new System.Text.StringBuilder();
         sb.AppendLine(Cek(gs.PunyaBukti(GameState.BUKTI_CHAT_DAY2)) + " Screenshot chat (Hari 2)    " +
                       Cek(gs.PunyaBukti(GameState.BUKTI_PLAT_DAY2)) + " Cek plat angkot (Hari 2)");
@@ -2873,7 +2886,7 @@ public class Day3Controller : MonoBehaviour
     string TeksKataSakti(GameState gs)
     {
         if (gs == null) return "-";
-        string Cek(bool ada) => ada ? "<color=#26AD61>\u2713</color>" : "<color=#E84D3D>\u2717</color>";
+        string Cek(bool ada) => ada ? "<color=#26AD61>OK</color>" : "<color=#E84D3D>X</color>";
         return Cek(gs.usedTidak) + " TIDAK      " +
                Cek(gs.usedPergi) + " PERGI      " +
                Cek(gs.usedCerita) + " CERITA";

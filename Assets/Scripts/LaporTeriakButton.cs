@@ -387,8 +387,8 @@ public class LaporTeriakButton : MonoBehaviour, IPointerDownHandler, IPointerUpH
             Sprite ps = b.speaker == "Rara"       ? vnPortraitRara
                       : b.speaker == "Pria Asing" ? vnPortraitPria
                       :                             vnPortraitNarasi;
-            if (ps != null) { portraitImg.sprite = ps; portraitImg.enabled = false; } // potret disembunyikan dari box dialog
-            else            { portraitImg.enabled = false; }
+            if (ps != null) { portraitImg.sprite = ps; portraitImg.color = Color.white; portraitImg.enabled = true; } // tampilkan potret di box dialog
+            else            { portraitImg.sprite = null; portraitImg.enabled = false; }
 
             // Tampilkan teks per-huruf (typewriter) agar transisi narasi lebih hidup.
             if (vnAnimasiKetik)

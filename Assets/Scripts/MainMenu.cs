@@ -129,11 +129,20 @@ public class MainMenu : MonoBehaviour
         }
         bgImg.raycastTarget = true; // blok klik ke layer di bawah
 
+        // ── Kontainer Safe Area (mobile) ─────────────────────────────────────
+        // Semua konten menu (judul, subjudul, tombol, footer) ditaruh di dalam
+        // area aman perangkat agar TIDAK tertutup poni/notch atau sudut membulat
+        // layar HP. Latar belakang tetap penuh layar (edge-to-edge). Di PC/desktop
+        // Screen.safeArea = seluruh layar sehingga tata letak tidak berubah.
+        var safe = NewUI("SafeArea", _root.transform);
+        StretchFull(safe);
+        safe.AddComponent<SafeAreaApplier>();
+
         // ── Kartu judul ──────────────────────────────────────────────────────
         // Tata letak RATA TENGAH layar (judul, subjudul, dan stack tombol semua
         // di-center horizontal). Anchor pakai pecahan tinggi/lebar layar agar
         // tetap proporsional di berbagai rasio.
-        var judul = MakeText(_root.transform, "Judul", judulGame, 120, warnaJudul, FontStyles.Bold);
+        var judul = MakeText(safe.transform, "Judul", judulGame, 120, warnaJudul, FontStyles.Bold);
         judul.alignment = TextAlignmentOptions.Center;
         var jRT = judul.rectTransform;
         jRT.anchorMin = jRT.anchorMax = new Vector2(0.5f, 0.84f);
@@ -141,7 +150,7 @@ public class MainMenu : MonoBehaviour
         jRT.anchoredPosition = new Vector2(0f, 0f);
         jRT.sizeDelta = new Vector2(900f, 170f);
 
-        var sub = MakeText(_root.transform, "SubJudul", subJudul, 42, warnaSubJudul, FontStyles.Bold);
+        var sub = MakeText(safe.transform, "SubJudul", subJudul, 42, warnaSubJudul, FontStyles.Bold);
         sub.alignment = TextAlignmentOptions.Center;
         var sRT = sub.rectTransform;
         sRT.anchorMin = sRT.anchorMax = new Vector2(0.5f, 0.72f);
@@ -158,7 +167,7 @@ public class MainMenu : MonoBehaviour
         // Dibungkus dalam container ber-VerticalLayoutGroup yang rata tengah dengan
         // tinggi otomatis (ContentSizeFitter). Stack ditaruh sedikit di bawah
         // subtitle supaya tidak saling tumpuk meski subtitle wrap menjadi 2 baris.
-        var stack = NewUI("TombolStack", _root.transform);
+        var stack = NewUI("TombolStack", safe.transform);
         var stRT = stack.GetComponent<RectTransform>();
         stRT.anchorMin = stRT.anchorMax = new Vector2(0.5f, 0.5f);
         stRT.pivot     = new Vector2(0.5f, 0.5f);
@@ -184,7 +193,7 @@ public class MainMenu : MonoBehaviour
         MakeButton(stack.transform, "BtnKeluar", "KELUAR",       warnaKeluar, 0f, 460f, 70, KonfirmasiKeluar, layoutChild: true);
 
         // ── Footer versi ──────────────────────────────────────────────────────
-        var ver = MakeText(_root.transform, "Versi", versiTeks, 24,
+        var ver = MakeText(safe.transform, "Versi", versiTeks, 24,
                            new Color(1f, 1f, 1f, 0.45f), FontStyles.Normal);
         var vRT = ver.rectTransform;
         vRT.anchorMin = new Vector2(1f, 0f);
@@ -249,8 +258,9 @@ public class MainMenu : MonoBehaviour
 
         string isi =
             "<b>MOBILE (Sentuh)</b>\n" +
-            "<b>Jalan</b>  :  tombol panah kiri-bawah\n" +
-            "<b>Lari & Teriak</b>  :  tombol kanan-bawah\n" +
+            "<b>Jalan</b>  :  tombol panah kiri / kanan\n" +
+            "<b>Lari</b>  :  teriak + tombol teriak\n" +
+            "<b>Teriak</b>  :  tombol teriak / teriak\n" +
             "<b>Menjawab</b>  :  ketuk tombol pilihan\n\n" +
             "<b>Tujuanmu</b>\n" +
             "Jaga 3 hati, kumpulkan skor dengan memilih tindakan " +
@@ -601,6 +611,38 @@ public class MainMenu : MonoBehaviour
         var go = new GameObject(nama, typeof(RectTransform));
         go.transform.SetParent(parent, false);
         return go;
+    }
+
+    // ══════════════════════════════════════════════════════════════════════
+    // SAFE AREA — menyesuaikan konten menu dengan area aman layar perangkat
+    // (poni/notch & sudut membulat HP). No-op di PC karena safeArea = full screen.
+    // ══════════════════════════════════════════════════════════════════════
+    private class SafeAreaApplier : MonoBehaviour
+    {
+        RectTransform _rt;
+        Rect _terakhir;
+
+        void Awake() { _rt = GetComponent<RectTransform>(); }
+        void OnEnable() { Terapkan(); }
+        void Update()   { Terapkan(); }
+
+        void Terapkan()
+        {
+            if (_rt == null || Screen.width <= 0 || Screen.height <= 0) return;
+            Rect sa = Screen.safeArea;
+            if (sa == _terakhir) return;   // hanya update saat berubah
+            _terakhir = sa;
+
+            Vector2 aMin = sa.position;
+            Vector2 aMax = sa.position + sa.size;
+            aMin.x /= Screen.width;  aMin.y /= Screen.height;
+            aMax.x /= Screen.width;  aMax.y /= Screen.height;
+
+            _rt.anchorMin = aMin;
+            _rt.anchorMax = aMax;
+            _rt.offsetMin = Vector2.zero;
+            _rt.offsetMax = Vector2.zero;
+        }
     }
 
     void StretchFull(GameObject go)

@@ -381,11 +381,8 @@ public class PamanBaik : MonoBehaviour
         _mendekatRara = false; // batalkan mendekat jika berjalan
         _pergiMenjauh = true;
 
-        // Arah berlawanan dari posisi Rara: paman menjauh, bukan mendekat.
-        if (playerTarget != null)
-            _arahMenjauh = (transform.position.x >= playerTarget.position.x) ? 1f : -1f;
-        else
-            _arahMenjauh = (direction != 0f) ? Mathf.Sign(direction) : 1f;
+        // Arah pergi paman: selalu ke kiri (menjauh ke arah kiri).
+        _arahMenjauh = -1f;
 
         _xTargetMenjauh = transform.position.x + _arahMenjauh * jarakMenjauh;
 

@@ -235,7 +235,10 @@ public class DialogManager : MonoBehaviour
             // Teks + ikon penanda kategori (aksesibilitas buta warna): ✓ / ! / ✕
             var tmp = btnObj.GetComponentInChildren<TextMeshProUGUI>();
             if (tmp != null)
-                tmp.text = UIPalette.KategoriIkon(choice.category) + "  " + choice.label;
+            {
+                tmp.text = choice.label;
+                tmp.alignment = TextAlignmentOptions.Center;
+            }
 
             var img = btnObj.GetComponent<Image>();
             if (img != null) img.color = CategoryColor(choice.category);
@@ -286,7 +289,7 @@ public class DialogManager : MonoBehaviour
             lbl.fontSize           = 28;
             lbl.color              = Color.white;
             lbl.fontStyle          = FontStyles.Bold;
-            lbl.alignment          = TextAlignmentOptions.MidlineLeft;
+            lbl.alignment          = TextAlignmentOptions.Center;
             lbl.textWrappingMode   = TextWrappingModes.Normal;
             lbl.enableAutoSizing   = true;
             lbl.fontSizeMin        = 20;

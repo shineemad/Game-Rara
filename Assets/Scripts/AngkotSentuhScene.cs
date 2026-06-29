@@ -497,7 +497,7 @@ public class AngkotSentuhScene : MonoBehaviour
             "Pak Supir"  => portraitPakSupir  != null ? portraitPakSupir  : portraitNarasi,
             _             => portraitNarasi
         };
-        if (s != null) { _portraitImg.sprite = s; _portraitImg.enabled = false; } // potret disembunyikan dari box dialog
+        if (s != null) { _portraitImg.sprite = s; _portraitImg.enabled = true; } // tampilkan potret bila ada sprite
         else           { _portraitImg.enabled = false; }
     }
 

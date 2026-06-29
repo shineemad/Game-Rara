@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 82e4d81776f2f504bb818b2b30d4ade9
+guid: 417c476cd90e9a74894a1ad9a982cc2e
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1528380126220725092
-    second: priaasing_0
+      213: -4693353401862682160
+    second: prolog day 2 last_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: priaasing_0
+      name: prolog day 2 last_0
       rect:
         serializedVersion: 2
-        x: 46
+        x: 0
         y: 0
-        width: 2462
-        height: 2252
+        width: 1672
+        height: 941
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -127,8 +127,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: c94d8d67f5a1acae0800000000000000
-      internalID: -1528380126220725092
+      spriteID: 0d98a9c82fbdddeb0800000000000000
+      internalID: -4693353401862682160
       vertices: []
       indices: 
       edges: []

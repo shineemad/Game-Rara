@@ -643,7 +643,7 @@ public class NpcGang : MonoBehaviour
         d.portraitCenterY = 0.584f;
         d.portraitSizeW   = 0.189f;
         d.portraitSizeH   = 0.56f;
-        d.portraitPreserveAspect = false;
+        d.portraitPreserveAspect = true;   // potret jaga rasio (tercentang) saat game berjalan
 
         // ── Banner nama (anchor area teks nama) ──
         d.bannerAnchorMin = new Vector2(0.03f,  0.11f);

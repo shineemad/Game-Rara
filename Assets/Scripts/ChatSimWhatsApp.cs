@@ -51,6 +51,13 @@ public class ChatSimWhatsApp : MonoBehaviour
     public Color  warnaHeader = new Color(0.05f, 0.32f, 0.27f, 1f);
     public Color  warnaTeksHeader = Color.white;
 
+    [Header("Foto Profil Kontak (folder potrait)")]
+    [Tooltip("Foto profil bulat (avatar) di header chat. Kosong = pakai warna default.\n" +
+             "Drag sprite dari folder Assets/sprites/potrait ke field ini, sama seperti profil Paman.")]
+    public Sprite fotoProfilKontak;
+    [Tooltip("Jaga aspek rasio foto profil agar tidak gepeng.")]
+    public bool   fotoProfilPreserveAspect = true;
+
     [Header("Jam Stempel Bubble")]
     [Tooltip("Jam yang ditampilkan di tiap bubble (format HH:mm). Kosong = pakai jam sistem. Hari 3 (pulang sekolah SMP) diisi mis. 13:45.")]
     public string jamTampil = "";
@@ -257,9 +264,20 @@ public class ChatSimWhatsApp : MonoBehaviour
         var avatar = new GameObject("Avatar");
         avatar.transform.SetParent(header.transform, false);
         var aImg = avatar.AddComponent<Image>();
-        aImg.sprite = GetRoundedSprite();
-        aImg.color  = new Color(0.45f, 0.25f, 0.30f, 1f);
-        aImg.type   = Image.Type.Sliced;
+        if (fotoProfilKontak != null)
+        {
+            // Foto profil kontak di-assign (seperti profil Paman) — tampilkan sprite-nya.
+            aImg.sprite         = fotoProfilKontak;
+            aImg.color          = Color.white;
+            aImg.preserveAspect = fotoProfilPreserveAspect;
+        }
+        else
+        {
+            // Belum ada foto profil — pakai lingkaran warna default.
+            aImg.sprite = GetRoundedSprite();
+            aImg.color  = new Color(0.45f, 0.25f, 0.30f, 1f);
+            aImg.type   = Image.Type.Sliced;
+        }
         var aRT = avatar.GetComponent<RectTransform>();
         aRT.anchorMin = new Vector2(0f, 0.5f); aRT.anchorMax = new Vector2(0f, 0.5f);
         aRT.pivot = new Vector2(0f, 0.5f);

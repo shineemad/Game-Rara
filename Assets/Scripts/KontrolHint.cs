@@ -74,7 +74,7 @@ public class KontrolHint : MonoBehaviour
 
         // Game hanya untuk mobile → selalu tampilkan petunjuk kontrol sentuh
         string isi = string.IsNullOrEmpty(teksSentuh)
-            ? "\uD83D\uDC46  Tombol panah kiri-bawah untuk JALAN  \u2022  tombol LARI & TERIAK di kanan-bawah"
+            ? "\uD83D\uDC46  JALAN: tombol panah kiri / kanan  \u2022  LARI: teriak + tombol teriak  \u2022  TERIAK: tombol teriak / teriak"
             : teksSentuh;
 
         // Bangun UI

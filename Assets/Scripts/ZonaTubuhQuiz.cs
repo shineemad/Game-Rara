@@ -964,14 +964,15 @@ public class ZonaTubuhQuiz : MonoBehaviour
 
         if (sp != null)
         {
-            // Potret/sprite profil disembunyikan dari box dialog.
+            // Sama seperti profil Paman (NpcDialog.ApplyProfile): tampilkan sprite bila ada.
+            _narasiPortraitImg.preserveAspect = narasiPortraitPreserveAspect;
             _narasiPortraitImg.sprite  = sp;
             _narasiPortraitImg.color   = Color.white;
-            _narasiPortraitImg.enabled = false;
+            _narasiPortraitImg.enabled = true;
         }
         else
         {
-            // Fallback: tampilkan kotak warna polos supaya tata letak tetap konsisten
+            // Tidak ada sprite → sembunyikan potret (seperti profil Paman saat kosong).
             _narasiPortraitImg.sprite  = null;
             _narasiPortraitImg.color   = narasiPortraitFallbackWarna;
             _narasiPortraitImg.enabled = false;

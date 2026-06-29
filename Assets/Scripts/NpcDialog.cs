@@ -102,6 +102,18 @@ public class NpcDialog : MonoBehaviour
               "Gunakan sebagai profil AWAL / fallback jika baris pertama tidak punya profile-nya sendiri.\n" +
               "Per-baris 'Profile' di array Lines selalu lebih prioritas dari field ini.")]
     public Sprite editProfile;
+
+    [Header("Tampilan — Profil per Pembicara (folder potrait)")]
+    [Tooltip("Foto profil dipilih OTOMATIS dari nama pembicara jika field 'Profile' per-baris kosong.\n" +
+             "Drag sprite dari folder Assets/sprites/potrait ke field yang sesuai.")]
+    public Sprite profilNarasi;
+    public Sprite profilRara;
+    public Sprite profilPaman;
+    public Sprite profilPemotor;
+    public Sprite profilAnakGang;
+    public Sprite profilPriaAsing;
+    public Sprite profilBoss;
+
     [Tooltip("Tampilkan latar belakang banner nama (NARASI, Paman, dll). Hilangkan centang untuk teks saja tanpa kotak.")]
     public bool   showBannerBg = true;
 
@@ -623,13 +635,20 @@ public class NpcDialog : MonoBehaviour
 
         // Prioritas profil:
         //   1. line.profile (per-baris) — tertinggi, ganti foto saat dialog berganti
-        //   2. _displayedProfile (pertahankan foto sebelumnya jika baris ini tidak punya)
-        //   3. editProfile (fallback global, hanya dipakai jika belum ada foto sama sekali)
+        //   2. ProfilOtomatis(speakerName) — pilih dari folder potrait sesuai nama pembicara
+        //   3. _displayedProfile (pertahankan foto sebelumnya jika belum ada)
+        //   4. editProfile (fallback global, hanya dipakai jika belum ada foto sama sekali)
         if (line.profile != null)
             _displayedProfile = line.profile;           // ganti ke foto baris ini
-        else if (_displayedProfile == null)
-            _displayedProfile = editProfile;            // pakai default Inspector jika belum ada
-        // else: pertahankan _displayedProfile (foto pembicara sebelumnya tetap tampil)
+        else
+        {
+            Sprite otomatis = ProfilOtomatis(line.speakerName);
+            if (otomatis != null)
+                _displayedProfile = otomatis;           // foto sesuai pembicara (folder potrait)
+            else if (_displayedProfile == null)
+                _displayedProfile = editProfile;        // pakai default Inspector jika belum ada
+            // else: pertahankan _displayedProfile (foto pembicara sebelumnya tetap tampil)
+        }
 
         ApplyProfile(_displayedProfile);
 
@@ -1162,6 +1181,22 @@ public class NpcDialog : MonoBehaviour
 #endif
 
     // Tampilkan sprite di kotak potret
+    // Pilih foto profil otomatis dari folder potrait sesuai nama pembicara.
+    // Dipakai saat field 'Profile' per-baris kosong (fileID 0).
+    Sprite ProfilOtomatis(string speaker)
+    {
+        if (string.IsNullOrEmpty(speaker)) return null;
+        string s = speaker.ToLower();
+        if (s.Contains("rara"))                        return profilRara;
+        if (s.Contains("pemotor") || s.Contains("motor")) return profilPemotor;
+        if (s.Contains("gang")    || s.Contains("anak"))  return profilAnakGang;
+        if (s.Contains("boss")    || s.Contains("bully")) return profilBoss;
+        if (s.Contains("paman")   || s.Contains("om"))    return profilPaman;
+        if (s.Contains("asing")   || s.Contains("pria"))  return profilPriaAsing;
+        if (s.Contains("narasi")  || s.Contains("pilih")) return profilNarasi;
+        return null;
+    }
+
     void ApplyProfile(Sprite spr)
     {
         if (profileImg == null)
@@ -1169,21 +1204,20 @@ public class NpcDialog : MonoBehaviour
             Debug.LogWarning("[NpcDialog] profileImg NULL — UI belum dibangun? Panggil Play() dulu.");
             return;
         }
-        profileImg.enabled = false; // potret/sprite profil disembunyikan dari box dialog
         profileImg.preserveAspect = portraitPreserveAspect;   // terapkan setiap ganti sprite
         if (spr != null)
         {
-            profileImg.sprite = spr;
-            profileImg.color  = Color.white;
+            profileImg.enabled = true;                        // tampilkan potret di box dialog
+            profileImg.sprite  = spr;
+            profileImg.color   = Color.white;
             Debug.Log("[NpcDialog] ApplyProfile ✓ sprite: '" + spr.name + "'");
         }
         else
         {
-            profileImg.sprite = null;
-            // Tetap tampil sebagai placeholder abu-abu agar area portrait kelihatan
-            profileImg.color  = new Color(0.15f, 0.15f, 0.15f, 0.7f);
-            Debug.Log("[NpcDialog] ApplyProfile: sprite NULL — tampil placeholder abu-abu. " +
-                      "Drag sprite ke field 'Edit Profile' di Inspector.");
+            profileImg.enabled = false;                       // sembunyikan jika tidak ada sprite
+            profileImg.sprite  = null;
+            Debug.Log("[NpcDialog] ApplyProfile: sprite NULL — potret disembunyikan. " +
+                      "Isi field profil per-pembicara dari folder potrait di Inspector.");
         }
     }
 

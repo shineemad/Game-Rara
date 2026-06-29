@@ -612,7 +612,7 @@ MonoBehaviour:
   chatSim: {fileID: 173695826}
   eduCard: {fileID: 480807849}
   summaryScreen: {fileID: 1983714500}
-  aktifkanJembatanLapor: 0
+  aktifkanJembatanLapor: 1
   jembatanPortraitRara: {fileID: 0}
   jembatanPortraitPria: {fileID: 0}
   jembatanGunakanAnimasiKetik: 1
@@ -729,8 +729,8 @@ MonoBehaviour:
   panelSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
   panelSpritePath: sprites/UI day 1/box dialog.png
   nameBannerSprite: {fileID: 0}
-  portraitRara: {fileID: 0}
-  portraitNarasi: {fileID: 0}
+  portraitRara: {fileID: -621021955452869361, guid: 484933ec485cb08498499bc1c091a8be, type: 3}
+  portraitNarasi: {fileID: 5584602647974460991, guid: 2bc28c541cbe11d4890ac7681056801d, type: 3}
   portraitSprite: {fileID: 0}
   panelCenterX: 0.5
   panelCenterY: 0.16
@@ -740,7 +740,7 @@ MonoBehaviour:
   portraitCenterY: 0.584
   portraitSizeW: 0.189
   portraitSizeH: 0.56
-  portraitPreserveAspect: 0
+  portraitPreserveAspect: 1
   bannerAnchorMin: {x: 0.11, y: 0.11}
   bannerAnchorMax: {x: 0.253, y: 0.333}
   textAnchorMin: {x: 0.31, y: 0.55}
@@ -945,6 +945,8 @@ MonoBehaviour:
   statusKontak: online
   warnaHeader: {r: 0.05, g: 0.32, b: 0.27, a: 1}
   warnaTeksHeader: {r: 1, g: 1, b: 1, a: 1}
+  fotoProfilKontak: {fileID: 0}
+  fotoProfilPreserveAspect: 1
   jamTampil: 06:45
   warnaChatBg: {r: 0.05, g: 0.12, b: 0.12, a: 1}
   warnaBubbleMasuk: {r: 0.2, g: 0.3, b: 0.35, a: 1}
@@ -1951,6 +1953,13 @@ MonoBehaviour:
   editHeadline: 
   editBody: 
   editProfile: {fileID: 0}
+  profilNarasi: {fileID: 5584602647974460991, guid: 2bc28c541cbe11d4890ac7681056801d, type: 3}
+  profilRara: {fileID: -621021955452869361, guid: 484933ec485cb08498499bc1c091a8be, type: 3}
+  profilPaman: {fileID: -1209331726834910066, guid: 3b751f2280a789a45953cff56b2ecdad, type: 3}
+  profilPemotor: {fileID: 7572167918987689274, guid: b30a97671e973024bb393c29e9cf45e9, type: 3}
+  profilAnakGang: {fileID: -951285293377004457, guid: b9154a521584e7e4b89ba4125e2bf869, type: 3}
+  profilPriaAsing: {fileID: -1528380126220725092, guid: 82e4d81776f2f504bb818b2b30d4ade9, type: 3}
+  profilBoss: {fileID: -2424553518018739129, guid: 18d6546ee835c7c4e96bf30a3875334b, type: 3}
   showBannerBg: 0
   fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   speakerFontAsset: {fileID: 0}
@@ -1971,7 +1980,7 @@ MonoBehaviour:
   portraitCenterY: 0.584
   portraitSizeW: 0.189
   portraitSizeH: 0.56
-  portraitPreserveAspect: 0
+  portraitPreserveAspect: 1
   bannerAnchorMin: {x: 0.03, y: 0.1}
   bannerAnchorMax: {x: 0.253, y: 0.333}
   textAnchorMin: {x: 0.31, y: 0.55}
@@ -2039,42 +2048,68 @@ MonoBehaviour:
   tampilkanOverlay: 1
   overlaySprite: {fileID: 0}
   overlayColor: {r: 0, g: 0, b: 0, a: 0.82}
-  judul: "CARA MENJAGA DIRI - HARI 2"
+  judul: CARA MENJAGA DIRI - HARI 2
   warnaJudul: {r: 0.45, g: 1, b: 0.65, a: 1}
   ukuranJudul: 32
   tipsList:
-  - heading: "3 KATA SAKTI saat merasa tidak aman:"
-    isi: "1. TIDAK! - tolak dengan TEGAS & suara keras.\n2. PERGI - menjauh / pindah
-      ke tempat ramai.\n3. CERITA - lapor orang dewasa yang kamu percaya.\nKamu TIDAK
-      pernah salah karena menolak atau melapor."
+  - heading: '3 KATA SAKTI saat merasa tidak aman:'
+    isi: '1. TIDAK! - tolak dengan TEGAS & suara keras.
+
+      2. PERGI - menjauh
+      / pindah ke tempat ramai.
+
+      3. CERITA - lapor orang dewasa yang kamu percaya.
+
+      Kamu
+      TIDAK pernah salah karena menolak atau melapor.'
     ikon: {fileID: 0}
     warnaHeading: {r: 0.45, g: 1, b: 0.65, a: 1}
     warnaIsi: {r: 1, g: 1, b: 0.85, a: 1}
-  - heading: "ZONA PRIBADI tubuhmu:"
-    isi: "- Bagian tubuh yang tertutup baju renang = milik kamu sendiri.\n- Tidak
-      ada yang boleh menyentuh / melihat / memotretnya.\n- Kalau ada yang mencoba
-      - walau orang dikenal - itu BAHAYA. Lakukan: TIDAK, PERGI, CERITA."
+  - heading: 'ZONA PRIBADI tubuhmu:'
+    isi: '- Bagian tubuh yang tertutup baju renang = milik kamu sendiri.
+
+      -
+      Tidak ada yang boleh menyentuh / melihat / memotretnya.
+
+      - Kalau ada
+      yang mencoba - walau orang dikenal - itu BAHAYA. Lakukan: TIDAK, PERGI, CERITA.'
     ikon: {fileID: 0}
     warnaHeading: {r: 0.45, g: 1, b: 0.65, a: 1}
     warnaIsi: {r: 1, g: 1, b: 0.85, a: 1}
-  - heading: "KENALI TANDA BAHAYA (grooming):"
-    isi: "- Orang asing sok akrab & memberi iming-iming / hadiah gratis.\n- Minta
-      data pribadi (nomor HP, alamat, foto).\n- Mengajak menyimpan rahasia dari orang
-      tua.\nSemua itu = RED FLAG. Jangan diladeni!"
+  - heading: 'KENALI TANDA BAHAYA (grooming):'
+    isi: '- Orang asing sok akrab & memberi iming-iming / hadiah gratis.
+
+      -
+      Minta data pribadi (nomor HP, alamat, foto).
+
+      - Mengajak menyimpan rahasia
+      dari orang tua.
+
+      Semua itu = RED FLAG. Jangan diladeni!'
     ikon: {fileID: 0}
     warnaHeading: {r: 0.45, g: 1, b: 0.65, a: 1}
     warnaIsi: {r: 1, g: 1, b: 0.85, a: 1}
-  - heading: "Aman di Angkot & Jalan:"
-    isi: "- Duduk dekat Pak Supir / ibu-ibu, hindari pojok sepi.\n- Catat plat nomor
-      & kabari orang tua.\n- Kalau ada yang aneh, turun di tempat ramai dan minta
-      tolong."
+  - heading: 'Aman di Angkot & Jalan:'
+    isi: '- Duduk dekat Pak Supir / ibu-ibu, hindari pojok sepi.
+
+      - Catat plat
+      nomor & kabari orang tua.
+
+      - Kalau ada yang aneh, turun di tempat ramai
+      dan minta tolong.'
     ikon: {fileID: 0}
     warnaHeading: {r: 0.45, g: 1, b: 0.65, a: 1}
     warnaIsi: {r: 1, g: 1, b: 0.85, a: 1}
-  - heading: "ORANG TEPERCAYA tempat lapor:"
-    isi: "- Orang tua, guru, dan keluarga dekat.\n- Polisi, satpam, atau petugas
-      berseragam.\n- Ibu-ibu / orang dewasa di tempat ramai.\nSimpan nomor mereka
-      & beranikan diri bercerita."
+  - heading: 'ORANG TEPERCAYA tempat lapor:'
+    isi: '- Orang tua, guru, dan keluarga dekat.
+
+      - Polisi, satpam, atau petugas
+      berseragam.
+
+      - Ibu-ibu / orang dewasa di tempat ramai.
+
+      Simpan
+      nomor mereka & beranikan diri bercerita.'
     ikon: {fileID: 0}
     warnaHeading: {r: 0.45, g: 1, b: 0.65, a: 1}
     warnaIsi: {r: 1, g: 1, b: 0.85, a: 1}
@@ -2082,10 +2117,12 @@ MonoBehaviour:
   ilustrasiTinggi: 140
   accordion: 1
   accordionTerbukaAwal: 0
-  footerText: "Hotline:\nPolisi 110  |  Hotline Anak 129  |  KPAI 021-31901556"
+  footerText: 'Hotline:
+
+    Polisi 110  |  Hotline Anak 129  |  KPAI 021-31901556'
   warnaFooter: {r: 1, g: 0.78, b: 0.2, a: 1}
   ukuranFooter: 18
-  tombolLanjutTeks: "LANJUT"
+  tombolLanjutTeks: LANJUT
   tombolSprite: {fileID: 0}
   tombolWarna: {r: 0.2, g: 0.65, b: 0.35, a: 1}
   tombolBorderColor: {r: 1, g: 0.78, b: 0.2, a: 1}
@@ -2581,9 +2618,9 @@ MonoBehaviour:
   panelSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
   panelSpritePath: sprites/UI day 1/box dialog.png
   panelTint: {r: 1, g: 1, b: 1, a: 1}
-  portraitNarasi: {fileID: -7771728774132427043, guid: 6809b27ca40283248be0310e4d5f4ef1, type: 3}
-  portraitRara: {fileID: -307426207498796367, guid: b337f726c99b2184ba032db933c4af66, type: 3}
-  portraitPriaAsing: {fileID: 0}
+  portraitNarasi: {fileID: 5584602647974460991, guid: 2bc28c541cbe11d4890ac7681056801d, type: 3}
+  portraitRara: {fileID: -621021955452869361, guid: 484933ec485cb08498499bc1c091a8be, type: 3}
+  portraitPriaAsing: {fileID: -1528380126220725092, guid: 82e4d81776f2f504bb818b2b30d4ade9, type: 3}
   boxPanelCenterX: 0.5
   boxPanelCenterY: 0.16
   boxPanelWidth: 0.972
@@ -2592,7 +2629,7 @@ MonoBehaviour:
   boxPortraitCenterY: 0.584
   boxPortraitW: 0.189
   boxPortraitH: 0.56
-  boxPortraitPreserveAspect: 0
+  boxPortraitPreserveAspect: 1
   boxBannerAnchorMin: {x: 0.03, y: 0.1}
   boxBannerAnchorMax: {x: 0.253, y: 0.333}
   boxTextAnchorMin: {x: 0.31, y: 0.55}
@@ -3989,28 +4026,28 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lines:
   - speakerName: Narasi
-    profile: {fileID: 0}
+    profile: {fileID: 5584602647974460991, guid: 2bc28c541cbe11d4890ac7681056801d, type: 3}
     text: 'Tiga remaja besar berdiri menghadang di tengah gang.
 
       Mereka menatap
       Rara sambil tersenyum sinis.'
     choices: []
   - speakerName: Anak Gang
-    profile: {fileID: 0}
+    profile: {fileID: -951285293377004457, guid: b9154a521584e7e4b89ba4125e2bf869, type: 3}
     text: '"Eh bocah! Lewat sini bayar dulu dong~
 
       Mana uang jajan lo? HP-nya
       juga sini!"'
     choices: []
   - speakerName: Rara (batin)
-    profile: {fileID: 0}
+    profile: {fileID: -621021955452869361, guid: 484933ec485cb08498499bc1c091a8be, type: 3}
     text: 'Jantung Rara berdebar kencang.
 
       Mereka mau memalak! Aku harus pilih
       dengan tepat...'
     choices: []
   - speakerName: Rara
-    profile: {fileID: 0}
+    profile: {fileID: -621021955452869361, guid: 484933ec485cb08498499bc1c091a8be, type: 3}
     text: Apa yang harus aku lakukan sekarang?
     choices:
     - label: BALIK ARAH & lari ke jalan ramai sambil teriak "TOLONG!"
@@ -4045,6 +4082,13 @@ MonoBehaviour:
   editHeadline: 
   editBody: 
   editProfile: {fileID: 0}
+  profilNarasi: {fileID: 5584602647974460991, guid: 2bc28c541cbe11d4890ac7681056801d, type: 3}
+  profilRara: {fileID: -621021955452869361, guid: 484933ec485cb08498499bc1c091a8be, type: 3}
+  profilPaman: {fileID: -1209331726834910066, guid: 3b751f2280a789a45953cff56b2ecdad, type: 3}
+  profilPemotor: {fileID: 7572167918987689274, guid: b30a97671e973024bb393c29e9cf45e9, type: 3}
+  profilAnakGang: {fileID: -951285293377004457, guid: b9154a521584e7e4b89ba4125e2bf869, type: 3}
+  profilPriaAsing: {fileID: -1528380126220725092, guid: 82e4d81776f2f504bb818b2b30d4ade9, type: 3}
+  profilBoss: {fileID: -2424553518018739129, guid: 18d6546ee835c7c4e96bf30a3875334b, type: 3}
   showBannerBg: 0
   fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   speakerFontAsset: {fileID: 0}
@@ -4065,7 +4109,7 @@ MonoBehaviour:
   portraitCenterY: 0.584
   portraitSizeW: 0.189
   portraitSizeH: 0.56
-  portraitPreserveAspect: 0
+  portraitPreserveAspect: 1
   bannerAnchorMin: {x: 0.03, y: 0.11}
   bannerAnchorMax: {x: 0.253, y: 0.333}
   textAnchorMin: {x: 0.31, y: 0.55}
@@ -4177,6 +4221,7 @@ MonoBehaviour:
   latihBerhasil: "\u2713 HEBAT! Suaramu lantang! Kalau ada yang mengganggu di jalan,
     berani TERIAK minta tolong, ya!"
   latihWaktuWindow: 15
+  latihMicGain: 0.5
   autoMulaiTanpaIntro: 0
 --- !u!1 &881222453
 GameObject:
@@ -4314,19 +4359,19 @@ MonoBehaviour:
 
       Ayah udah
       berangkat kerja tadi.'
-    portrait: {fileID: 0}
+    portrait: {fileID: 5584602647974460991, guid: 2bc28c541cbe11d4890ac7681056801d, type: 3}
   - pembicara: Rara
     teks: '"Oke, bismillah! Sekolahku nggak jauh kok.
 
       Aku pasti bisa jalan
       sendiri!"'
-    portrait: {fileID: 0}
+    portrait: {fileID: -621021955452869361, guid: 484933ec485cb08498499bc1c091a8be, type: 3}
   - pembicara: Narasi
     teks: 'Sebelum jalan, latih dulu suaramu!
 
       Teriak KERAS = kamu lebih aman
       di jalan!'
-    portrait: {fileID: 0}
+    portrait: {fileID: 5584602647974460991, guid: 2bc28c541cbe11d4890ac7681056801d, type: 3}
   layout: {fileID: 0}
   useLayoutAsset: 0
   liveEditLayout: 1
@@ -4345,7 +4390,7 @@ MonoBehaviour:
   portraitCenterY: 0.584
   portraitSizeW: 0.189
   portraitSizeH: 0.56
-  portraitPreserveAspect: 0
+  portraitPreserveAspect: 1
   bannerAnchorMin: {x: 0.11, y: 0.11}
   bannerAnchorMax: {x: 0.253, y: 0.333}
   textAnchorMin: {x: 0.31, y: 0.55}
@@ -4416,6 +4461,13 @@ MonoBehaviour:
   editHeadline: 
   editBody: 
   editProfile: {fileID: 0}
+  profilNarasi: {fileID: 0}
+  profilRara: {fileID: 0}
+  profilPaman: {fileID: 0}
+  profilPemotor: {fileID: 0}
+  profilAnakGang: {fileID: 0}
+  profilPriaAsing: {fileID: 0}
+  profilBoss: {fileID: 0}
   showBannerBg: 1
   fontAsset: {fileID: 0}
   speakerFontAsset: {fileID: 0}
@@ -4647,6 +4699,7 @@ MonoBehaviour:
   latihBerhasil: "\u2713 HEBAT! Suaramu lantang! Kalau ada yang mengganggu di jalan,
     berani TERIAK minta tolong, ya!"
   latihWaktuWindow: 15
+  latihMicGain: 0.274
   autoMulaiTanpaIntro: 0
 --- !u!1 &982115341
 GameObject:
@@ -5381,8 +5434,8 @@ MonoBehaviour:
   narasiBoxDialogSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
   narasiBoxDialogSpritePath: sprites/UI day 1/box dialog.png
   narasiNameBannerSprite: {fileID: 0}
-  narasiPortraitRara: {fileID: 0}
-  narasiPortraitNarasi: {fileID: 0}
+  narasiPortraitRara: {fileID: -621021955452869361, guid: 484933ec485cb08498499bc1c091a8be, type: 3}
+  narasiPortraitNarasi: {fileID: 5584602647974460991, guid: 2bc28c541cbe11d4890ac7681056801d, type: 3}
   narasiBgFullscreenSprite: {fileID: 0}
   narasiBgWarna: {r: 0.16, g: 0.12, b: 0.09, a: 1}
   narasiPanelWarna: {r: 0, g: 0, b: 0, a: 0}
@@ -5404,7 +5457,7 @@ MonoBehaviour:
   narasiPortraitCenterY: 0.584
   narasiPortraitSizeW: 0.189
   narasiPortraitSizeH: 0.56
-  narasiPortraitPreserveAspect: 0
+  narasiPortraitPreserveAspect: 1
   narasiBannerAnchorMin: {x: 0.11, y: 0.11}
   narasiBannerAnchorMax: {x: 0.253, y: 0.333}
   narasiTextAnchorMin: {x: 0.31, y: 0.55}
@@ -6143,6 +6196,8 @@ MonoBehaviour:
   statusKontak: online
   warnaHeader: {r: 0.05, g: 0.32, b: 0.27, a: 1}
   warnaTeksHeader: {r: 1, g: 1, b: 1, a: 1}
+  fotoProfilKontak: {fileID: 0}
+  fotoProfilPreserveAspect: 1
   jamTampil: 06:45
   warnaChatBg: {r: 0.05, g: 0.12, b: 0.12, a: 1}
   warnaBubbleMasuk: {r: 0.2, g: 0.3, b: 0.35, a: 1}
@@ -6479,11 +6534,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   lines:
   - speakerName: Narasi
-    profile: {fileID: -7771728774132427043, guid: 6809b27ca40283248be0310e4d5f4ef1, type: 3}
+    profile: {fileID: 0}
     text: '*Tiba-tiba ada orang asing mendekat ke arah Rara...*'
     choices: []
   - speakerName: Paman Baik
-    profile: {fileID: 414440879778542897, guid: d7769e879c67f7d44942d01f783848db, type: 3}
+    profile: {fileID: 0}
     text: '"Hei dek, bentar ya~!"'
     choices: []
   - speakerName: Rara (batin)
@@ -6552,6 +6607,13 @@ MonoBehaviour:
   editHeadline: 
   editBody: 
   editProfile: {fileID: 0}
+  profilNarasi: {fileID: 5584602647974460991, guid: 2bc28c541cbe11d4890ac7681056801d, type: 3}
+  profilRara: {fileID: -621021955452869361, guid: 484933ec485cb08498499bc1c091a8be, type: 3}
+  profilPaman: {fileID: -1209331726834910066, guid: 3b751f2280a789a45953cff56b2ecdad, type: 3}
+  profilPemotor: {fileID: 7572167918987689274, guid: b30a97671e973024bb393c29e9cf45e9, type: 3}
+  profilAnakGang: {fileID: -951285293377004457, guid: b9154a521584e7e4b89ba4125e2bf869, type: 3}
+  profilPriaAsing: {fileID: -1528380126220725092, guid: 82e4d81776f2f504bb818b2b30d4ade9, type: 3}
+  profilBoss: {fileID: -2424553518018739129, guid: 18d6546ee835c7c4e96bf30a3875334b, type: 3}
   showBannerBg: 0
   fontAsset: {fileID: 11400000, guid: dc36b3fdc14f47ebb36fd484a67e268a, type: 2}
   speakerFontAsset: {fileID: 0}
@@ -6572,7 +6634,7 @@ MonoBehaviour:
   portraitCenterY: 0.584
   portraitSizeW: 0.189
   portraitSizeH: 0.56
-  portraitPreserveAspect: 0
+  portraitPreserveAspect: 1
   bannerAnchorMin: {x: 0.03, y: 0.11}
   bannerAnchorMax: {x: 0.253, y: 0.333}
   textAnchorMin: {x: 0.31, y: 0.55}
@@ -7214,9 +7276,9 @@ MonoBehaviour:
   bossMentalMax: 100
   gayaHalteDialog: {fileID: 0}
   boxDialogSprite: {fileID: 0}
-  portraitNarasi: {fileID: 0}
-  portraitBoss: {fileID: 0}
-  portraitRara: {fileID: 0}
+  portraitNarasi: {fileID: 5584602647974460991, guid: 2bc28c541cbe11d4890ac7681056801d, type: 3}
+  portraitBoss: {fileID: -2424553518018739129, guid: 18d6546ee835c7c4e96bf30a3875334b, type: 3}
+  portraitRara: {fileID: -621021955452869361, guid: 484933ec485cb08498499bc1c091a8be, type: 3}
   bossBarLabel: Mental Pelaku
   bossBarWarnaIsi: {r: 0.85, g: 0.2, b: 0.22, a: 1}
   bossBarWarnaKosong: {r: 0.15, g: 0.15, b: 0.18, a: 1}
@@ -7284,8 +7346,8 @@ MonoBehaviour:
       bonusPoin: 0
       reaksi: "\u2716 BAHAYA besar! Kamu kehilangan 1 nyawa."
       latarReaksi: {fileID: 0}
-  narasiBossKalah: Satpam dan guru piket datang! Si Bayangan Hitam langsung kabur ketakutan.
-    Rara berhasil menjaga dirinya dengan berani dan cerdas.
+  narasiBossKalah: Satpam dan guru piket datang! Si Bayangan Hitam langsung kabur
+    ketakutan. Rara berhasil menjaga dirinya dengan berani dan cerdas.
   achievementMenang: Penakluk Si Bayangan Hitam
   eduJudul: "\U0001F4DA  KARTU EDUKASI \u2014 HARI 3"
   eduWarnaJudul: {r: 1, g: 0.85, b: 0.3, a: 1}
@@ -8491,9 +8553,9 @@ MonoBehaviour:
   modeVisualNovel: 1
   vnPanelSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
   vnPanelTint: {r: 1, g: 1, b: 1, a: 1}
-  portraitNarasi: {fileID: -7771728774132427043, guid: 6809b27ca40283248be0310e4d5f4ef1, type: 3}
-  portraitRara: {fileID: -307426207498796367, guid: b337f726c99b2184ba032db933c4af66, type: 3}
-  portraitPriaAsing: {fileID: 0}
+  portraitNarasi: {fileID: 5584602647974460991, guid: 2bc28c541cbe11d4890ac7681056801d, type: 3}
+  portraitRara: {fileID: -621021955452869361, guid: 484933ec485cb08498499bc1c091a8be, type: 3}
+  portraitPriaAsing: {fileID: -1528380126220725092, guid: 82e4d81776f2f504bb818b2b30d4ade9, type: 3}
   portraitPakSupir: {fileID: 0}
   vnPortraitPreserveAspect: 1
   vnBoxAnchorMin: {x: 0.014, y: 0.0145}
@@ -9061,7 +9123,7 @@ MonoBehaviour:
       HP Rara tiba-tiba menerima pesan dari nomor tak dikenal.
     dialogSprite: {fileID: 0}
   - backgroundColor: {r: 0.55, g: 0.37, b: 0.24, a: 0}
-    backgroundSprite: {fileID: 1328657904472760768, guid: 52799330135485c409d8f6bf7ee4adbd, type: 3}
+    backgroundSprite: {fileID: -4693353401862682160, guid: 417c476cd90e9a74894a1ad9a982cc2e, type: 3}
     illustration: {fileID: 0}
     title: Yang Perlu Rara Tahu
     text: "\u25CF Tubuhmu adalah milikmu \u2014 tidak ada yang boleh menyentuh sembarangan.\n\u25CF
@@ -9753,16 +9815,16 @@ MonoBehaviour:
   judulWarna: {r: 1, g: 0.45, b: 0.45, a: 1}
   judulUkuran: 38
   deskripsiTeks: "Pria yang tadi menyentuh bahumu kembali menggeser duduknya \u2014
-    makin merapat!\n\n\U0001F449 TAHAN TERUS tombol TERIAK tanpa
-    dilepas.\nBar hijau akan PENUH dalam {DURASI} detik \u2014 kalau kamu lepas,
-    bar TURUN lagi.\nLengkapi sebelum waktu habis untuk memanggil Pak Supir!"
+    makin merapat!\n\n\U0001F449 TAHAN TERUS tombol TERIAK tanpa dilepas.\nBar hijau
+    akan PENUH dalam {DURASI} detik \u2014 kalau kamu lepas, bar TURUN lagi.\nLengkapi
+    sebelum waktu habis untuk memanggil Pak Supir!"
   deskripsiWarna: {r: 1, g: 1, b: 0.92, a: 0.95}
   deskripsiUkuran: 22
   tampilkanNarasiPembuka: 1
   vnPanelSprite: {fileID: 5011292805565146863, guid: 95201ba9e07858347b852a0efde8239a, type: 3}
-  vnPortraitNarasi: {fileID: -7771728774132427043, guid: 6809b27ca40283248be0310e4d5f4ef1, type: 3}
-  vnPortraitRara: {fileID: -307426207498796367, guid: b337f726c99b2184ba032db933c4af66, type: 3}
-  vnPortraitPria: {fileID: 0}
+  vnPortraitNarasi: {fileID: 5584602647974460991, guid: 2bc28c541cbe11d4890ac7681056801d, type: 3}
+  vnPortraitRara: {fileID: -621021955452869361, guid: 484933ec485cb08498499bc1c091a8be, type: 3}
+  vnPortraitPria: {fileID: -1528380126220725092, guid: 82e4d81776f2f504bb818b2b30d4ade9, type: 3}
   vnLatarSprite: {fileID: 6052365454412321436, guid: dfd2d65f63fde224f9636367b0d74ffc, type: 3}
   vnLatarPerBaris:
   - {fileID: 6052365454412321436, guid: dfd2d65f63fde224f9636367b0d74ffc, type: 3}

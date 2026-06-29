@@ -506,10 +506,20 @@ public class Day2NarasiAwal : MonoBehaviour
             if (_namaTMP != null) _namaTMP.text = pembicara;
             if (_portImg != null)
             {
-                _portImg.sprite  = portrait;
-                _portImg.enabled = false; // potret/sprite profil disembunyikan dari box dialog
-                if (portrait == null) _portImg.color = portraitFallbackWarna;
-                else                  _portImg.color = Color.white;
+                // Sama seperti profil Paman (NpcDialog.ApplyProfile):
+                // tampilkan sprite bila ada, sembunyikan bila kosong.
+                _portImg.preserveAspect = portraitPreserveAspect;
+                if (portrait != null)
+                {
+                    _portImg.enabled = true;          // tampilkan potret bila ada sprite
+                    _portImg.sprite  = portrait;
+                    _portImg.color   = Color.white;
+                }
+                else
+                {
+                    _portImg.enabled = false;         // sembunyikan bila tidak ada sprite
+                    _portImg.sprite  = null;
+                }
             }
 
             // Update BG fullscreen per baris (kalau di-assign)
