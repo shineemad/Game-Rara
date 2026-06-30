@@ -687,7 +687,7 @@ public class DialogManager : MonoBehaviour
         contLblRT.offsetMin = Vector2.zero;
         contLblRT.offsetMax = Vector2.zero;
         var contTMP = contLblGO.AddComponent<TextMeshProUGUI>();
-        contTMP.text          = "▼ Lanjut";
+        contTMP.text          = "Lanjut";
         contTMP.fontSize      = 22;
         contTMP.color         = Color.white;
         contTMP.fontStyle     = FontStyles.Bold;

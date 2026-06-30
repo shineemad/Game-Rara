@@ -135,6 +135,16 @@ public class VoiceMeter : MonoBehaviour
     float      _smoothedRMS;
     VoiceLevel _prevLevel = VoiceLevel.Silent;
 
+    // ── Jembatan mikrofon WebGL (lihat Plugins/WebGL/MicrophoneWebGL.jslib) ──
+    // Unity tidak mendukung kelas Microphone di WebGL, jadi dipakai Web Audio API.
+#if UNITY_WEBGL && !UNITY_EDITOR
+    [System.Runtime.InteropServices.DllImport("__Internal")] static extern void  WebGLMicInit();
+    [System.Runtime.InteropServices.DllImport("__Internal")] static extern void  WebGLMicResume();
+    [System.Runtime.InteropServices.DllImport("__Internal")] static extern int   WebGLMicIsReady();
+    [System.Runtime.InteropServices.DllImport("__Internal")] static extern float WebGLMicGetLevel();
+    bool _webglResumed;
+#endif
+
     // ── Auto-spawn: muncul otomatis tanpa perlu ditaruh di scene ──────────
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     static void AutoSpawn()
@@ -183,7 +193,23 @@ public class VoiceMeter : MonoBehaviour
 #else
         yield return null;
 #endif
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+        // WebGL: pakai jembatan Web Audio API (getUserMedia). Microphone class
+        // tidak didukung browser. Tunggu izin & pipeline siap sebelum aktif.
+        WebGLMicInit();
+        float tunggu = 0f;
+        while (WebGLMicIsReady() == 0 && tunggu < 10f)
+        {
+            tunggu += Time.deltaTime;
+            yield return null;
+        }
+        MicActive = WebGLMicIsReady() == 1;
+        Debug.Log(MicActive ? "[VoiceMeter] Mikrofon WebGL aktif." : "[VoiceMeter] Mic WebGL belum siap — fallback tombol.");
+        yield break;
+#else
         AktifkanMikrofon();
+#endif
     }
 
     void AktifkanMikrofon()
@@ -216,6 +242,26 @@ public class VoiceMeter : MonoBehaviour
         // Tombol / SpaceBar selalu override mic — beri prioritas tertinggi
         bool buttonOverride = useFallback && (fallbackButtonHeld || Input.GetKey(KeyCode.Space));
 
+#if UNITY_WEBGL && !UNITY_EDITOR
+        // Browser butuh gesture pengguna untuk meng-resume AudioContext + retry init.
+        if (Input.GetMouseButton(0) || Input.touchCount > 0)
+        {
+            if (!_webglResumed) { WebGLMicResume(); _webglResumed = true; }
+            if (!MicActive)
+            {
+                WebGLMicInit();                               // ulang minta izin pada gesture
+                if (WebGLMicIsReady() == 1) MicActive = true;
+            }
+        }
+        if (buttonOverride)
+            _rawRMS = thresholdLoud + 0.20f;
+        else if (MicActive)
+            _rawRMS = WebGLMicGetLevel() * gainMic;   // RMS dari Web Audio API
+        else if (useFallback)
+            _rawRMS = HitungFallbackRMS();
+        else
+            _rawRMS = 0f;
+#else
         if (buttonOverride)
             _rawRMS = thresholdLoud + 0.20f;   // langsung Loud saat tombol/SpaceBar ditekan
         else if (MicActive && _micClip != null)
@@ -224,6 +270,7 @@ public class VoiceMeter : MonoBehaviour
             _rawRMS = HitungFallbackRMS();
         else
             _rawRMS = 0f;
+#endif
 
         // Smooth: naik cepat (responsif saat teriak), turun lebih lambat
         float kecepatan = _rawRMS > _smoothedRMS ? smoothUp : smoothDown;

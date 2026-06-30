@@ -221,7 +221,7 @@ public class AngkotSentuhScene : MonoBehaviour
              "khusus di sini.")]
     public List<PanelKomik> panelSampaiSekolah = new List<PanelKomik>();
     [Header("Tombol Lanjut")]
-    public string tombolLanjutTeks = "\u25B6  Lanjut";
+    public string tombolLanjutTeks = "Lanjut";
     public Color  warnaLanjut      = new Color(0.20f, 0.62f, 0.86f, 1f);
 
     [Header("Voice Meter \u2014 Mekanik Teriak (Voice-Driven Action)")]

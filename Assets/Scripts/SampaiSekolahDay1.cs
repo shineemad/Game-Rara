@@ -151,8 +151,8 @@ public class SampaiSekolahDay1 : MonoBehaviour
         Color warnaJudul = gangSepi ? new Color(0.95f, 0.45f, 0.30f, 1f)   // oranye waspada
                                     : new Color(0.30f, 0.78f, 0.42f, 1f);  // hijau ceria
         string judul = gangSepi
-            ? "\uD83D\uDE13  Fyuh\u2026 Rara Akhirnya Sampai"
-            : "\uD83C\uDF89  Yeay! Rara Sampai dengan Selamat!";
+            ? "Fyuh\u2026 Rara Akhirnya Sampai"
+            : "Yeay! Rara Sampai dengan Selamat!";
         string subtitel = gangSepi
             ? "Rara nekat lewat <b>GANG SEPI</b> tadi \u2014 sempat deg-degan dan kehilangan 1 nyawa. Untung berhasil tiba di SMP Harapan!"
             : "Rara memilih <b>JALAN RAMAI</b> dan tiba di SMP Harapan dengan aman. Keputusan yang tepat! \u2705";
@@ -185,7 +185,7 @@ public class SampaiSekolahDay1 : MonoBehaviour
         jRt.anchoredPosition = new Vector2(0f, -40f);
 
         // Highlight tengah: poin (jalur aman) atau peringatan (jalur bahaya).
-        string highlight = gangSepi ? "\u26A0  \u22121 Nyawa" : $"\u2726  +{bonusJalurAman} poin  \u2726";
+        string highlight = gangSepi ? "\u22121 Nyawa" : $"+{bonusJalurAman} poin";
         Color  warnaHighlight = gangSepi ? new Color(0.95f, 0.35f, 0.30f, 1f)
                                          : new Color(0.95f, 0.62f, 0.10f, 1f);
         var hl = BuatTeks(card.transform, "Highlight", highlight, 64, warnaHighlight, FontStyles.Bold);
@@ -275,8 +275,8 @@ public class SampaiSekolahDay1 : MonoBehaviour
         pitaRt.offsetMin = new Vector2(28f, -96f); pitaRt.offsetMax = new Vector2(-28f, -22f);
 
         string judulKartu = gangSepi
-            ? "\uD83D\uDCDA  KARTU EDUKASI \u2014 PELAJARAN HARI 1"
-            : "\uD83D\uDCDA  KARTU EDUKASI \u2014 HARI 1";
+            ? "KARTU EDUKASI \u2014 PELAJARAN HARI 1"
+            : "KARTU EDUKASI \u2014 HARI 1";
         var judul = BuatTeks(pita.transform, "Judul", judulKartu, 32,
             new Color(0.18f, 0.09f, 0.02f, 1f), FontStyles.Bold);
         judul.alignment = TextAlignmentOptions.Center;
@@ -291,7 +291,7 @@ public class SampaiSekolahDay1 : MonoBehaviour
         isiRt.offsetMin = new Vector2(50f, 120f); isiRt.offsetMax = new Vector2(-50f, -112f);
 
         // Tombol lanjutkan.
-        BuatTombol(card.transform, "\u25B6  LANJUTKAN", new Color(0.20f, 0.70f, 0.36f, 1f), () =>
+        BuatTombol(card.transform, "LANJUTKAN", new Color(0.20f, 0.70f, 0.36f, 1f), () =>
         {
             AudioManager.Instance?.Click();
             if (_canvasGO != null) Destroy(_canvasGO);

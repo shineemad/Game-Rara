@@ -1005,7 +1005,7 @@ MonoBehaviour:
     akhiriGameOver: 0
     warna: {r: 0.95, g: 0.62, b: 0.07, a: 1}
   aksiSaatTimeout: 2
-  tombolLanjutTeks: "\u25B6  Lanjut"
+  tombolLanjutTeks: Lanjut
   warnaLanjut: {r: 0.2, g: 0.62, b: 0.86, a: 1}
   bgFullscreenSprite: {fileID: 0}
   bgFullscreenPreserveAspect: 0
@@ -5383,7 +5383,7 @@ MonoBehaviour:
   zonaAmanAnchorMax: {x: 0.205, y: 0.86}
   zonaBahayaAnchorMin: {x: 0.795, y: 0.1}
   zonaBahayaAnchorMax: {x: 0.988, y: 0.86}
-  karakterSprite: {fileID: 0}
+  karakterSprite: {fileID: 3694361038321104321, guid: efabd828e97114f4c8697dfedda01bb4, type: 3}
   karakterAnchoredPos: {x: 0, y: -20}
   karakterUkuran: {x: 220, y: 360}
   chipWarna: {r: 0.18, g: 0.2, b: 0.3, a: 0.95}
@@ -6255,7 +6255,7 @@ MonoBehaviour:
     akhiriGameOver: 0
     warna: {r: 0.95, g: 0.62, b: 0.07, a: 1}
   aksiSaatTimeout: 2
-  tombolLanjutTeks: "\u25B6  Lanjut"
+  tombolLanjutTeks: Lanjut
   warnaLanjut: {r: 0.2, g: 0.62, b: 0.86, a: 1}
   bgFullscreenSprite: {fileID: 0}
   bgFullscreenPreserveAspect: 0
@@ -8688,7 +8688,7 @@ MonoBehaviour:
     tintGambar: {r: 1, g: 1, b: 1, a: 1}
     latarSprite: {fileID: -3018959765559948573, guid: 387740b62e27cb74da755e868d5bbc4a, type: 3}
   panelSampaiSekolah: []
-  tombolLanjutTeks: "\u25B6  Lanjut"
+  tombolLanjutTeks: Lanjut
   warnaLanjut: {r: 0.2, g: 0.62, b: 0.86, a: 1}
   aktifkanVoiceMeter: 1
   kategoriPemicu: AMAN
@@ -9123,7 +9123,7 @@ MonoBehaviour:
       HP Rara tiba-tiba menerima pesan dari nomor tak dikenal.
     dialogSprite: {fileID: 0}
   - backgroundColor: {r: 0.55, g: 0.37, b: 0.24, a: 0}
-    backgroundSprite: {fileID: -4693353401862682160, guid: 417c476cd90e9a74894a1ad9a982cc2e, type: 3}
+    backgroundSprite: {fileID: 1918971268994237271, guid: 915b1de092d481f4989f84a158c156f4, type: 3}
     illustration: {fileID: 0}
     title: Yang Perlu Rara Tahu
     text: "\u25CF Tubuhmu adalah milikmu \u2014 tidak ada yang boleh menyentuh sembarangan.\n\u25CF

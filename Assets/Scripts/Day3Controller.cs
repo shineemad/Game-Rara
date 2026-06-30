@@ -2358,7 +2358,7 @@ public class Day3Controller : MonoBehaviour
         // ── Tombol LANJUT: HANYA tombol ini yang melanjutkan dialog ──
         // (klik di luar tombol tidak lagi melanjutkan)
         _tombolLanjutUcapan = TombolLanjutVN.Pasang(box.transform, null,
-            "LANJUT  \u25B6", new Vector2(0.80f, 0.06f), new Vector2(0.99f, 0.40f));
+            "LANJUT", new Vector2(0.80f, 0.06f), new Vector2(0.99f, 0.40f));
 
         // Reaksi (di ATAS kotak ucapan) — TANPA sprite box dialog. Hanya teks reaksi
         // yang ditampilkan (latar transparan), sesuai permintaan menghapus box dialog.

@@ -130,7 +130,7 @@ public class ChatSimWhatsApp : MonoBehaviour
     public int aksiSaatTimeout = 2;
 
     [Header("Tombol Lanjut")]
-    public string tombolLanjutTeks = "\u25B6  Lanjut";
+    public string tombolLanjutTeks = "Lanjut";
     public Color  warnaLanjut = new Color(0.20f, 0.62f, 0.86f, 1f);
 
     [Header("BG Fullscreen Device (opsional)")]
